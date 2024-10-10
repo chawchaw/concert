@@ -1,10 +1,58 @@
 = 콘서트 예약 API 문서
 :toc: left
 :toclevels: 2
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:sectlinks:
+:table-caption!:
 
-== User API
+== 유저 API
 
-=== Create User
+=== 유저 토큰 발급
+include::{snippets}/user/request-token/curl-request.adoc[]
+include::{snippets}/user/request-token/http-request.adoc[]
+include::{snippets}/user/request-token/http-response.adoc[]
+include::{snippets}/user/request-token/response-fields.adoc[]
 
-include::{snippets}/create-user/request-fields.adoc[]
-include::{snippets}/create-user/response-fields.adoc[]
+=== 잔액 충전
+include::{snippets}/user/charge-point/curl-request.adoc[]
+include::{snippets}/user/charge-point/http-request.adoc[]
+include::{snippets}/user/charge-point/http-response.adoc[]
+include::{snippets}/user/charge-point/response-fields.adoc[]
+
+=== 잔액 조회
+include::{snippets}/user/get-point/curl-request.adoc[]
+include::{snippets}/user/get-point/http-request.adoc[]
+include::{snippets}/user/get-point/http-response.adoc[]
+include::{snippets}/user/get-point/response-fields.adoc[]
+
+
+== 콘서트
+
+=== 예약 가능 날짜 조회
+include::{snippets}/concert/get-concerts/curl-request.adoc[]
+include::{snippets}/concert/get-concerts/http-request.adoc[]
+include::{snippets}/concert/get-concerts/http-response.adoc[]
+include::{snippets}/concert/get-concerts/response-fields.adoc[]
+
+=== 예약 가능 좌석 조회
+include::{snippets}/concert/get-tickets/curl-request.adoc[]
+include::{snippets}/concert/get-tickets/http-request.adoc[]
+include::{snippets}/concert/get-tickets/path-parameters.adoc[]
+include::{snippets}/concert/get-tickets/http-response.adoc[]
+include::{snippets}/concert/get-tickets/response-fields.adoc[]
+
+=== 좌석 예약 요청
+include::{snippets}/concert/temp-booking/curl-request.adoc[]
+include::{snippets}/concert/temp-booking/http-request.adoc[]
+include::{snippets}/concert/temp-booking/path-parameters.adoc[]
+include::{snippets}/concert/temp-booking/http-response.adoc[]
+include::{snippets}/concert/temp-booking/response-fields.adoc[]
+
+=== 결제
+include::{snippets}/concert/pay/curl-request.adoc[]
+include::{snippets}/concert/pay/http-request.adoc[]
+include::{snippets}/concert/pay/path-parameters.adoc[]
+include::{snippets}/concert/pay/http-response.adoc[]
+include::{snippets}/concert/pay/response-fields.adoc[]
