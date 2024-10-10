@@ -1,0 +1,10 @@
+= 콘서트 예약 API 문서
+:toc: left
+:toclevels: 2
+
+== User API
+
+=== Create User
+
+include::{snippets}/create-user/request-fields.adoc[]
+include::{snippets}/create-user/response-fields.adoc[]
