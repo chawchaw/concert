@@ -1,8 +1,9 @@
 package com.chaw.concert.interfaces.api.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.chaw.concert.interfaces.api.user.dto.ChargePointInput;
+import com.chaw.concert.interfaces.api.user.dto.ChargePointOutput;
+import com.chaw.concert.interfaces.api.user.dto.GetPointOutput;
+import com.chaw.concert.interfaces.api.user.dto.RequestTokenOutput;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,45 +13,20 @@ public class UserController {
 
     @PostMapping("/token")
     @ResponseStatus(HttpStatus.CREATED)
-    public Output1 requestToken() {
-        return new Output1("token");
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class Output1 {
-        private String token;
+    public RequestTokenOutput requestToken() {
+        return new RequestTokenOutput("token");
     }
 
     @PostMapping("/point")
     @ResponseStatus(HttpStatus.CREATED)
-    public Output2 chargePoint(@RequestBody Input2 input) {
-        return new Output2(200, 100);
+    public ChargePointOutput chargePoint(@RequestBody ChargePointInput input) {
+        return new ChargePointOutput(200, 100);
     }
-
-    @Data
-    @NoArgsConstructor
-    public static class Input2 {
-        private Integer point;
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class Output2 {
-        private Integer balance;
-        private Integer point;
-    }
-
 
     @GetMapping("/point")
     @ResponseStatus(HttpStatus.OK)
-    public Output3 getPoint() {
-        return new Output3(200);
+    public GetPointOutput getPoint() {
+        return new GetPointOutput(200);
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class Output3 {
-        private Integer balance;
-    }
 }
