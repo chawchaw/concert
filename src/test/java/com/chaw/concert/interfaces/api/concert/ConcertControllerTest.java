@@ -19,8 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
@@ -48,8 +47,8 @@ public class ConcertControllerTest {
     public void getConcerts() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("concert/get-concerts",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("from").description("공연일 시작"),
                                 fieldWithPath("to").description("공연일 끝")
@@ -83,18 +82,18 @@ public class ConcertControllerTest {
     public void getTickets() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("concert/get-tickets",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         pathParameters(
                                 parameterWithName("id").description("콘서트 ID")
                         ),
                         responseFields(
-                                fieldWithPath("[].id").description("티켓 ID"),
-                                fieldWithPath("[].status").description("예매 상태 (공석, 임시예약, 예약완료)"),
-                                fieldWithPath("[].seat_zone").description("구역"),
-                                fieldWithPath("[].seat_no").description("좌석 번호"),
-                                fieldWithPath("[].seat_type").description("좌석 종류 (VIP, 1등석, 2등석)"),
-                                fieldWithPath("[].seat_price").description("가격")
+                                fieldWithPath("items[].id").description("티켓 ID"),
+                                fieldWithPath("items[].status").description("예매 상태 (공석, 임시예약, 예약완료)"),
+                                fieldWithPath("items[].seat_zone").description("구역"),
+                                fieldWithPath("items[].seat_no").description("좌석 번호"),
+                                fieldWithPath("items[].seat_type").description("좌석 종류 (VIP, 1등석, 2등석)"),
+                                fieldWithPath("items[].seat_price").description("가격")
                         )
                 );
 
@@ -108,8 +107,8 @@ public class ConcertControllerTest {
     public void tempBooking() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("concert/temp-booking",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         pathParameters(
                                 parameterWithName("id").description("티켓 ID")
                         ),
@@ -130,8 +129,8 @@ public class ConcertControllerTest {
     public void pay() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("concert/pay",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         pathParameters(
                                 parameterWithName("id").description("티켓 ID")
                         ),

@@ -33,9 +33,9 @@ public class ConcertController {
 
     @GetMapping("/{id}/tickets")
     @ResponseStatus(HttpStatus.OK)
-    public List<GetTicketsOutput> getTickets(@PathVariable Long id) {
-        return List.of(
-                GetTicketsOutput.builder()
+    public GetTicketsOutput getTickets(@PathVariable Long id) {
+        List<GetTicketsOutput.Item> items = List.of(
+                GetTicketsOutput.Item.builder()
                         .id(1L)
                         .status("공석")
                         .seat_zone("A")
@@ -43,7 +43,7 @@ public class ConcertController {
                         .seat_type("VIP")
                         .seat_price(200000)
                         .build(),
-                GetTicketsOutput.builder()
+                GetTicketsOutput.Item.builder()
                         .id(2L)
                         .status("예약완료")
                         .seat_zone("B")
@@ -52,6 +52,10 @@ public class ConcertController {
                         .seat_price(150000)
                         .build()
         );
+
+        return GetTicketsOutput.builder()
+                .items(items)
+                .build();
     }
 
     @PostMapping("/tickets/{id}")

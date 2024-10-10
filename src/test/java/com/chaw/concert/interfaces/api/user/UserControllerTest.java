@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,8 +46,8 @@ public class UserControllerTest {
     public void requestToken() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("user/request-token",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("token").description("대기열 토큰")
                         ));
@@ -63,8 +63,8 @@ public class UserControllerTest {
     public void chargePoint() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("user/charge-point",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("point").description("충전할 포인트")
                         ),
@@ -85,8 +85,8 @@ public class UserControllerTest {
     public void getPoint() throws Exception {
         RestDocumentationResultHandler documentationHandler =
                 MockMvcRestDocumentation.document("user/get-point",
-                        preprocessRequest(),
-                        preprocessResponse(),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         responseFields(
                                 fieldWithPath("balance").description("현재 포인트")
                         ));
