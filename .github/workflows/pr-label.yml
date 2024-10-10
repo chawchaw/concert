@@ -1,0 +1,23 @@
+name: Add PR size and stability labels
+"on":
+  pull_request_target:
+    types: [opened, synchronize]
+  push:
+    branches: [master, develop]
+jobs:
+  add-pr-labels:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: victorx64/pr-label@v0
+        with:
+          # Optional pattern used to limit paths.
+          # Example: "'*.js' ':!*.spec.js' .".
+          # See https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+          git-pathspec: |
+            '*.java'               # 모든 Java 파일
+            'src/main/resources/**' # 리소스 파일 포함
+            ':!*.yml'               # YAML 파일 제외 (예: application.yml)
+          
