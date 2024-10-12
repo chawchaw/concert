@@ -24,11 +24,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-web")  // Spring MVC 추가
     implementation("org.projectlombok:lombok:1.18.30")  // Lombok 추가
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0") // Swagger 의존성 추가
+
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc") // Spring REST Docs MockMVC 추가
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
