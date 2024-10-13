@@ -1,51 +1,34 @@
 # 시퀀스 다이어그램
 
-## 유저 대기열 토큰 발급
+## 대기열 입장
 ```mermaid
 sequenceDiagram
-    title 유저 대기열 토큰 발급
+    title 대기열 입장
     actor U as 사용자
     participant C as 컨트롤러
     participant S as 서비스
     participant P as 영속성
 
-    U->>+C: 토큰 발급 요청<br/>[UUID] 포함
+    U->>+C: 토큰 발급 요청
     C->>+S: 토큰 발급 요청
-    S->>+P: 기존 토큰 조회
-    alt 기존 토큰이 있는 경우
-        P->>S: 기존 토큰 반환
-        S->>S: 기존 토큰 유효 체크
-        alt 기존 토큰이 유효한 경우
-            S->>C: 기존 토큰 반환
-            C->>U: 토큰 반환
-        end
+    S->>S: UUID 생성
+    S->>+P: 대기열 순번 조회
+    P->>S: 대기열 순번 여부 반환
+    alt 대기열 순번이 없는 경우
+        S->>P: 대기열 순번 저장
+        P->>S: 저장 완료
     end
-    P->>S: 기존 토큰 없음
-    S-->>P: 토큰 lock 요청
-    alt lock 획득 실패
-        S->>S: lock 획득 실패
-        S->>C: lock 획득 실패
-        C->>U: 현재 대기열이 혼잡합니다. 잠시 후 다시 시도해주세요.
-    end
-    P-->>S: 토큰 lock 획득
-
-    S->>P: 토큰 발급 요청
-    P->>S: 대기열 정보 반환
-    S->>S: 대기 순서 및 잔여 시간 계산
-    S->>P: 대기열 정보를 포함한 토큰 생성
-
-    S-->>P: 토큰 lock 해제
-    P-->>S: 토큰 lock 해제 완료
-
+    S->>P: 토큰 발급 저장
+    P->>S: 저장 완료
     P->>-S: 생성된 토큰 반환
     S->>-C: 토큰 반환
     C->>-U: 토큰 반환
 ```
 
-## 토큰 유효성 검증(공통)
+## 대기열 순서 조회
 ```mermaid
 sequenceDiagram
-    title 토큰 유효성 검증(공통)
+    title 대기열 순서 조회
     actor U as 사용자 
     participant C as 컨트롤러
     participant S as 서비스

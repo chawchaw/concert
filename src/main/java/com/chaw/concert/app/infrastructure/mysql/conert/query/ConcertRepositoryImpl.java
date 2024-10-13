@@ -13,7 +13,7 @@ public class ConcertRepositoryImpl implements ConcertRepository {
     }
 
     @Override
-    public Concert create(Concert concert) {
+    public Concert save(Concert concert) {
         return repository.save(concert);
     }
 }
