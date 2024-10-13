@@ -25,7 +25,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")  // Spring MVC 추가
     implementation("org.projectlombok:lombok:1.18.30")  // Lombok 추가
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0") // Swagger 의존성 추가
-
+    implementation("mysql:mysql-connector-java:8.0.33") // MySQL 8.0 의존성 추가
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa") // Spring Data JPA 추가
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 
@@ -35,30 +36,4 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
-}
-
-val snippetsDir = file("build/generated-snippets")
-
-tasks.named<Test>("test") {
-    outputs.dir(snippetsDir)
-    doFirst {
-        delete(snippetsDir)
-    }
-}
-
-tasks.named<AsciidoctorTask>("asciidoctor") {
-    inputs.dir(snippetsDir)
-    dependsOn(tasks.test)
-    attributes(
-        mapOf("snippets" to snippetsDir.absolutePath)
-    )
-    outputOptions {
-        setOutputDir(file("build/docs/asciidoc"))
-    }
-}
-
-tasks.register<Copy>("copyRestDocs") {
-    from("build/docs/asciidoc")
-    into("src/main/resources/static/docs")
-    dependsOn(tasks.withType<AsciidoctorTask>())
 }
