@@ -7,9 +7,9 @@ import java.util.List;
 public interface WaitQueueRepository {
     WaitQueue save(WaitQueue waitQueue);
 
-    Boolean existsByConcertIdAndUuid(Long concertId, String uuid);
+    Boolean existsByConcertScheduleIdAndUuid(Long concertId, String uuid);
 
-    List<WaitQueue> findByConcertIdAndIdGreaterThanOrderByIdAsc(Long concertId, Long waitingUserId);
+    List<WaitQueue> findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(Long concertId, Long waitingUserId);
 
     void saveAll(List<WaitQueue> waitQueues);
 }

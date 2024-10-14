@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface WaitQueueJpaRepository extends JpaRepository<WaitQueue, Long> {
-    Boolean existsByConcertIdAndUuid(Long concertId, String uuid);
+    Boolean existsByConcertScheduleIdAndUuid(Long concertScheduleId, String uuid);
 
-    List<WaitQueue> findByConcertIdAndIdGreaterThanOrderByIdAsc(Long concertId, Long lastTransferredWaitingUserId);
+    List<WaitQueue> findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(Long concertScheduleId, Long lastTransferredWaitingUserId);
 }

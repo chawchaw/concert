@@ -9,9 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface QueuePositionTrackerJpaRepository extends JpaRepository<QueuePositionTracker, Long> {
-    Optional<QueuePositionTracker> findByConcertId(Long concertId);
-
-    Boolean existsByConcertId(Long concertId);
+    Optional<QueuePositionTracker> findByConcertScheduleId(Long concertScheduleId);
 
     List<QueuePositionTracker> findAllByIsWaitQueueExist(Boolean isWaitQueueExist);
 }

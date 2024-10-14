@@ -15,11 +15,11 @@ public class QueuePositionTracker {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "concert_id", unique = true)
-    private Long concertId;
+    @Column(name = "concert_schedule_id", unique = true)
+    private Long concertScheduleId;
 
-    @Column(name = "waiting_user_id")
-    private Long waitingUserId;
+    @Column(name = "wait_queue_id")
+    private Long waitQueueId;
 
     @Column(name = "is_wait_queue_exist")
     private Boolean isWaitQueueExist;

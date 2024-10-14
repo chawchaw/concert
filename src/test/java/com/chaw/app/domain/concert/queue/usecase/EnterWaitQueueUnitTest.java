@@ -38,22 +38,22 @@ public class EnterWaitQueueUnitTest {
         // given
         EnterWaitQueue.Input input = EnterWaitQueue.Input.builder()
                 .userId(1L)
-                .concertId(100L)
+                .concertScheduleId(100L)
                 .build();
 
         QueuePositionTracker mockIndicator = QueuePositionTracker.builder()
-                .concertId(100L)
-                .waitingUserId(0L)
+                .concertScheduleId(100L)
+                .waitQueueId(0L)
                 .isWaitQueueExist(true)
                 .build();
 
         // Mock Indicator가 이미 존재하는 경우
-        when(queuePositionTrackerRepository.findByConcertId(100L)).thenReturn(mockIndicator);
+        when(queuePositionTrackerRepository.findByConcertScheduleId(100L)).thenReturn(mockIndicator);
 
         // Mock 대기열 추가 성공
         WaitQueue mockWaitQueue = WaitQueue.builder()
                 .userId(input.getUserId())
-                .concertId(input.getConcertId())
+                .concertScheduleId(input.getConcertScheduleId())
                 .uuid(UUID.randomUUID().toString())
                 .build();
         when(waitQueueRepository.save(any(WaitQueue.class))).thenReturn(mockWaitQueue);
@@ -64,10 +64,10 @@ public class EnterWaitQueueUnitTest {
         // then
         assertNotNull(result);
         assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertId(), result.getConcertId());
+        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
         assertNotNull(result.getUuid());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertId(input.getConcertId());
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
     }
 
@@ -76,16 +76,16 @@ public class EnterWaitQueueUnitTest {
         // given
         EnterWaitQueue.Input input = EnterWaitQueue.Input.builder()
                 .userId(1L)
-                .concertId(100L)
+                .concertScheduleId(100L)
                 .build();
 
         // Mock Indicator가 없는 경우
-        when(queuePositionTrackerRepository.findByConcertId(100L)).thenReturn(null);
+        when(queuePositionTrackerRepository.findByConcertScheduleId(100L)).thenReturn(null);
 
         // Mock 대기열 추가 성공
         WaitQueue mockWaitQueue = WaitQueue.builder()
                 .userId(input.getUserId())
-                .concertId(input.getConcertId())
+                .concertScheduleId(input.getConcertScheduleId())
                 .uuid(UUID.randomUUID().toString())
                 .build();
         when(waitQueueRepository.save(any(WaitQueue.class))).thenReturn(mockWaitQueue);
@@ -96,10 +96,10 @@ public class EnterWaitQueueUnitTest {
         // then
         assertNotNull(result);
         assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertId(), result.getConcertId());
+        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
         assertNotNull(result.getUuid());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertId(input.getConcertId());
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
         verify(queuePositionTrackerRepository, times(1)).save(any(QueuePositionTracker.class));
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
     }
@@ -109,22 +109,22 @@ public class EnterWaitQueueUnitTest {
         // given
         EnterWaitQueue.Input input = EnterWaitQueue.Input.builder()
                 .userId(1L)
-                .concertId(100L)
+                .concertScheduleId(100L)
                 .build();
 
         // Mock Indicator가 존재하지만 대기열이 비활성화된 경우
         QueuePositionTracker inactiveIndicator = QueuePositionTracker.builder()
-                .concertId(100L)
-                .waitingUserId(0L)
+                .concertScheduleId(100L)
+                .waitQueueId(0L)
                 .isWaitQueueExist(false)  // 비활성화 상태
                 .build();
 
-        when(queuePositionTrackerRepository.findByConcertId(100L)).thenReturn(inactiveIndicator);
+        when(queuePositionTrackerRepository.findByConcertScheduleId(100L)).thenReturn(inactiveIndicator);
 
         // Mock 대기열 추가 성공
         WaitQueue mockWaitQueue = WaitQueue.builder()
                 .userId(input.getUserId())
-                .concertId(input.getConcertId())
+                .concertScheduleId(input.getConcertScheduleId())
                 .uuid(UUID.randomUUID().toString())
                 .build();
         when(waitQueueRepository.save(any(WaitQueue.class))).thenReturn(mockWaitQueue);
@@ -135,10 +135,10 @@ public class EnterWaitQueueUnitTest {
         // then
         assertNotNull(result);
         assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertId(), result.getConcertId());
+        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
         assertNotNull(result.getUuid());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertId(input.getConcertId());
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
         verify(queuePositionTrackerRepository, times(1)).save(any(QueuePositionTracker.class));  // 활성화 상태로 저장
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
     }

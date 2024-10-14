@@ -33,22 +33,22 @@ public class GetWaitQueueStatus {
     }
 
     public Output execute(Input input) {
-        Optional<ReservationPhase> reservationPhase = reservationPhaseRepository.findByConcertIdAndUuid(input.getConcertId(), input.getUuid());
+        Optional<ReservationPhase> reservationPhase = reservationPhaseRepository.findByConcertScheduleIdAndUuid(input.getConcertScheduleId(), input.getUuid());
         if (reservationPhase.isPresent()) {
             return new Output(0, true);
         }
 
-        QueuePositionTracker queuePositionTracker = queuePositionTrackerRepository.findByConcertId(input.getConcertId());
+        QueuePositionTracker queuePositionTracker = queuePositionTrackerRepository.findByConcertScheduleId(input.getConcertScheduleId());
         if (queuePositionTracker == null) {
             throw new WaitQueueIndicatorNotExist();
         }
 
-        Boolean waitingUserExist = waitQueueRepository.existsByConcertIdAndUuid(input.getConcertId(), input.getUuid());
+        Boolean waitingUserExist = waitQueueRepository.existsByConcertScheduleIdAndUuid(input.getConcertScheduleId(), input.getUuid());
         if (!waitingUserExist) {
             throw new UserNotInQueueException();
         }
 
-        List<WaitQueue> waitQueues = waitQueueRepository.findByConcertIdAndIdGreaterThanOrderByIdAsc(input.getConcertId(), queuePositionTracker.getWaitingUserId());
+        List<WaitQueue> waitQueues = waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(input.getConcertScheduleId(), queuePositionTracker.getWaitQueueId());
 
         Integer position = -1;
         for (int i = 0; i < waitQueues.size(); i++) {
@@ -67,7 +67,7 @@ public class GetWaitQueueStatus {
     @Builder
     @Getter
     public static class Input {
-        private Long concertId;
+        private Long concertScheduleId;
         private String uuid;
     }
 

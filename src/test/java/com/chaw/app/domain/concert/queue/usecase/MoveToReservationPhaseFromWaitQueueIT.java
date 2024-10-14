@@ -45,20 +45,20 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         Long concertId = 999L;
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(0L)
+                .concertScheduleId(concertId)
+                .waitQueueId(0L)
                 .isWaitQueueExist(true)
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker);
 
         List<WaitQueue> waitQueues = List.of(
                 WaitQueue.builder()
-                        .concertId(concertId)
+                        .concertScheduleId(concertId)
                         .userId(1L)
                         .uuid("uuid1")
                         .build(),
                 WaitQueue.builder()
-                        .concertId(concertId)
+                        .concertScheduleId(concertId)
                         .userId(2L)
                         .uuid("uuid2")
                         .build()
@@ -69,9 +69,9 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         moveToReservationPhaseFromWaitQueue.execute();
 
         // then
-        assertEquals(2, reservationPhaseRepository.countByConcertId(concertId));
+        assertEquals(2, reservationPhaseRepository.countByConcertScheduleId(concertId));
 
-        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertId(concertId);
+        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertScheduleId(concertId);
         assertNotNull(updatedIndicator);
         assertFalse(updatedIndicator.getIsWaitQueueExist());  // 대기열이 비워졌으므로 false로 변경되었는지 확인
     }
@@ -83,8 +83,8 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         Long concertId = 999L;
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(0L)
+                .concertScheduleId(concertId)
+                .waitQueueId(0L)
                 .isWaitQueueExist(true)
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker);
@@ -94,7 +94,7 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         for (int i = 0; i < 30; i++) {
             reservationPhases.add(
                     ReservationPhase.builder()
-                    .concertId(concertId)
+                    .concertScheduleId(concertId)
                     .userId((long) i + 1)
                     .uuid("uuid" + (i + 1))
                     .build()
@@ -103,7 +103,7 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         reservationPhaseRepository.saveAll(reservationPhases);
 
         WaitQueue waitQueue1 = WaitQueue.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .userId(31L)
                 .uuid("uuid31")
                 .build();
@@ -113,8 +113,8 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         moveToReservationPhaseFromWaitQueue.execute();
 
         // then
-        assertEquals(30, reservationPhaseRepository.countByConcertId(concertId));  // 더 이상 추가되지 않음
-        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertId(concertId);
+        assertEquals(30, reservationPhaseRepository.countByConcertScheduleId(concertId));  // 더 이상 추가되지 않음
+        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertScheduleId(concertId);
         assertTrue(updatedIndicator.getIsWaitQueueExist());  // 대기열은 여전히 존재
     }
 
@@ -125,14 +125,14 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         Long concertId = 999L;
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(0L)
+                .concertScheduleId(concertId)
+                .waitQueueId(0L)
                 .isWaitQueueExist(true)
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker);
 
         WaitQueue waitQueue = WaitQueue.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .userId(1L)
                 .uuid("uuid1")
                 .build();
@@ -143,9 +143,9 @@ public class MoveToReservationPhaseFromWaitQueueIT {
         moveToReservationPhaseFromWaitQueue.execute();
 
         // then
-        assertEquals(1, reservationPhaseRepository.countByConcertId(concertId));
+        assertEquals(1, reservationPhaseRepository.countByConcertScheduleId(concertId));
 
-        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertId(concertId);
+        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertScheduleId(concertId);
         assertNotNull(updatedIndicator);
         assertFalse(updatedIndicator.getIsWaitQueueExist());  // 대기열이 비워졌으므로 isWaitQueueExist는 false가 되어야 함
     }

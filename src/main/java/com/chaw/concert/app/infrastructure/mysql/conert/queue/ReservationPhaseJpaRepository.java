@@ -8,11 +8,11 @@ import java.util.Optional;
 
 @Repository
 public interface ReservationPhaseJpaRepository extends JpaRepository<ReservationPhase, Long> {
-    Integer countByConcertId(Long concertId);
+    Integer countByConcertScheduleId(Long concertScheduleId);
 
     void deleteByUuid(String uuid);
 
     Optional<ReservationPhase> findByUuid(String uuid);
 
-    Optional<ReservationPhase> findByConcertIdAndUuid(Long concertId, String uuid);
+    Optional<ReservationPhase> findByConcertScheduleIdAndUuid(Long concertScheduleId, String uuid);
 }

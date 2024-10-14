@@ -43,7 +43,7 @@ public class MoveToReservationPhaseFromWaitQueue {
     public void execute() {
         List<QueuePositionTracker> queuePositionTrackers = queuePositionTrackerRepository.findAllByIsWaitQueueExist();
         for (QueuePositionTracker queuePositionTracker : queuePositionTrackers) {
-            Integer reservationPhaseSize = reservationPhaseRepository.countByConcertId(queuePositionTracker.getConcertId());
+            Integer reservationPhaseSize = reservationPhaseRepository.countByConcertScheduleId(queuePositionTracker.getConcertScheduleId());
             Integer movableSize = MAX_RESERVATION_PHASE_SIZE - reservationPhaseSize;
             if (movableSize <= 0) {
                 continue;
@@ -60,23 +60,23 @@ public class MoveToReservationPhaseFromWaitQueue {
      */
     @Transactional
     public void move(QueuePositionTracker queuePositionTracker, Integer movableSize) {
-        List<WaitQueue> waitQueues = waitQueueRepository.findByConcertIdAndIdGreaterThanOrderByIdAsc(
-                queuePositionTracker.getConcertId(),
-                queuePositionTracker.getWaitingUserId()
+        List<WaitQueue> waitQueues = waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(
+                queuePositionTracker.getConcertScheduleId(),
+                queuePositionTracker.getWaitQueueId()
         );
         Integer min = Math.min(waitQueues.size(), movableSize);
         List<WaitQueue> limitedWaitQueues = waitQueues.subList(0, min);
         List<ReservationPhase> reservationPhases = limitedWaitQueues.stream()
                         .map(waitQueue -> ReservationPhase.builder()
                                 .userId(waitQueue.getUserId())
-                                .concertId(waitQueue.getConcertId())
+                                .concertScheduleId(waitQueue.getConcertScheduleId())
                                 .uuid(waitQueue.getUuid())
                                 .build())
                         .collect(Collectors.toList());
         reservationPhaseRepository.saveAll(reservationPhases);
 
         if (limitedWaitQueues.size() > 0) {
-            queuePositionTracker.setWaitingUserId(limitedWaitQueues.get(min - 1).getId());
+            queuePositionTracker.setWaitQueueId(limitedWaitQueues.get(min - 1).getId());
         }
         if (waitQueues.size() <= movableSize) {
             queuePositionTracker.setIsWaitQueueExist(false);

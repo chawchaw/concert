@@ -21,13 +21,13 @@ public class WaitQueueRepositoryImpl implements WaitQueueRepository {
     }
 
     @Override
-    public Boolean existsByConcertIdAndUuid(Long concertId, String uuid) {
-        return repository.existsByConcertIdAndUuid(concertId, uuid);
+    public Boolean existsByConcertScheduleIdAndUuid(Long concertScheduleId, String uuid) {
+        return repository.existsByConcertScheduleIdAndUuid(concertScheduleId, uuid);
     }
 
     @Override
-    public List<WaitQueue> findByConcertIdAndIdGreaterThanOrderByIdAsc(Long concertId, Long lastTransferredWaitingUserId) {
-        return repository.findByConcertIdAndIdGreaterThanOrderByIdAsc(concertId, lastTransferredWaitingUserId);
+    public List<WaitQueue> findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(Long concertScheduleId, Long lastTransferredWaitingUserId) {
+        return repository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertScheduleId, lastTransferredWaitingUserId);
     }
 
     @Override

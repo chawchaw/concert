@@ -22,8 +22,8 @@ public class ReservationPhaseRepositoryImpl implements ReservationPhaseRepositor
     }
 
     @Override
-    public Integer countByConcertId(Long concertId) {
-        return repository.countByConcertId(concertId);
+    public Integer countByConcertScheduleId(Long concertScheduleId) {
+        return repository.countByConcertScheduleId(concertScheduleId);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ReservationPhaseRepositoryImpl implements ReservationPhaseRepositor
     }
 
     @Override
-    public Optional<ReservationPhase> findByConcertIdAndUuid(Long concertId, String uuid) {
-        return repository.findByConcertIdAndUuid(concertId, uuid);
+    public Optional<ReservationPhase> findByConcertScheduleIdAndUuid(Long concertScheduleId, String uuid) {
+        return repository.findByConcertScheduleIdAndUuid(concertScheduleId, uuid);
     }
 }

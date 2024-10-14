@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface ReservationPhaseRepository {
     ReservationPhase save(ReservationPhase reservationPhase);
 
-    Integer countByConcertId(Long concertId);
+    Integer countByConcertScheduleId(Long concertId);
 
     void saveAll(List<ReservationPhase> reservationPhases);
 
@@ -16,5 +16,5 @@ public interface ReservationPhaseRepository {
 
     Optional<ReservationPhase> findByUuid(String uuid);
 
-    Optional<ReservationPhase> findByConcertIdAndUuid(Long concertId, String uuid);
+    Optional<ReservationPhase> findByConcertScheduleIdAndUuid(Long concertId, String uuid);
 }

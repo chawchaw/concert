@@ -47,21 +47,21 @@ public class GetWaitQueueStatusUnitTest {
     void shouldReturnPositionInWaitQueue() {
         // given
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(1L)
+                .concertScheduleId(1L)
                 .uuid("test-uuid")
                 .build();
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(1L)
-                .waitingUserId(10L)
+                .concertScheduleId(1L)
+                .waitQueueId(10L)
                 .build();
 
         List<WaitQueue> waitQueues = new ArrayList<>();
-        waitQueues.add(WaitQueue.builder().id(11L).concertId(1L).uuid("test-uuid").build());
+        waitQueues.add(WaitQueue.builder().id(11L).concertScheduleId(1L).uuid("test-uuid").build());
 
-        when(queuePositionTrackerRepository.findByConcertId(1L)).thenReturn(queuePositionTracker);
-        when(waitQueueRepository.existsByConcertIdAndUuid(1L, "test-uuid")).thenReturn(true);
-        when(waitQueueRepository.findByConcertIdAndIdGreaterThanOrderByIdAsc(1L, 10L)).thenReturn(waitQueues);
+        when(queuePositionTrackerRepository.findByConcertScheduleId(1L)).thenReturn(queuePositionTracker);
+        when(waitQueueRepository.existsByConcertScheduleIdAndUuid(1L, "test-uuid")).thenReturn(true);
+        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(1L, 10L)).thenReturn(waitQueues);
 
         // when
         GetWaitQueueStatus.Output result = getWaitQueueStatus.execute(input);
@@ -71,52 +71,52 @@ public class GetWaitQueueStatusUnitTest {
         assertEquals(1, result.getQueuePosition());
         assertFalse(result.getIsReservationPhase());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertId(1L);
-        verify(waitQueueRepository, times(1)).existsByConcertIdAndUuid(1L, "test-uuid");
-        verify(waitQueueRepository, times(1)).findByConcertIdAndIdGreaterThanOrderByIdAsc(1L, 10L);
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(1L);
+        verify(waitQueueRepository, times(1)).existsByConcertScheduleIdAndUuid(1L, "test-uuid");
+        verify(waitQueueRepository, times(1)).findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(1L, 10L);
     }
 
     @Test
     void shouldThrowUserNotInQueueExceptionWhenUserDoesNotExist() {
         // given
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(1L)
+                .concertScheduleId(1L)
                 .uuid("test-uuid")
                 .build();
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(1L)
-                .waitingUserId(10L)
+                .concertScheduleId(1L)
+                .waitQueueId(10L)
                 .build();
 
         List<WaitQueue> waitQueues = new ArrayList<>();
 
-        when(queuePositionTrackerRepository.findByConcertId(1L)).thenReturn(queuePositionTracker);
-        when(waitQueueRepository.existsByConcertIdAndUuid(1L, "test-uuid")).thenReturn(false);
+        when(queuePositionTrackerRepository.findByConcertScheduleId(1L)).thenReturn(queuePositionTracker);
+        when(waitQueueRepository.existsByConcertScheduleIdAndUuid(1L, "test-uuid")).thenReturn(false);
 
         // when & then
         assertThrows(UserNotInQueueException.class, () -> {
             getWaitQueueStatus.execute(input);
         });
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertId(1L);
-        verify(waitQueueRepository, times(1)).existsByConcertIdAndUuid(1L, "test-uuid");
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(1L);
+        verify(waitQueueRepository, times(1)).existsByConcertScheduleIdAndUuid(1L, "test-uuid");
     }
 
     @Test
     void shouldReturnZeroWhenUserIsInReservationPhase() {
         // given
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(1L)
+                .concertScheduleId(1L)
                 .uuid("test-uuid")
                 .build();
 
         ReservationPhase reservationPhase = ReservationPhase.builder()
-                .concertId(1L)
+                .concertScheduleId(1L)
                 .uuid("test-uuid")
                 .build();
 
-        when(reservationPhaseRepository.findByConcertIdAndUuid(1L, "test-uuid")).thenReturn(Optional.of(reservationPhase));
+        when(reservationPhaseRepository.findByConcertScheduleIdAndUuid(1L, "test-uuid")).thenReturn(Optional.of(reservationPhase));
 
         // when
         GetWaitQueueStatus.Output result = getWaitQueueStatus.execute(input);
@@ -126,27 +126,27 @@ public class GetWaitQueueStatusUnitTest {
         assertEquals(0, result.getQueuePosition());
         assertTrue(result.getIsReservationPhase());
 
-        verify(reservationPhaseRepository, times(1)).findByConcertIdAndUuid(1L, "test-uuid");
-        verify(queuePositionTrackerRepository, never()).findByConcertId(anyLong());
-        verify(waitQueueRepository, never()).existsByConcertIdAndUuid(anyLong(), anyString());
+        verify(reservationPhaseRepository, times(1)).findByConcertScheduleIdAndUuid(1L, "test-uuid");
+        verify(queuePositionTrackerRepository, never()).findByConcertScheduleId(anyLong());
+        verify(waitQueueRepository, never()).existsByConcertScheduleIdAndUuid(anyLong(), anyString());
     }
 
     @Test
     void shouldThrowWaitQueueIndicatorNotExistWhenNoQueueIndicatorFound() {
         // given
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(1L)
+                .concertScheduleId(1L)
                 .uuid("test-uuid")
                 .build();
 
-        when(reservationPhaseRepository.findByConcertIdAndUuid(1L, "test-uuid")).thenReturn(Optional.empty());
-        when(queuePositionTrackerRepository.findByConcertId(1L)).thenReturn(null);
+        when(reservationPhaseRepository.findByConcertScheduleIdAndUuid(1L, "test-uuid")).thenReturn(Optional.empty());
+        when(queuePositionTrackerRepository.findByConcertScheduleId(1L)).thenReturn(null);
 
         // when & then
         assertThrows(WaitQueueIndicatorNotExist.class, () -> {
             getWaitQueueStatus.execute(input);
         });
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertId(1L);
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(1L);
     }
 }

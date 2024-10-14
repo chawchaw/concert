@@ -17,8 +17,8 @@ public class ReservationPhase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "concert_id")
-    private Long concertId;
+    @Column(name = "concert_schedule_id")
+    private Long concertScheduleId;
 
     @Column(name = "user_id")
     private Long userId;

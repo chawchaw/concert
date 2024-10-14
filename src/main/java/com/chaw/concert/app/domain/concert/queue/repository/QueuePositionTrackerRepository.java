@@ -7,7 +7,7 @@ import java.util.List;
 public interface QueuePositionTrackerRepository {
     QueuePositionTracker save(QueuePositionTracker queuePositionTracker);
 
-    QueuePositionTracker findByConcertId(Long concertId);
+    QueuePositionTracker findByConcertScheduleId(Long concertId);
 
     List<QueuePositionTracker> findAllByIsWaitQueueExist();
 }

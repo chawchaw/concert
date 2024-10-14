@@ -38,7 +38,7 @@ public class LeaveReservationPhaseIT {
         // 예약 페이즈에 사용자 추가
         ReservationPhase reservationPhase = ReservationPhase.builder()
                 .userId(1L)
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(uuid)
                 .build();
         reservationPhaseRepository.saveAll(List.of(reservationPhase));

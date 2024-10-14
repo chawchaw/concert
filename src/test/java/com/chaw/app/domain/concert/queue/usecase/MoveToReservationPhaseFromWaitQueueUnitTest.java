@@ -43,20 +43,20 @@ class MoveToReservationPhaseFromWaitQueueTest {
         // given
         Long concertId = 999L;
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(10L)
+                .concertScheduleId(concertId)
+                .waitQueueId(10L)
                 .isWaitQueueExist(true)
                 .build();
 
         List<WaitQueue> waitQueues = Arrays.asList(
-                WaitQueue.builder().id(11L).concertId(concertId).userId(1L).uuid("uuid1").build(),
-                WaitQueue.builder().id(12L).concertId(concertId).userId(2L).uuid("uuid2").build()
+                WaitQueue.builder().id(11L).concertScheduleId(concertId).userId(1L).uuid("uuid1").build(),
+                WaitQueue.builder().id(12L).concertScheduleId(concertId).userId(2L).uuid("uuid2").build()
         );
 
         // Mock Repository 동작 설정
         when(queuePositionTrackerRepository.findAllByIsWaitQueueExist()).thenReturn(Collections.singletonList(queuePositionTracker));
-        when(reservationPhaseRepository.countByConcertId(concertId)).thenReturn(0); // 예약 페이즈에 아직 아무도 없음
-        when(waitQueueRepository.findByConcertIdAndIdGreaterThanOrderByIdAsc(concertId, 10L)).thenReturn(waitQueues);
+        when(reservationPhaseRepository.countByConcertScheduleId(concertId)).thenReturn(0); // 예약 페이즈에 아직 아무도 없음
+        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertId, 10L)).thenReturn(waitQueues);
 
         // when
         moveToReservationPhaseFromWaitQueue.execute();
@@ -64,7 +64,7 @@ class MoveToReservationPhaseFromWaitQueueTest {
         // then
         verify(reservationPhaseRepository, times(1)).saveAll(anyList());
         verify(queuePositionTrackerRepository, times(1)).save(queuePositionTracker);
-        verify(waitQueueRepository, times(1)).findByConcertIdAndIdGreaterThanOrderByIdAsc(concertId, 10L);
+        verify(waitQueueRepository, times(1)).findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertId, 10L);
     }
 
     @Test
@@ -72,14 +72,14 @@ class MoveToReservationPhaseFromWaitQueueTest {
         // given
         Long concertId = 999L;
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(10L)
+                .concertScheduleId(concertId)
+                .waitQueueId(10L)
                 .isWaitQueueExist(true)
                 .build();
 
         // Mock Repository 동작 설정
         when(queuePositionTrackerRepository.findAllByIsWaitQueueExist()).thenReturn(Collections.singletonList(queuePositionTracker));
-        when(reservationPhaseRepository.countByConcertId(concertId)).thenReturn(30); // 예약 페이즈가 이미 꽉 찼음
+        when(reservationPhaseRepository.countByConcertScheduleId(concertId)).thenReturn(30); // 예약 페이즈가 이미 꽉 찼음
 
         // when
         moveToReservationPhaseFromWaitQueue.execute();
@@ -87,7 +87,7 @@ class MoveToReservationPhaseFromWaitQueueTest {
         // then
         verify(reservationPhaseRepository, never()).saveAll(anyList());  // 예약 페이즈가 꽉 찼으므로 saveAll이 호출되지 않음
         verify(queuePositionTrackerRepository, never()).save(any());
-        verify(waitQueueRepository, never()).findByConcertIdAndIdGreaterThanOrderByIdAsc(anyLong(), anyLong());
+        verify(waitQueueRepository, never()).findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(anyLong(), anyLong());
     }
 
     @Test
@@ -95,8 +95,8 @@ class MoveToReservationPhaseFromWaitQueueTest {
         // given
         Long concertId = 999L;
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(10L)
+                .concertScheduleId(concertId)
+                .waitQueueId(10L)
                 .isWaitQueueExist(true)
                 .build();
 
@@ -105,8 +105,8 @@ class MoveToReservationPhaseFromWaitQueueTest {
 
         // Mock Repository 동작 설정
         when(queuePositionTrackerRepository.findAllByIsWaitQueueExist()).thenReturn(Collections.singletonList(queuePositionTracker));
-        when(reservationPhaseRepository.countByConcertId(concertId)).thenReturn(0);
-        when(waitQueueRepository.findByConcertIdAndIdGreaterThanOrderByIdAsc(concertId, 10L)).thenReturn(emptyWaitQueue);
+        when(reservationPhaseRepository.countByConcertScheduleId(concertId)).thenReturn(0);
+        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertId, 10L)).thenReturn(emptyWaitQueue);
 
         // when
         moveToReservationPhaseFromWaitQueue.execute();

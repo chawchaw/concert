@@ -36,15 +36,15 @@ public class EnterWaitQueue {
         String uuid = UUID.randomUUID().toString();
         WaitQueue waitQueue = WaitQueue.builder()
                 .userId(input.getUserId())
-                .concertId(input.getConcertId())
+                .concertScheduleId(input.getConcertScheduleId())
                 .uuid(uuid)
                 .build();
 
-        QueuePositionTracker queuePositionTracker = queuePositionTrackerRepository.findByConcertId(input.concertId);
+        QueuePositionTracker queuePositionTracker = queuePositionTrackerRepository.findByConcertScheduleId(input.concertScheduleId);
         if (queuePositionTracker == null) {
             queuePositionTracker = QueuePositionTracker.builder()
-                    .concertId(input.getConcertId())
-                    .waitingUserId(0L)
+                    .concertScheduleId(input.getConcertScheduleId())
+                    .waitQueueId(0L)
                     .isWaitQueueExist(true)
                     .build();
             queuePositionTrackerRepository.save(queuePositionTracker);
@@ -62,6 +62,6 @@ public class EnterWaitQueue {
     @Getter
     public static class Input {
         private Long userId;
-        private Long concertId;
+        private Long concertScheduleId;
     }
 }

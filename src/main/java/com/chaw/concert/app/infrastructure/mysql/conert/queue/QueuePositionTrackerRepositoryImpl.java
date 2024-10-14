@@ -21,8 +21,8 @@ public class QueuePositionTrackerRepositoryImpl implements QueuePositionTrackerR
     }
 
     @Override
-    public QueuePositionTracker findByConcertId(Long concertId) {
-        return repository.findByConcertId(concertId).orElse(null);
+    public QueuePositionTracker findByConcertScheduleId(Long concertScheduleId) {
+        return repository.findByConcertScheduleId(concertScheduleId).orElse(null);
     }
 
     @Override

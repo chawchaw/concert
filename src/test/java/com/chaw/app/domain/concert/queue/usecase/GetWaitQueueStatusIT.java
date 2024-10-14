@@ -52,13 +52,13 @@ class GetWaitQueueStatusIT {
         String uuid = "test-uuid";
 
         ReservationPhase reservationPhase = ReservationPhase.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(uuid)
                 .build();
         reservationPhaseRepository.save(reservationPhase);
 
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(uuid)
                 .build();
 
@@ -79,13 +79,13 @@ class GetWaitQueueStatusIT {
         String uuid = "non-existent-uuid";
 
         QueuePositionTracker tracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(10L)
+                .concertScheduleId(concertId)
+                .waitQueueId(10L)
                 .build();
         queuePositionTrackerRepository.save(tracker);
 
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(uuid)
                 .build();
 
@@ -103,20 +103,20 @@ class GetWaitQueueStatusIT {
         String uuid = "test-uuid";
 
         QueuePositionTracker tracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(10L)
+                .concertScheduleId(concertId)
+                .waitQueueId(10L)
                 .build();
         queuePositionTrackerRepository.save(tracker);
 
         WaitQueue waitQueue = WaitQueue.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .userId(1L)
                 .uuid(uuid)
                 .build();
         waitQueueRepository.save(waitQueue);
 
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(uuid)
                 .build();
 
@@ -143,19 +143,19 @@ class GetWaitQueueStatusIT {
 
         // 프로세스 시작
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(0L)  // 아무 사용자도 입장하지 않음
+                .concertScheduleId(concertId)
+                .waitQueueId(0L)  // 아무 사용자도 입장하지 않음
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker);
 
         // 대기열에 사용자 추가
-        waitQueueRepository.save(WaitQueue.builder().concertId(concertId).userId(userId1).uuid(uuid1).build());
-        waitQueueRepository.save(WaitQueue.builder().concertId(concertId).userId(userId2).uuid(uuid2).build());
-        waitQueueRepository.save(WaitQueue.builder().concertId(concertId).userId(userId3).uuid(uuid3).build());
+        waitQueueRepository.save(WaitQueue.builder().concertScheduleId(concertId).userId(userId1).uuid(uuid1).build());
+        waitQueueRepository.save(WaitQueue.builder().concertScheduleId(concertId).userId(userId2).uuid(uuid2).build());
+        waitQueueRepository.save(WaitQueue.builder().concertScheduleId(concertId).userId(userId3).uuid(uuid3).build());
 
         // 입력 생성
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(uuid2)
                 .build();
 
@@ -173,16 +173,16 @@ class GetWaitQueueStatusIT {
         // given
         Long concertId = 999L;
         List<WaitQueue> waitQueues = List.of(
-                WaitQueue.builder().concertId(concertId).userId(1L).uuid("test-uuid1").build(),
-                WaitQueue.builder().concertId(concertId).userId(2L).uuid("test-uuid2").build(),
-                WaitQueue.builder().concertId(concertId).userId(3L).uuid("test-uuid3").build(),
-                WaitQueue.builder().concertId(concertId).userId(4L).uuid("test-uuid4").build(),
-                WaitQueue.builder().concertId(concertId).userId(5L).uuid("test-uuid5").build(),
-                WaitQueue.builder().concertId(concertId).userId(6L).uuid("test-uuid6").build(),
-                WaitQueue.builder().concertId(concertId).userId(7L).uuid("test-uuid7").build(),
-                WaitQueue.builder().concertId(concertId).userId(8L).uuid("test-uuid8").build(),
-                WaitQueue.builder().concertId(concertId).userId(9L).uuid("test-uuid9").build(),
-                WaitQueue.builder().concertId(concertId).userId(10L).uuid("test-uuid10").build()
+                WaitQueue.builder().concertScheduleId(concertId).userId(1L).uuid("test-uuid1").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(2L).uuid("test-uuid2").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(3L).uuid("test-uuid3").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(4L).uuid("test-uuid4").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(5L).uuid("test-uuid5").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(6L).uuid("test-uuid6").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(7L).uuid("test-uuid7").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(8L).uuid("test-uuid8").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(9L).uuid("test-uuid9").build(),
+                WaitQueue.builder().concertScheduleId(concertId).userId(10L).uuid("test-uuid10").build()
         );
         WaitQueue waitQueue5Th = waitQueues.get(4);
         WaitQueue waitQueue9Th = waitQueues.get(8);
@@ -192,14 +192,14 @@ class GetWaitQueueStatusIT {
 
         // 콘서트 대기열 시작
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertId(concertId)
-                .waitingUserId(waitQueue5Th.getId())  // 5번째 사용자까지 입장함
+                .concertScheduleId(concertId)
+                .waitQueueId(waitQueue5Th.getId())  // 5번째 사용자까지 입장함
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker);
 
         // 입력 생성
         GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId)
+                .concertScheduleId(concertId)
                 .uuid(waitQueue9Th.getUuid())
                 .build();
 
@@ -221,14 +221,14 @@ class GetWaitQueueStatusIT {
         Long concertId1 = 998L;
         Long concertId2 = 999L;
         List<WaitQueue> waitingUsers1 = List.of(
-                WaitQueue.builder().concertId(concertId1).userId(1L).uuid("test-uuid1").build(),
-                WaitQueue.builder().concertId(concertId1).userId(2L).uuid("test-uuid2").build(),
-                WaitQueue.builder().concertId(concertId1).userId(3L).uuid("test-uuid3").build()
+                WaitQueue.builder().concertScheduleId(concertId1).userId(1L).uuid("test-uuid1").build(),
+                WaitQueue.builder().concertScheduleId(concertId1).userId(2L).uuid("test-uuid2").build(),
+                WaitQueue.builder().concertScheduleId(concertId1).userId(3L).uuid("test-uuid3").build()
         );
         List<WaitQueue> waitingUsers2 = List.of(
-                WaitQueue.builder().concertId(concertId2).userId(4L).uuid("test-uuid4").build(),
-                WaitQueue.builder().concertId(concertId2).userId(5L).uuid("test-uuid5").build(),
-                WaitQueue.builder().concertId(concertId2).userId(6L).uuid("test-uuid6").build()
+                WaitQueue.builder().concertScheduleId(concertId2).userId(4L).uuid("test-uuid4").build(),
+                WaitQueue.builder().concertScheduleId(concertId2).userId(5L).uuid("test-uuid5").build(),
+                WaitQueue.builder().concertScheduleId(concertId2).userId(6L).uuid("test-uuid6").build()
         );
 
         // 대기열에 사용자 추가, 서로 엇갈려서 입장
@@ -244,23 +244,23 @@ class GetWaitQueueStatusIT {
 
         // 콘서트 대기열 시작
         QueuePositionTracker queuePositionTracker1 = QueuePositionTracker.builder()
-                .concertId(concertId1)
-                .waitingUserId(0L)  // 콘서트1은 아무 사용자도 입장하지 않음
+                .concertScheduleId(concertId1)
+                .waitQueueId(0L)  // 콘서트1은 아무 사용자도 입장하지 않음
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker1);
         QueuePositionTracker queuePositionTracker2 = QueuePositionTracker.builder()
-                .concertId(concertId2)
-                .waitingUserId(waitingUsers2.get(0).getId())  // 콘서트2는 1번째 사용자까지 입장함
+                .concertScheduleId(concertId2)
+                .waitQueueId(waitingUsers2.get(0).getId())  // 콘서트2는 1번째 사용자까지 입장함
                 .build();
         queuePositionTrackerRepository.save(queuePositionTracker2);
 
         // 입력 생성
         GetWaitQueueStatus.Input input1 = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId1)
+                .concertScheduleId(concertId1)
                 .uuid(waitingUsers1.get(0).getUuid()) // 콘서트1의 1번째 사용자의 대기열 순서
                 .build();
         GetWaitQueueStatus.Input input2 = GetWaitQueueStatus.Input.builder()
-                .concertId(concertId2)
+                .concertScheduleId(concertId2)
                 .uuid(waitingUsers2.get(2).getUuid()) // 콘서트2의 3번째 사용자의 대기열 순서
                 .build();
 
