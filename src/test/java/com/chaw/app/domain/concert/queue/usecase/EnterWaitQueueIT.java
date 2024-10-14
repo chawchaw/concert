@@ -1,8 +1,8 @@
 package com.chaw.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
@@ -40,16 +40,17 @@ public class EnterWaitQueueIT {
                 .build();
 
         // when
-        WaitQueue result = enterWaitQueue.execute(input);
+        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
         // then
-        assertNotNull(result);
-        assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
-        assertNotNull(result.getUuid());
+        WaitQueue waitQueue = output.getWaitQueue();
+        assertNotNull(waitQueue);
+        assertEquals(input.getUserId(), waitQueue.getUserId());
+        assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
+        assertNotNull(waitQueue.getUuid());
 
         // 데이터베이스에 대기열이 추가되었는지 확인
-        assertTrue(waitQueueRepository.existsByConcertScheduleIdAndUuid(input.getConcertScheduleId(), result.getUuid()));
+        assertTrue(waitQueueRepository.existsByConcertScheduleIdAndUuid(input.getConcertScheduleId(), waitQueue.getUuid()));
 
         // 대기열 인디케이터가 생성되었는지 확인
         QueuePositionTracker indicator = queuePositionTrackerRepository.findByConcertScheduleId(input.getConcertScheduleId());
@@ -75,13 +76,14 @@ public class EnterWaitQueueIT {
         queuePositionTrackerRepository.save(indicator);
 
         // when
-        WaitQueue result = enterWaitQueue.execute(input);
+        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
         // then
-        assertNotNull(result);
-        assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
-        assertNotNull(result.getUuid());
+        WaitQueue waitQueue = output.getWaitQueue();
+        assertNotNull(waitQueue);
+        assertEquals(input.getUserId(), waitQueue.getUserId());
+        assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
+        assertNotNull(waitQueue.getUuid());
 
         // 대기열 인디케이터가 업데이트되었는지 확인
         QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertScheduleId(input.getConcertScheduleId());

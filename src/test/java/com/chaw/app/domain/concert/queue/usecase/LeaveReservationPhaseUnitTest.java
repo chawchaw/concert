@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -29,7 +30,7 @@ public class LeaveReservationPhaseUnitTest {
         String uuid = "test-uuid";
 
         // when
-        leaveReservationPhase.execute(uuid);
+        leaveReservationPhase.execute(new LeaveReservationPhase.Input(uuid));
 
         // then
         verify(reservationPhaseRepository, times(1)).deleteByUuid(uuid);  // deleteByUuid가 1번 호출되었는지 확인

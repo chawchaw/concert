@@ -60,6 +60,7 @@ public class GetWaitQueueStatus {
         if (position == -1) {
             throw new UserNotInQueueException();
         }
+
         return new Output(position, false);
     }
 

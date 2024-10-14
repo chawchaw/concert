@@ -32,7 +32,7 @@ public class EnterWaitQueue {
      * 대기열에 추가한다.
      */
     @Transactional
-    public WaitQueue execute(Input input) {
+    public Output execute(Input input) {
         String uuid = UUID.randomUUID().toString();
         WaitQueue waitQueue = WaitQueue.builder()
                 .userId(input.getUserId())
@@ -54,7 +54,9 @@ public class EnterWaitQueue {
             queuePositionTrackerRepository.save(queuePositionTracker);
         }
 
-        return waitQueueRepository.save(waitQueue);
+        waitQueueRepository.save(waitQueue);
+
+        return new Output(waitQueue);
     }
 
     @AllArgsConstructor
@@ -63,5 +65,11 @@ public class EnterWaitQueue {
     public static class Input {
         private Long userId;
         private Long concertScheduleId;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public class Output {
+        private WaitQueue waitQueue;
     }
 }

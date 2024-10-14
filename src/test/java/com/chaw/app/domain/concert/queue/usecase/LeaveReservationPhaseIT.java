@@ -44,7 +44,7 @@ public class LeaveReservationPhaseIT {
         reservationPhaseRepository.saveAll(List.of(reservationPhase));
 
         // when
-        leaveReservationPhase.execute(uuid);
+        leaveReservationPhase.execute(new LeaveReservationPhase.Input(uuid));
 
         // then
         Optional<ReservationPhase> deletedPhase = reservationPhaseRepository.findByUuid(uuid);
@@ -56,12 +56,13 @@ public class LeaveReservationPhaseIT {
     void shouldHandleNonExistingUuidGracefully() {
         // given
         String nonExistingUuid = "non-existing-uuid";
+        LeaveReservationPhase.Input input = new LeaveReservationPhase.Input(nonExistingUuid);
 
         // when
-        leaveReservationPhase.execute(nonExistingUuid);
+        leaveReservationPhase.execute(input);
 
         // then
         // 에러가 발생하지 않고 실행되어야 함
-        assertDoesNotThrow(() -> leaveReservationPhase.execute(nonExistingUuid));
+        assertDoesNotThrow(() -> leaveReservationPhase.execute(input));
     }
 }

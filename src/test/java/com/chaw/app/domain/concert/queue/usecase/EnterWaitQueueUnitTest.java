@@ -1,7 +1,7 @@
 package com.chaw.app.domain.concert.queue.usecase;
 
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
@@ -13,7 +13,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -59,13 +60,14 @@ public class EnterWaitQueueUnitTest {
         when(waitQueueRepository.save(any(WaitQueue.class))).thenReturn(mockWaitQueue);
 
         // when
-        WaitQueue result = enterWaitQueue.execute(input);
+        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
         // then
-        assertNotNull(result);
-        assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
-        assertNotNull(result.getUuid());
+        WaitQueue waitQueue = output.getWaitQueue();
+        assertNotNull(waitQueue);
+        assertEquals(input.getUserId(), waitQueue.getUserId());
+        assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
+        assertNotNull(waitQueue.getUuid());
 
         verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
@@ -91,13 +93,14 @@ public class EnterWaitQueueUnitTest {
         when(waitQueueRepository.save(any(WaitQueue.class))).thenReturn(mockWaitQueue);
 
         // when
-        WaitQueue result = enterWaitQueue.execute(input);
+        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
         // then
-        assertNotNull(result);
-        assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
-        assertNotNull(result.getUuid());
+        WaitQueue waitQueue = output.getWaitQueue();
+        assertNotNull(waitQueue);
+        assertEquals(input.getUserId(), waitQueue.getUserId());
+        assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
+        assertNotNull(waitQueue.getUuid());
 
         verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
         verify(queuePositionTrackerRepository, times(1)).save(any(QueuePositionTracker.class));
@@ -130,13 +133,14 @@ public class EnterWaitQueueUnitTest {
         when(waitQueueRepository.save(any(WaitQueue.class))).thenReturn(mockWaitQueue);
 
         // when
-        WaitQueue result = enterWaitQueue.execute(input);
+        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
         // then
-        assertNotNull(result);
-        assertEquals(input.getUserId(), result.getUserId());
-        assertEquals(input.getConcertScheduleId(), result.getConcertScheduleId());
-        assertNotNull(result.getUuid());
+        WaitQueue waitQueue = output.getWaitQueue();
+        assertNotNull(waitQueue);
+        assertEquals(input.getUserId(), waitQueue.getUserId());
+        assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
+        assertNotNull(waitQueue.getUuid());
 
         verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
         verify(queuePositionTrackerRepository, times(1)).save(any(QueuePositionTracker.class));  // 활성화 상태로 저장
