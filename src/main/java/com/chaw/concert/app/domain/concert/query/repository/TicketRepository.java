@@ -1,4 +1,4 @@
 package com.chaw.concert.app.domain.concert.query.repository;
 
-public interface SeatRepository {
+public interface TicketRepository {
 }
