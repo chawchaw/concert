@@ -32,9 +32,9 @@ public class Ticket {
     @Column
     private Integer price; // 가격
 
-    @Column(name = "temp_reserve_user_id")
-    private Long tempReserveUserId; // "임시예약 사용자"
+    @Column(name = "reserve_user_id")
+    private Long reserveUserId; // "예약 사용자"
 
-    @Column(name = "temp_reserve_end_at")
-    private LocalDateTime tempReserveEndAt; // "임시예약 마감일"
+    @Column(name = "reserve_end_at")
+    private LocalDateTime reserveEndAt; // "예약 마감일"
 }

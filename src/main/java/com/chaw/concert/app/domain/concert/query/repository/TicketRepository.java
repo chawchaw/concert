@@ -15,4 +15,8 @@ public interface TicketRepository {
     Ticket save(Ticket ticket);
 
     Optional<Ticket> findById(Long id);
+
+    void deleteById(Long id);
+
+    List<Ticket> findByReserveExpired();
 }

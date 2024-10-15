@@ -5,6 +5,7 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,5 +35,15 @@ public class TicketRepositoryImpl implements TicketRepository {
     @Override
     public Optional<Ticket> findById(Long id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public List<Ticket> findByReserveExpired() {
+        return repository.findByReserveEndAtBeforeAndStatus(LocalDateTime.now(), TicketStatus.RESERVE);
     }
 }

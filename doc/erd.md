@@ -38,7 +38,7 @@
   - ex) 2024 윤하 연말 콘서트 1회차, 2024 레드벨벳 콘서트 2회차
 - Ticket
   - 티켓 정보입니다.
-  - 공석, 임시예약, 예약완료 상태를 가집니다.
+  - 공석, 예약, 결제완료 상태를 가집니다.
 - PointHistory
   - 포인트 변동 내역입니다.
   - 충전, 결제, 환불을 기록합니다.
@@ -116,12 +116,12 @@ erDiagram
         long id PK
         long concert_schedule_id FK
         enum type "VIP,1등석,2등석"
-        enum status "공석, 임시예약, 예약완료"
+        enum status "공석, 예약, 결제완료"
         int price "가격"
-        long temp_booking_user_id FK "임시예약한 사용자"
-        datetime temp_booking_end_at "임시예약 마감일"
+        long reserve_user_id FK "예약한 사용자"
+        datetime reserve_end_at "예약 마감일"
     }
     Ticket }o--|| ConcertSchedule : "콘서트 일정이 여러 티켓을 가질 수 있음"
-    Ticket }o--|| User : "임시예약한 사용자"
+    Ticket }o--|| User : "예약한 사용자"
 
 ```

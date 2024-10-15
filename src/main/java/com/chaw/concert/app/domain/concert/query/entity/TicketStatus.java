@@ -2,8 +2,8 @@ package com.chaw.concert.app.domain.concert.query.entity;
 
 public enum TicketStatus {
     EMPTY("공석"),
-    TEMP_RESERVATION("임시예약"),
-    COMPLETED_RESERVATION("예약완료");
+    RESERVE("예약"),
+    PAID("결제완료");
 
     private final String dbValue;
 
