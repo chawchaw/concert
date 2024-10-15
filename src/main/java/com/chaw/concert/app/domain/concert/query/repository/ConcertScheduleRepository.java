@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ConcertScheduleRepository {
     List<ConcertSchedule> findByConcertIdAndIsSold(Long concertId, boolean isSold);
+
+    ConcertSchedule save(ConcertSchedule concertSchedule);
 }

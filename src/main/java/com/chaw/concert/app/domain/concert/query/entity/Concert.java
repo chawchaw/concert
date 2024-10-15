@@ -1,10 +1,13 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Concert {
 
     @Id

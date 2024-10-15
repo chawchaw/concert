@@ -1,8 +1,17 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
+@Setter
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class Ticket {
 
     @Id
@@ -22,4 +31,10 @@ public class Ticket {
 
     @Column
     private Integer price; // 가격
+
+    @Column(name = "temp_reserve_user_id")
+    private Long tempReserveUserId; // "임시예약 사용자"
+
+    @Column(name = "temp_reserve_end_at")
+    private LocalDateTime tempReserveEndAt; // "임시예약 마감일"
 }

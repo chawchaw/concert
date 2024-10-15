@@ -18,4 +18,9 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
     public List<ConcertSchedule> findByConcertIdAndIsSold(Long concertId, boolean isSold) {
         return repository.findByConcertIdAndIsSold(concertId, isSold);
     }
+
+    @Override
+    public ConcertSchedule save(ConcertSchedule concertSchedule) {
+        return repository.save(concertSchedule);
+    }
 }
