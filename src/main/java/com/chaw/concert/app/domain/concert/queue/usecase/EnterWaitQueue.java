@@ -10,6 +10,7 @@ import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -40,7 +41,8 @@ public class EnterWaitQueue {
                 .uuid(uuid)
                 .build();
 
-        QueuePositionTracker queuePositionTracker = queuePositionTrackerRepository.findByConcertScheduleId(input.concertScheduleId);
+        Optional<QueuePositionTracker> queuePositionTrackerOptional = queuePositionTrackerRepository.findByConcertScheduleIdWithLock(input.concertScheduleId);
+        QueuePositionTracker queuePositionTracker = queuePositionTrackerOptional.orElse(null);
         if (queuePositionTracker == null) {
             queuePositionTracker = QueuePositionTracker.builder()
                     .concertScheduleId(input.getConcertScheduleId())

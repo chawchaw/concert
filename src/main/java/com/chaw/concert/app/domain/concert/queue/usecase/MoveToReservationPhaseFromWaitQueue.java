@@ -6,11 +6,14 @@ import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
 import com.chaw.concert.app.domain.concert.queue.repository.ReservationPhaseRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +51,7 @@ public class MoveToReservationPhaseFromWaitQueue {
             if (movableSize <= 0) {
                 continue;
             }
-            move(queuePositionTracker, movableSize);
+            move(queuePositionTracker.getConcertScheduleId(), movableSize);
         }
     }
 
@@ -59,12 +62,22 @@ public class MoveToReservationPhaseFromWaitQueue {
      * 대기가 없으면 대기열 존재여부를 존재하지 않음으로 변경한다.
      */
     @Transactional
-    public void move(QueuePositionTracker queuePositionTracker, Integer movableSize) {
+    public void move(Long concertScheduleId, Integer movableSize) {
+        Optional<QueuePositionTracker> queuePositionTrackerOptional = queuePositionTrackerRepository.findByConcertScheduleIdWithLock(concertScheduleId);
+        QueuePositionTracker queuePositionTracker = queuePositionTrackerOptional.orElse(null);
+        if (queuePositionTracker == null) {
+            return;
+        }
+
         List<WaitQueue> waitQueues = waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(
                 queuePositionTracker.getConcertScheduleId(),
                 queuePositionTracker.getWaitQueueId()
         );
         Integer min = Math.min(waitQueues.size(), movableSize);
+        if (min <= 0) {
+            return;
+        }
+
         List<WaitQueue> limitedWaitQueues = waitQueues.subList(0, min);
         List<ReservationPhase> reservationPhases = limitedWaitQueues.stream()
                         .map(waitQueue -> ReservationPhase.builder()

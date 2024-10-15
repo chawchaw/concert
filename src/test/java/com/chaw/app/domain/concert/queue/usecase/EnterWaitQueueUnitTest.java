@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,7 +70,7 @@ public class EnterWaitQueueUnitTest {
         assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
         assertNotNull(waitQueue.getUuid());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleIdWithLock(input.getConcertScheduleId());
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
     }
 
@@ -102,7 +103,7 @@ public class EnterWaitQueueUnitTest {
         assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
         assertNotNull(waitQueue.getUuid());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleIdWithLock(input.getConcertScheduleId());
         verify(queuePositionTrackerRepository, times(1)).save(any(QueuePositionTracker.class));
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
     }
@@ -122,7 +123,7 @@ public class EnterWaitQueueUnitTest {
                 .isWaitQueueExist(false)  // 비활성화 상태
                 .build();
 
-        when(queuePositionTrackerRepository.findByConcertScheduleId(100L)).thenReturn(inactiveIndicator);
+        when(queuePositionTrackerRepository.findByConcertScheduleIdWithLock(100L)).thenReturn(Optional.of(inactiveIndicator));
 
         // Mock 대기열 추가 성공
         WaitQueue mockWaitQueue = WaitQueue.builder()
@@ -142,7 +143,7 @@ public class EnterWaitQueueUnitTest {
         assertEquals(input.getConcertScheduleId(), waitQueue.getConcertScheduleId());
         assertNotNull(waitQueue.getUuid());
 
-        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(input.getConcertScheduleId());
+        verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleIdWithLock(input.getConcertScheduleId());
         verify(queuePositionTrackerRepository, times(1)).save(any(QueuePositionTracker.class));  // 활성화 상태로 저장
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
     }

@@ -1,25 +1,24 @@
 package com.chaw.app.domain.concert.queue.usecase;
 
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
-import com.chaw.concert.app.domain.concert.queue.repository.ReservationPhaseRepository;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
+import com.chaw.concert.app.domain.concert.queue.repository.ReservationPhaseRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.queue.usecase.MoveToReservationPhaseFromWaitQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
-class MoveToReservationPhaseFromWaitQueueTest {
+class MoveToReservationPhaseFromWaitQueueUnitTest {
 
     @Mock
     private ReservationPhaseRepository reservationPhaseRepository;
@@ -30,89 +29,90 @@ class MoveToReservationPhaseFromWaitQueueTest {
     @Mock
     private QueuePositionTrackerRepository queuePositionTrackerRepository;
 
-    @InjectMocks
     private MoveToReservationPhaseFromWaitQueue moveToReservationPhaseFromWaitQueue;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        moveToReservationPhaseFromWaitQueue = Mockito.spy(new MoveToReservationPhaseFromWaitQueue(
+                reservationPhaseRepository,
+                waitQueueRepository,
+                queuePositionTrackerRepository
+        ));
     }
 
     @Test
-    void shouldMoveToReservationPhaseSuccessfully() {
-        // given
-        Long concertId = 999L;
-        QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertScheduleId(concertId)
-                .waitQueueId(10L)
-                .isWaitQueueExist(true)
-                .build();
+    void testExecute_withWaitQueue() {
+        // Given
+        Long concertScheduleId = 1L;
+        QueuePositionTracker queuePositionTracker = new QueuePositionTracker();
+        queuePositionTracker.setConcertScheduleId(concertScheduleId);
+
+        when(queuePositionTrackerRepository.findAllByIsWaitQueueExist())
+                .thenReturn(Arrays.asList(queuePositionTracker));
+
+        when(reservationPhaseRepository.countByConcertScheduleId(concertScheduleId))
+                .thenReturn(10); // 30 - 10 = 20 movableSize
+
+        doNothing().when(moveToReservationPhaseFromWaitQueue).move(concertScheduleId, 20);
+
+        // When
+        moveToReservationPhaseFromWaitQueue.execute();
+
+        // Then
+        verify(queuePositionTrackerRepository, times(1)).findAllByIsWaitQueueExist();
+        verify(reservationPhaseRepository, times(1)).countByConcertScheduleId(concertScheduleId);
+        verify(moveToReservationPhaseFromWaitQueue, times(1)).move(concertScheduleId, 20);
+    }
+
+    @Test
+    void testMove_withAvailableSeats() {
+        // Given
+        Long concertScheduleId = 1L;
+        QueuePositionTracker queuePositionTracker = new QueuePositionTracker();
+        queuePositionTracker.setConcertScheduleId(concertScheduleId);
+        queuePositionTracker.setWaitQueueId(1L);
 
         List<WaitQueue> waitQueues = Arrays.asList(
-                WaitQueue.builder().id(11L).concertScheduleId(concertId).userId(1L).uuid("uuid1").build(),
-                WaitQueue.builder().id(12L).concertScheduleId(concertId).userId(2L).uuid("uuid2").build()
+                new WaitQueue(1L, concertScheduleId, 1L, "uuid1"),
+                new WaitQueue(2L, concertScheduleId, 2L, "uuid2")
         );
 
-        // Mock Repository 동작 설정
-        when(queuePositionTrackerRepository.findAllByIsWaitQueueExist()).thenReturn(Collections.singletonList(queuePositionTracker));
-        when(reservationPhaseRepository.countByConcertScheduleId(concertId)).thenReturn(0); // 예약 페이즈에 아직 아무도 없음
-        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertId, 10L)).thenReturn(waitQueues);
+        when(queuePositionTrackerRepository.findByConcertScheduleIdWithLock(concertScheduleId))
+                .thenReturn(Optional.of(queuePositionTracker));
 
-        // when
-        moveToReservationPhaseFromWaitQueue.execute();
+        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertScheduleId, 1L))
+                .thenReturn(waitQueues);
 
-        // then
+        // When
+        moveToReservationPhaseFromWaitQueue.move(concertScheduleId, 2);
+
+        // Then
         verify(reservationPhaseRepository, times(1)).saveAll(anyList());
         verify(queuePositionTrackerRepository, times(1)).save(queuePositionTracker);
-        verify(waitQueueRepository, times(1)).findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertId, 10L);
+        assertEquals(2L, queuePositionTracker.getWaitQueueId());
+        assertFalse(queuePositionTracker.getIsWaitQueueExist());
     }
 
     @Test
-    void shouldNotMoveWhenReservationPhaseIsFull() {
-        // given
-        Long concertId = 999L;
-        QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertScheduleId(concertId)
-                .waitQueueId(10L)
-                .isWaitQueueExist(true)
-                .build();
+    void testMove_noWaitQueues() {
+        // Given
+        Long concertScheduleId = 1L;
+        QueuePositionTracker queuePositionTracker = new QueuePositionTracker();
+        queuePositionTracker.setConcertScheduleId(concertScheduleId);
+        queuePositionTracker.setWaitQueueId(1L);
 
-        // Mock Repository 동작 설정
-        when(queuePositionTrackerRepository.findAllByIsWaitQueueExist()).thenReturn(Collections.singletonList(queuePositionTracker));
-        when(reservationPhaseRepository.countByConcertScheduleId(concertId)).thenReturn(30); // 예약 페이즈가 이미 꽉 찼음
+        when(queuePositionTrackerRepository.findByConcertScheduleIdWithLock(concertScheduleId))
+                .thenReturn(Optional.of(queuePositionTracker));
 
-        // when
-        moveToReservationPhaseFromWaitQueue.execute();
+        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertScheduleId, 1L))
+                .thenReturn(Arrays.asList());
 
-        // then
-        verify(reservationPhaseRepository, never()).saveAll(anyList());  // 예약 페이즈가 꽉 찼으므로 saveAll이 호출되지 않음
-        verify(queuePositionTrackerRepository, never()).save(any());
-        verify(waitQueueRepository, never()).findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(anyLong(), anyLong());
-    }
+        // When
+        moveToReservationPhaseFromWaitQueue.move(concertScheduleId, 2);
 
-    @Test
-    void shouldMarkQueueAsNotExistingWhenEmpty() {
-        // given
-        Long concertId = 999L;
-        QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
-                .concertScheduleId(concertId)
-                .waitQueueId(10L)
-                .isWaitQueueExist(true)
-                .build();
-
-        // 대기열에 아무도 없을 경우
-        List<WaitQueue> emptyWaitQueue = Collections.emptyList();
-
-        // Mock Repository 동작 설정
-        when(queuePositionTrackerRepository.findAllByIsWaitQueueExist()).thenReturn(Collections.singletonList(queuePositionTracker));
-        when(reservationPhaseRepository.countByConcertScheduleId(concertId)).thenReturn(0);
-        when(waitQueueRepository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertId, 10L)).thenReturn(emptyWaitQueue);
-
-        // when
-        moveToReservationPhaseFromWaitQueue.execute();
-
-        // then
-        assertFalse(queuePositionTracker.getIsWaitQueueExist());  // 대기열이 없으므로 isWaitQueueExist 가 false 로 변경
-        verify(queuePositionTrackerRepository, times(1)).save(queuePositionTracker);  // 상태 변경 후 저장
+        // Then
+        verify(reservationPhaseRepository, never()).saveAll(anyList());
+        verify(queuePositionTrackerRepository, never()).save(queuePositionTracker);
     }
 }

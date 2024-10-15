@@ -5,6 +5,7 @@ import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTracker
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class QueuePositionTrackerRepositoryImpl implements QueuePositionTrackerRepository {
@@ -28,5 +29,10 @@ public class QueuePositionTrackerRepositoryImpl implements QueuePositionTrackerR
     @Override
     public List<QueuePositionTracker> findAllByIsWaitQueueExist() {
         return repository.findAllByIsWaitQueueExist(true);
+    }
+
+    @Override
+    public Optional<QueuePositionTracker> findByConcertScheduleIdWithLock(Long concertScheduleId) {
+        return repository.findByConcertScheduleIdWithLock(concertScheduleId);
     }
 }
