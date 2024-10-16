@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
@@ -33,7 +33,7 @@ public class GetPointUnitTest {
                 .userId(1L)
                 .balance(100)
                 .build();
-        when(pointRepository.findById(anyLong())).thenReturn(existingPoint);
+        when(pointRepository.findByUserId(anyLong())).thenReturn(existingPoint);
 
         // When: 요청 실행
         GetPoint.Input input = new GetPoint.Input(1L);
