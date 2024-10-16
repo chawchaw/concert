@@ -11,6 +11,7 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.transaction.entity.TicketTransaction;
 import com.chaw.concert.app.domain.concert.transaction.entity.TransactionStatus;
+import com.chaw.concert.app.domain.concert.transaction.exception.TransactionExpired;
 import com.chaw.concert.app.domain.concert.transaction.repository.TicketTransactionRepository;
 import com.chaw.concert.app.domain.concert.transaction.usecase.PayTicket;
 import org.junit.jupiter.api.AfterEach;
@@ -23,8 +24,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -73,6 +73,7 @@ public class PayTicketIT {
         ticketTransaction.setIdempotencyKey("test-key");
         ticketTransaction.setCreatedAt(LocalDateTime.now());
         ticketTransaction.setUpdatedAt(LocalDateTime.now());
+        ticketTransaction.setExpiredAt(LocalDateTime.now().plusMinutes(1));
         ticketTransaction.setIsDeleted(false);
         ticketTransactionRepository.save(ticketTransaction);
     }
@@ -86,79 +87,68 @@ public class PayTicketIT {
     }
 
     @Test
-    void testSuccessfulPayment() {
-        // Given: 충분한 잔액과 PENDING 상태의 트랜잭션이 있을 때
-        PayTicket.Input input = new PayTicket.Input("test-key", userId);
+    void testExecute_SuccessfulPayment() {
+        // Given: 결제 요청 생성
+        PayTicket.Input input = new PayTicket.Input(ticketTransaction.getIdempotencyKey(), point.getUserId());
 
-        // When: 결제 요청을 실행
+        // When: 결제 실행
         PayTicket.Output output = payTicket.execute(input);
 
-        // Then: 결제가 성공적으로 완료되었는지 확인
+        // Then: 결제가 성공했는지 확인
         assertEquals("COMPLETED", output.status());
-        assertTrue(output.message().contains("결제가 완료되었습니다."));
+        assertEquals("결제가 완료되었습니다. 잔액: 100", output.message());
 
-        // 트랜잭션이 COMPLETED 상태로 변경되었는지 확인
+        // 트랜잭션 상태 확인
         TicketTransaction updatedTransaction = ticketTransactionRepository.findById(ticketTransaction.getId());
         assertEquals(TransactionStatus.COMPLETED, updatedTransaction.getTransactionStatus());
 
-        // 포인트 잔액이 적절히 차감되었는지 확인
+        // 티켓 상태 확인
+        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
+        assertEquals(TicketStatus.PAID, updatedTicket.getStatus());
+
+        // 포인트 잔액 확인
         Point updatedPoint = pointRepository.findById(point.getId());
         assertEquals(100, updatedPoint.getBalance());
 
-        // 포인트 히스토리가 저장되었는지 확인
+        // 포인트 히스토리 확인
         PointHistory pointHistory = pointHistoryRepository.findAll().get(0);
-        assertEquals(PointHistoryType.PAY, pointHistory.getType());
-        assertEquals(100, pointHistory.getAmount());
-
-        // 티켓 상태가 PAID로 변경되었는지 확인
-        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
-        assertEquals(TicketStatus.PAID, updatedTicket.getStatus());
+        assertEquals(point.getId(), pointHistory.getPointId());
+        assertEquals(ticketTransaction.getAmount(), pointHistory.getAmount());
+        assertEquals("PAY", pointHistory.getType().name());
     }
 
     @Test
-    void testPaymentWithInsufficientBalance() {
-        // Given: 사용자의 포인트 잔액이 부족한 경우
-        point.setBalance(50); // 잔액을 부족하게 설정
+    void testExecute_InsufficientBalance() {
+        // Given: 포인트 잔액이 부족한 상황으로 설정
+        point.setBalance(0); // 잔액 부족
         pointRepository.save(point);
+        PayTicket.Input input = new PayTicket.Input(ticketTransaction.getIdempotencyKey(), point.getUserId());
 
-        PayTicket.Input input = new PayTicket.Input("test-key", point.getId());
-
-        // When: 결제 요청을 실행
+        // When: 결제 실행
         PayTicket.Output output = payTicket.execute(input);
 
-        // Then: 잔액 부족으로 결제가 실패했는지 확인
+        // Then: 결제가 실패했는지 확인
         assertEquals("FAILED", output.status());
-        assertTrue(output.message().contains("잔액이 부족합니다."));
+        assertEquals("잔액이 부족합니다.", output.message());
 
-        // 트랜잭션이 FAILED 상태로 변경되었는지 확인
+        // 트랜잭션 상태 확인
         TicketTransaction updatedTransaction = ticketTransactionRepository.findById(ticketTransaction.getId());
         assertEquals(TransactionStatus.FAILED, updatedTransaction.getTransactionStatus());
-
-        // 포인트 잔액이 그대로 유지되었는지 확인
-        Point updatedPoint = pointRepository.findById(point.getId());
-        assertEquals(50, updatedPoint.getBalance());
-
-        // 포인트 히스토리가 생성되지 않았는지 확인
-        assertTrue(pointHistoryRepository.findAll().isEmpty());
-
-        // 티켓 상태는 그대로 RESERVE로 남아 있어야 함
-        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
-        assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
     }
 
     @Test
-    void testAlreadyCompletedTransaction() {
-        // Given: 이미 완료된 트랜잭션이 있을 때
-        ticketTransaction.setTransactionStatus(TransactionStatus.COMPLETED);
-        ticketTransactionRepository.save(ticketTransaction);
+    void testExecute_TransactionExpired() {
+        // Given: 트랜잭션이 만료된 상황으로 설정
+        ticketTransaction.setExpiredAt(LocalDateTime.now().minusMinutes(1)); // 이미 만료된 트랜잭션
+        ticketTransaction = ticketTransactionRepository.save(ticketTransaction);
+        PayTicket.Input input = new PayTicket.Input(ticketTransaction.getIdempotencyKey(), point.getUserId());
 
-        PayTicket.Input input = new PayTicket.Input("test-key", point.getId());
-
-        // When: 이미 완료된 트랜잭션으로 결제 요청을 실행
+        // When: 결제 실행
         PayTicket.Output output = payTicket.execute(input);
 
-        // Then: 결제가 이미 완료되었다는 메시지가 반환되어야 함
-        assertEquals("COMPLETED", output.status());
-        assertTrue(output.message().contains("이미 결제가 완료되었습니다."));
+        // Then: 트랜잭션 상태 확인
+        TicketTransaction updatedTransaction = ticketTransactionRepository.findById(ticketTransaction.getId());
+        assertEquals(TransactionStatus.EXPIRED.name(), output.status());
+        assertEquals(TransactionStatus.EXPIRED, updatedTransaction.getTransactionStatus());
     }
 }

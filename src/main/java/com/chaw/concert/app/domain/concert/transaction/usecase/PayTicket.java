@@ -49,7 +49,7 @@ public class PayTicket {
             ticketTransaction.setTransactionStatus(TransactionStatus.EXPIRED);
             ticketTransaction.setIsDeleted(true);
             ticketTransactionRepository.save(ticketTransaction);
-            throw new TransactionExpired();
+            return new Output(ticketTransaction.getTransactionStatus().name(), "결제 유효기간이 만료되었습니다.");
         }
 
         Ticket ticket = ticketRepository.findById(ticketTransaction.getTicketId());

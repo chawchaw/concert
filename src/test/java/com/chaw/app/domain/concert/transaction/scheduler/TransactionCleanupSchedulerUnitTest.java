@@ -1,5 +1,8 @@
 package com.chaw.app.domain.concert.transaction.scheduler;
 
+import com.chaw.concert.app.domain.concert.query.entity.Ticket;
+import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.transaction.entity.TicketTransaction;
 import com.chaw.concert.app.domain.concert.transaction.entity.TransactionStatus;
 import com.chaw.concert.app.domain.concert.transaction.repository.TicketTransactionRepository;
@@ -12,14 +15,17 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class TransactionCleanupSchedulerUnitTest {
+
+    @Mock
+    private TicketRepository ticketRepository;
 
     @Mock
     private TicketTransactionRepository ticketTransactionRepository;
@@ -27,38 +33,51 @@ public class TransactionCleanupSchedulerUnitTest {
     @InjectMocks
     private TransactionCleanupScheduler transactionCleanupScheduler;
 
+    private TicketTransaction expiredTransaction;
+    private Ticket reservedTicket;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // 만료된 트랜잭션 설정
+        expiredTransaction = new TicketTransaction();
+        expiredTransaction.setTicketId(1L);
+        expiredTransaction.setTransactionStatus(TransactionStatus.PENDING);
+        expiredTransaction.setExpiredAt(LocalDateTime.now().minusMinutes(10));  // 이미 만료된 시간
+        expiredTransaction.setIsDeleted(false);
+
+        // 예약된 티켓 설정
+        reservedTicket = new Ticket();
+        reservedTicket.setId(1L);
+        reservedTicket.setStatus(TicketStatus.RESERVE);
+        reservedTicket.setReserveUserId(1L);
+        reservedTicket.setReserveEndAt(LocalDateTime.now().minusMinutes(10));
     }
 
     @Test
     void testCleanupExpiredTransactions() {
-        // Given
-        TicketTransaction transaction1 = new TicketTransaction();
-        transaction1.setTransactionStatus(TransactionStatus.PENDING);
-        transaction1.setIsDeleted(false);
-
-        TicketTransaction transaction2 = new TicketTransaction();
-        transaction2.setTransactionStatus(TransactionStatus.PENDING);
-        transaction2.setIsDeleted(false);
-
-        List<TicketTransaction> expiredTransactions = Arrays.asList(transaction1, transaction2);
-
-        // When
+        // Given: 만료된 트랜잭션 리스트를 반환
+        List<TicketTransaction> expiredTransactions = Collections.singletonList(expiredTransaction);
         when(ticketTransactionRepository.findByTransactionStatusNotCompletedAndExpiredAtBeforeAndNotDeleted(any(LocalDateTime.class)))
                 .thenReturn(expiredTransactions);
 
-        // Then: 각 트랜잭션이 EXPIRED 상태로 업데이트 되었는지 확인
+        // 티켓이 예약된 상태로 조회
+        when(ticketRepository.findById(expiredTransaction.getTicketId()))
+                .thenReturn(reservedTicket);
+
+        // When: 스케줄러 메서드를 호출
         transactionCleanupScheduler.cleanupExpiredTransactions();
-        verify(ticketTransactionRepository, times(2)).save(any(TicketTransaction.class));
 
-        // 트랜잭션 상태가 EXPIRED로 변경되었는지 검증
-        assertEquals(transaction1.getTransactionStatus(), TransactionStatus.EXPIRED);
-        assertEquals(transaction2.getTransactionStatus(), TransactionStatus.EXPIRED);
+        // Then: 트랜잭션이 만료 상태로 업데이트되고 삭제 처리되었는지 확인
+        verify(ticketTransactionRepository, times(1)).save(expiredTransaction);
+        assertEquals(expiredTransaction.getTransactionStatus(), TransactionStatus.EXPIRED);
+        assertTrue(expiredTransaction.getIsDeleted());
 
-        // 트랜잭션이 소프트 삭제되었는지 검증
-        assertTrue(transaction1.getIsDeleted());
-        assertTrue(transaction2.getIsDeleted());
+        // 티켓 상태가 EMPTY로 변경되었는지 확인
+        verify(ticketRepository, times(1)).save(reservedTicket);
+        assertEquals(reservedTicket.getStatus(), TicketStatus.EMPTY);
+        assertNull(reservedTicket.getReserveUserId());
+        assertNull(reservedTicket.getReserveEndAt());
     }
 }
