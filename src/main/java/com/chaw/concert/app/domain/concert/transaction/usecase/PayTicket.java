@@ -15,6 +15,7 @@ import com.chaw.concert.app.domain.concert.transaction.entity.TicketTransaction;
 import com.chaw.concert.app.domain.concert.transaction.entity.TransactionStatus;
 import com.chaw.concert.app.domain.concert.transaction.exception.IdempotencyNotFound;
 import com.chaw.concert.app.domain.concert.transaction.exception.TicketNotInStatusReserve;
+import com.chaw.concert.app.domain.concert.transaction.exception.TransactionExpired;
 import com.chaw.concert.app.domain.concert.transaction.repository.TicketTransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +39,17 @@ public class PayTicket {
 
     @Transactional
     public Output execute(Input input) {
+        LocalDateTime now = LocalDateTime.now();
+
         TicketTransaction ticketTransaction = ticketTransactionRepository.findByIdempotencyKeyAndIsDeletedWithLock(input.idempotencyKey(), false);
         if (ticketTransaction == null) {
             throw new IdempotencyNotFound();
+        }
+        if (now.isAfter(ticketTransaction.getExpiredAt())) {
+            ticketTransaction.setTransactionStatus(TransactionStatus.EXPIRED);
+            ticketTransaction.setIsDeleted(true);
+            ticketTransactionRepository.save(ticketTransaction);
+            throw new TransactionExpired();
         }
 
         Ticket ticket = ticketRepository.findById(ticketTransaction.getTicketId());
@@ -65,7 +74,6 @@ public class PayTicket {
             return new Output(ticketTransaction.getTransactionStatus().name(), "잔액이 부족합니다.");
         }
 
-        LocalDateTime now = LocalDateTime.now();
         ticketTransaction.setPaymentMethod(PaymentMethod.POINT);
         ticketTransaction.setTransactionStatus(TransactionStatus.COMPLETED);
         ticketTransaction.setUpdatedAt(now);

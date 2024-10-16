@@ -13,6 +13,7 @@ import com.chaw.concert.app.domain.concert.transaction.entity.TicketTransaction;
 import com.chaw.concert.app.domain.concert.transaction.entity.TransactionStatus;
 import com.chaw.concert.app.domain.concert.transaction.exception.IdempotencyNotFound;
 import com.chaw.concert.app.domain.concert.transaction.exception.TicketNotInStatusReserve;
+import com.chaw.concert.app.domain.concert.transaction.exception.TransactionExpired;
 import com.chaw.concert.app.domain.concert.transaction.repository.TicketTransactionRepository;
 import com.chaw.concert.app.domain.concert.transaction.usecase.PayTicket;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,11 +22,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class PayTicketTest {
+class PayTicketUnitTest {
 
     @Mock
     private TicketTransactionRepository ticketTransactionRepository;
@@ -58,6 +61,29 @@ class PayTicketTest {
 
         // Then
         assertThrows(IdempotencyNotFound.class, () -> payTicket.execute(input));
+    }
+
+    @Test
+    void testExecute_TransactionExpired() {
+        // Given
+        String idempotencyKey = "test-key";
+        Long userId = 1L;
+        TicketTransaction ticketTransaction = new TicketTransaction();
+        ticketTransaction.setExpiredAt(LocalDateTime.now().minusMinutes(10)); // 만료된 시간 설정
+        ticketTransaction.setTransactionStatus(TransactionStatus.PENDING);
+
+        // 트랜잭션이 만료되었을 때 저장소에서 데이터를 찾도록 설정
+        when(ticketTransactionRepository.findByIdempotencyKeyAndIsDeletedWithLock(idempotencyKey, false)).thenReturn(ticketTransaction);
+
+        // When & Then
+        assertThrows(TransactionExpired.class, () -> {
+            payTicket.execute(new PayTicket.Input(idempotencyKey, userId));
+        });
+
+        // 만료된 상태로 업데이트가 되었는지 확인
+        verify(ticketTransactionRepository).save(ticketTransaction);
+        assertEquals(ticketTransaction.getTransactionStatus(), TransactionStatus.EXPIRED);
+        assertTrue(ticketTransaction.getIsDeleted());
     }
 
     @Test
