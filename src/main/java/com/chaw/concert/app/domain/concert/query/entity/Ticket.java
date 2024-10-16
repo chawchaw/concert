@@ -32,6 +32,9 @@ public class Ticket {
     @Column
     private Integer price; // 가격
 
+    @Column(name = "seat_no")
+    private String seatNo; // 좌석 번호
+
     @Column(name = "reserve_user_id")
     private Long reserveUserId; // "예약 사용자"
 

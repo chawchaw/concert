@@ -75,6 +75,7 @@ erDiagram
         char uuid
     }
     WaitQueue }o--|| ConcertSchedule : "콘서트 일정별로 존재"
+    WaitQueue }o--|| User : "콘서트 일정별로 존재"
 
     QueuePositionTracker {
         long id PK
@@ -124,6 +125,7 @@ erDiagram
         enum type "VIP,1등석,2등석"
         enum status "공석, 예약, 결제완료"
         decimal price "가격"
+        varchar seat_no "좌석번호"
         long reserve_user_id FK "예약한 사용자"
         datetime reserve_end_at "예약 마감일"
     }
