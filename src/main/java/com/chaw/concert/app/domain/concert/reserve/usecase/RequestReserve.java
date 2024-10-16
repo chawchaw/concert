@@ -5,13 +5,10 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class RequestReserve {
@@ -21,7 +18,7 @@ public class RequestReserve {
         this.ticketRepository = ticketRepository;
     }
 
-    @Transactional
+    @Transactional(timeout = 1)
     public Output execute(Input input) {
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
         if (ticket == null) {
