@@ -1,13 +1,13 @@
-package com.chaw.concert.app.domain.concert.reserve.usecase;
+package com.chaw.concert.app.domain.concert.reserve.scheduler;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Service
+@Component
 public class ReleaseReserveExpired {
 
     private final TicketRepository ticketRepository;

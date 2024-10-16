@@ -71,9 +71,10 @@ erDiagram
         long id PK
         long user_id FK
         long concert_schedule_id FK
+        long order "해당 콘서트일정에서 대기 순서"
         char uuid
     }
-    WaitQueue ||--|| ConcertSchedule : "콘서트 일정별로 존재"
+    WaitQueue }o--|| ConcertSchedule : "콘서트 일정별로 존재"
 
     QueuePositionTracker {
         long id PK

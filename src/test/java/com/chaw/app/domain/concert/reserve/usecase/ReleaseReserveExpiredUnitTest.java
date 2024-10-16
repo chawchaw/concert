@@ -2,7 +2,7 @@ package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.ReleaseReserveExpired;
+import com.chaw.concert.app.domain.concert.reserve.scheduler.ReleaseReserveExpired;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
