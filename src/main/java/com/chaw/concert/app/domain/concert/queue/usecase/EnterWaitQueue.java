@@ -1,12 +1,9 @@
 package com.chaw.concert.app.domain.concert.queue.usecase;
 
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +33,8 @@ public class EnterWaitQueue {
     public Output execute(Input input) {
         String uuid = UUID.randomUUID().toString();
         WaitQueue waitQueue = WaitQueue.builder()
-                .userId(input.getUserId())
-                .concertScheduleId(input.getConcertScheduleId())
+                .userId(input.userId())
+                .concertScheduleId(input.concertScheduleId())
                 .uuid(uuid)
                 .build();
 
@@ -45,7 +42,7 @@ public class EnterWaitQueue {
         QueuePositionTracker queuePositionTracker = queuePositionTrackerOptional.orElse(null);
         if (queuePositionTracker == null) {
             queuePositionTracker = QueuePositionTracker.builder()
-                    .concertScheduleId(input.getConcertScheduleId())
+                    .concertScheduleId(input.concertScheduleId())
                     .waitQueueId(0L)
                     .isWaitQueueExist(true)
                     .build();
@@ -61,17 +58,12 @@ public class EnterWaitQueue {
         return new Output(waitQueue);
     }
 
-    @AllArgsConstructor
-    @Builder
-    @Getter
-    public static class Input {
-        private Long userId;
-        private Long concertScheduleId;
-    }
+    public record Input (
+        Long userId,
+        Long concertScheduleId
+    ) {}
 
-    @Getter
-    @AllArgsConstructor
-    public class Output {
-        private WaitQueue waitQueue;
-    }
+    public record Output (
+        WaitQueue waitQueue
+    ) {}
 }

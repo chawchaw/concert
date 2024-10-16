@@ -1,8 +1,8 @@
-package com.chaw.app.domain.concert.query.usecase;
+package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.ReleaseReserveExpired;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ReleaseReserveExpired;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

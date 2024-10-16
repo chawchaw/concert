@@ -23,4 +23,9 @@ public class ConcertRepositoryImpl implements ConcertRepository {
     public List<Concert> findAll() {
         return repository.findAll();
     }
+
+    @Override
+    public Boolean existsById(Long concertId) {
+        return repository.existsById(concertId);
+    }
 }

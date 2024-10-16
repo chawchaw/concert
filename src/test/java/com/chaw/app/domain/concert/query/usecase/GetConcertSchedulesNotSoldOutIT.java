@@ -6,6 +6,7 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,6 @@ public class GetConcertSchedulesNotSoldOutIT {
 
     @BeforeEach
     void setUp() {
-        // 테스트용 Concert 및 ConcertSchedule 데이터 설정
         concert = Concert.builder()
                 .name("Test Concert")
                 .build();
@@ -64,9 +64,9 @@ public class GetConcertSchedulesNotSoldOutIT {
         GetConcertSchedulesNotSoldOut.Output output = getConcertSchedulesNotSoldOut.execute(input);
 
         // Then
-        List<ConcertSchedule> concertSchedules = output.getConcertSchedules();
-        assertNotNull(concertSchedules); // 결과가 null이 아닌지 확인
-        assertEquals(1, concertSchedules.size()); // 판매 중인 스케줄만 1개 존재해야 함
-        assertEquals(false, concertSchedules.get(0).getIsSold()); // 판매 중인 스케줄 확인
+        List<ConcertSchedule> concertSchedules = output.concertSchedules();
+        assertNotNull(concertSchedules);
+        assertEquals(1, concertSchedules.size());
+        assertEquals(false, concertSchedules.get(0).getIsSold());
     }
 }

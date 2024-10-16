@@ -47,7 +47,7 @@ public class GetTicketsInEmptyStatusIT {
         GetTicketsInEmptyStatus.Output output = getTicketsInEmptyStatus.execute(input);
 
         // Then
-        List<Ticket> tickets = output.getTickets();
+        List<Ticket> tickets = output.tickets();
         assertEquals(2, tickets.size());
         for (Ticket ticket : tickets) {
             assertEquals(TicketStatus.EMPTY, ticket.getStatus());

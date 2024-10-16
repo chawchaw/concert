@@ -45,6 +45,6 @@ class GetTicketsInEmptyStatusUnitTest {
         GetTicketsInEmptyStatus.Output output = getTicketsInEmptyStatus.execute(input);
 
         // Then
-        assertEquals(emptyTickets, output.getTickets());
+        assertEquals(emptyTickets, output.tickets());
     }
 }

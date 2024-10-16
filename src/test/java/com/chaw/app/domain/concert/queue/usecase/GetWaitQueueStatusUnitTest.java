@@ -46,10 +46,7 @@ public class GetWaitQueueStatusUnitTest {
     @Test
     void shouldReturnPositionInWaitQueue() {
         // given
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(1L)
-                .uuid("test-uuid")
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(1L, "test-uuid");
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
                 .concertScheduleId(1L)
@@ -68,8 +65,8 @@ public class GetWaitQueueStatusUnitTest {
 
         // then
         assertNotNull(result);
-        assertEquals(1, result.getQueuePosition());
-        assertFalse(result.getIsReservationPhase());
+        assertEquals(1, result.queuePosition());
+        assertFalse(result.isReservationPhase());
 
         verify(queuePositionTrackerRepository, times(1)).findByConcertScheduleId(1L);
         verify(waitQueueRepository, times(1)).existsByConcertScheduleIdAndUuid(1L, "test-uuid");
@@ -79,10 +76,7 @@ public class GetWaitQueueStatusUnitTest {
     @Test
     void shouldThrowUserNotInQueueExceptionWhenUserDoesNotExist() {
         // given
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(1L)
-                .uuid("test-uuid")
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(1L, "test-uuid");
 
         QueuePositionTracker queuePositionTracker = QueuePositionTracker.builder()
                 .concertScheduleId(1L)
@@ -106,10 +100,7 @@ public class GetWaitQueueStatusUnitTest {
     @Test
     void shouldReturnZeroWhenUserIsInReservationPhase() {
         // given
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(1L)
-                .uuid("test-uuid")
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(1L, "test-uuid");
 
         ReservationPhase reservationPhase = ReservationPhase.builder()
                 .concertScheduleId(1L)
@@ -123,8 +114,8 @@ public class GetWaitQueueStatusUnitTest {
 
         // then
         assertNotNull(result);
-        assertEquals(0, result.getQueuePosition());
-        assertTrue(result.getIsReservationPhase());
+        assertEquals(0, result.queuePosition());
+        assertTrue(result.isReservationPhase());
 
         verify(reservationPhaseRepository, times(1)).findByConcertScheduleIdAndUuid(1L, "test-uuid");
         verify(queuePositionTrackerRepository, never()).findByConcertScheduleId(anyLong());
@@ -134,10 +125,7 @@ public class GetWaitQueueStatusUnitTest {
     @Test
     void shouldThrowWaitQueueIndicatorNotExistWhenNoQueueIndicatorFound() {
         // given
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(1L)
-                .uuid("test-uuid")
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(1L, "test-uuid");
 
         when(reservationPhaseRepository.findByConcertScheduleIdAndUuid(1L, "test-uuid")).thenReturn(Optional.empty());
         when(queuePositionTrackerRepository.findByConcertScheduleId(1L)).thenReturn(null);

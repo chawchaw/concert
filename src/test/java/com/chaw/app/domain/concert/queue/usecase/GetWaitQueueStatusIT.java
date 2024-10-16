@@ -57,18 +57,15 @@ class GetWaitQueueStatusIT {
                 .build();
         reservationPhaseRepository.save(reservationPhase);
 
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId)
-                .uuid(uuid)
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(concertId, uuid);
 
         // when
         GetWaitQueueStatus.Output result = getWaitQueueStatus.execute(input);
 
         // then
         assertNotNull(result);
-        assertEquals(0, result.getQueuePosition());
-        assertTrue(result.getIsReservationPhase());
+        assertEquals(0, result.queuePosition());
+        assertTrue(result.isReservationPhase());
     }
 
     @Test
@@ -84,10 +81,7 @@ class GetWaitQueueStatusIT {
                 .build();
         queuePositionTrackerRepository.save(tracker);
 
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId)
-                .uuid(uuid)
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(concertId, uuid);
 
         // when & then
         assertThrows(UserNotInQueueException.class, () -> {
@@ -115,18 +109,15 @@ class GetWaitQueueStatusIT {
                 .build();
         waitQueueRepository.save(waitQueue);
 
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId)
-                .uuid(uuid)
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(concertId, uuid);
 
         // when
         GetWaitQueueStatus.Output result = getWaitQueueStatus.execute(input);
 
         // then
         assertNotNull(result);
-        assertEquals(1, result.getQueuePosition());  // 대기열 순번이 1이어야 함
-        assertFalse(result.getIsReservationPhase());
+        assertEquals(1, result.queuePosition());  // 대기열 순번이 1이어야 함
+        assertFalse(result.isReservationPhase());
     }
 
     @Test
@@ -154,17 +145,14 @@ class GetWaitQueueStatusIT {
         waitQueueRepository.save(WaitQueue.builder().concertScheduleId(concertId).userId(userId3).uuid(uuid3).build());
 
         // 입력 생성
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId)
-                .uuid(uuid2)
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(concertId, uuid2);
 
         // when
         GetWaitQueueStatus.Output result = getWaitQueueStatus.execute(input);
 
         // then
         assertNotNull(result);
-        assertEquals(2, result.getQueuePosition());  // 2번째 사용자는 2번
+        assertEquals(2, result.queuePosition());  // 2번째 사용자는 2번
     }
 
     @Test
@@ -198,17 +186,14 @@ class GetWaitQueueStatusIT {
         queuePositionTrackerRepository.save(queuePositionTracker);
 
         // 입력 생성
-        GetWaitQueueStatus.Input input = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId)
-                .uuid(waitQueue9Th.getUuid())
-                .build();
+        GetWaitQueueStatus.Input input = new GetWaitQueueStatus.Input(concertId, waitQueue9Th.getUuid());
 
         // when
         GetWaitQueueStatus.Output result = getWaitQueueStatus.execute(input);
 
         // then
         assertNotNull(result);
-        assertEquals(4, result.getQueuePosition());  // 2번째 사용자는 대기열에서 2번
+        assertEquals(4, result.queuePosition());  // 2번째 사용자는 대기열에서 2번
     }
 
     @Test
@@ -255,14 +240,10 @@ class GetWaitQueueStatusIT {
         queuePositionTrackerRepository.save(queuePositionTracker2);
 
         // 입력 생성
-        GetWaitQueueStatus.Input input1 = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId1)
-                .uuid(waitingUsers1.get(0).getUuid()) // 콘서트1의 1번째 사용자의 대기열 순서
-                .build();
-        GetWaitQueueStatus.Input input2 = GetWaitQueueStatus.Input.builder()
-                .concertScheduleId(concertId2)
-                .uuid(waitingUsers2.get(2).getUuid()) // 콘서트2의 3번째 사용자의 대기열 순서
-                .build();
+        // 콘서트1의 1번째 사용자의 대기열 순서
+        GetWaitQueueStatus.Input input1 = new GetWaitQueueStatus.Input(concertId1, waitingUsers1.get(0).getUuid());
+        // 콘서트2의 3번째 사용자의 대기열 순서
+        GetWaitQueueStatus.Input input2 = new GetWaitQueueStatus.Input(concertId2, waitingUsers2.get(2).getUuid());
 
         // when
         GetWaitQueueStatus.Output result1 = getWaitQueueStatus.execute(input1);
@@ -270,7 +251,7 @@ class GetWaitQueueStatusIT {
 
         // then
         assertNotNull(result1);
-        assertEquals(1, result1.getQueuePosition());  // 콘서트1의 2번째 사용자 대기열 순서
-        assertEquals(2, result2.getQueuePosition());  // 콘서트2의 2번째 사용자 대기열 순서
+        assertEquals(1, result1.queuePosition());  // 콘서트1의 2번째 사용자 대기열 순서
+        assertEquals(2, result2.queuePosition());  // 콘서트2의 2번째 사용자 대기열 순서
     }
 }

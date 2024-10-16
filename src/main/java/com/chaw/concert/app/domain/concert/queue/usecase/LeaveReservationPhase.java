@@ -1,8 +1,6 @@
 package com.chaw.concert.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.app.domain.concert.queue.repository.ReservationPhaseRepository;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,19 +16,15 @@ public class LeaveReservationPhase {
     }
 
     public Output execute(Input input) {
-        reservationPhaseRepository.deleteByUuid(input.getUuid());
+        reservationPhaseRepository.deleteByUuid(input.uuid());
         return new Output(true);
     }
 
-    @Getter
-    @AllArgsConstructor
-    public static class Input {
-        private String uuid;
-    }
+    public record Input (
+        String uuid
+    ) {}
 
-    @Getter
-    @AllArgsConstructor
-    public class Output {
-        private Boolean result;
-    }
+    public record Output (
+        Boolean result
+    ) {}
 }

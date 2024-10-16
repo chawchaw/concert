@@ -3,8 +3,6 @@ package com.chaw.concert.app.domain.concert.query.usecase;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,19 +17,15 @@ public class GetTicketsInEmptyStatus {
     }
 
     public Output execute(Input input) {
-        List<Ticket> tickets = ticketRepository.findByConcertScheduleIdAndStatus(input.getConcertScheduleId(), TicketStatus.EMPTY);
+        List<Ticket> tickets = ticketRepository.findByConcertScheduleIdAndStatus(input.concertScheduleId(), TicketStatus.EMPTY);
         return new Output(tickets);
     }
 
-    @AllArgsConstructor
-    @Getter
-    public static class Input {
-        private Long concertScheduleId;
-    }
+    public record Input (
+        Long concertScheduleId
+    ) {}
 
-    @AllArgsConstructor
-    @Getter
-    public static class Output {
-        List<Ticket> tickets;
-    }
+    public record Output (
+        List<Ticket> tickets
+    ) {}
 }

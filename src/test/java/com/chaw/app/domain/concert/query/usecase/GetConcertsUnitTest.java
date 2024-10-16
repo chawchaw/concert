@@ -40,6 +40,6 @@ public class GetConcertsUnitTest {
         GetConcerts.Output output = getConcerts.execute();
 
         // Then
-        assertEquals(mockConcerts, output.getConcerts());
+        assertEquals(mockConcerts, output.concerts());
     }
 }

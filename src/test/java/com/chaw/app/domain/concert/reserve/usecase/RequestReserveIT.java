@@ -1,4 +1,4 @@
-package com.chaw.app.domain.concert.query.usecase;
+package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
@@ -6,7 +6,7 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class RequestReserveIT {
         RequestReserve.Output output = requestReserve.execute(input);
 
         // Then
-        Ticket reservedTicket = output.getTicket();
+        Ticket reservedTicket = output.ticket();
         Ticket foundTicket = ticketRepository.findById(reservedTicket.getId()).get();
         assertEquals(reservedTicket, foundTicket);
         assertEquals(TicketStatus.RESERVE, foundTicket.getStatus());

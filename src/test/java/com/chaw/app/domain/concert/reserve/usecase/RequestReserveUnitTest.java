@@ -1,11 +1,11 @@
-package com.chaw.app.domain.concert.query.usecase;
+package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -43,7 +43,7 @@ public class RequestReserveUnitTest {
         RequestReserve.Output output = requestReserve.execute(new RequestReserve.Input(1L, 1L));
 
         // Then
-        assertEquals(ticket, output.getTicket());
+        assertEquals(ticket, output.ticket());
     }
 
     @Test

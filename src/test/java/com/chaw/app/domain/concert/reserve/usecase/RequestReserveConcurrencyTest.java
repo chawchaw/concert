@@ -1,10 +1,10 @@
-package com.chaw.app.domain.concert.query.usecase;
+package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ public class RequestReserveConcurrencyTest {
     }
 
     @Test
-    void testConcurrencyRequestReserve() throws InterruptedException, ExecutionException {
+    void testConcurrencyRequestReserve() throws InterruptedException {
         int threadCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         List<Future<RequestReserve.Output>> futures = new ArrayList<>();

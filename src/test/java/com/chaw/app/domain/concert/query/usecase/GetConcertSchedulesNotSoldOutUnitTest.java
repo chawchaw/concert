@@ -1,6 +1,8 @@
 package com.chaw.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
+import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFound;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +14,13 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class GetConcertSchedulesNotSoldOutUnitTest {
+
+    @Mock
+    private ConcertRepository concertRepository;
 
     @Mock
     private ConcertScheduleRepository concertScheduleRepository;
@@ -25,25 +30,44 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this); // Mock 객체 초기화
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testGetConcertSchedulesNotSoldOut() {
+    void testExecute_ConcertNotFound() {
         // Given
         Long concertId = 1L;
-        List<ConcertSchedule> mockSchedules = Arrays.asList(
-                new ConcertSchedule(/* mock 데이터 */),
-                new ConcertSchedule(/* mock 데이터 */)
-        );
+        when(concertRepository.existsById(concertId)).thenReturn(false);
 
-        when(concertScheduleRepository.findByConcertIdAndIsSold(concertId, false)).thenReturn(mockSchedules);
+        // When / Then
+        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
+        assertThrows(ConcertNotFound.class, () -> getConcertSchedulesNotSoldOut.execute(input));
+
+        verify(concertRepository, times(1)).existsById(concertId);
+        verify(concertScheduleRepository, never()).findByConcertIdAndIsSold(anyLong(), anyBoolean());
+    }
+
+    @Test
+    void testExecute_ConcertFound() {
+        // Given
+        Long concertId = 1L;
+        when(concertRepository.existsById(concertId)).thenReturn(true);
+
+        List<ConcertSchedule> concertSchedules = Arrays.asList(
+                new ConcertSchedule(),
+                new ConcertSchedule()
+        );
+        when(concertScheduleRepository.findByConcertIdAndIsSold(concertId, false)).thenReturn(concertSchedules);
 
         // When
         GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
         GetConcertSchedulesNotSoldOut.Output output = getConcertSchedulesNotSoldOut.execute(input);
 
         // Then
-        assertEquals(2, output.getConcertSchedules().size()); // 예상된 결과 확인
+        assertNotNull(output);
+        assertEquals(2, output.concertSchedules().size());
+
+        verify(concertRepository, times(1)).existsById(concertId);
+        verify(concertScheduleRepository, times(1)).findByConcertIdAndIsSold(concertId, false);
     }
 }

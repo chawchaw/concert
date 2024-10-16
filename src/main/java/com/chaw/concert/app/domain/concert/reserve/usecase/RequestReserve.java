@@ -1,4 +1,4 @@
-package com.chaw.concert.app.domain.concert.query.usecase;
+package com.chaw.concert.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
@@ -23,7 +23,7 @@ public class RequestReserve {
 
     @Transactional
     public Output execute(Input input) {
-        Optional<Ticket> ticketOptional = ticketRepository.findByIdWithLock(input.getTicketId());
+        Optional<Ticket> ticketOptional = ticketRepository.findByIdWithLock(input.ticketId());
         if (ticketOptional.isEmpty()) {
             throw new TicketNotFound();
         }
@@ -33,22 +33,18 @@ public class RequestReserve {
         }
 
         ticket.setStatus(TicketStatus.RESERVE);
-        ticket.setReserveUserId(input.getUserId());
+        ticket.setReserveUserId(input.userId());
         ticket.setReserveEndAt(LocalDateTime.now());
         ticketRepository.save(ticket);
         return new Output(ticket);
     }
 
-    @Getter
-    @AllArgsConstructor
-    public static class Input {
-        private Long userId;
-        private Long ticketId;
-    }
+    public record Input (
+        Long userId,
+        Long ticketId
+    ) {}
 
-    @Getter
-    @AllArgsConstructor
-    public class Output {
-        private Ticket ticket;
-    }
+    public record Output (
+        Ticket ticket
+    ) {}
 }
