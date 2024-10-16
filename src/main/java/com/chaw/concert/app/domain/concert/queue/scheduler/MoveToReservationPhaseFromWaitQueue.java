@@ -1,4 +1,4 @@
-package com.chaw.concert.app.domain.concert.queue.usecase;
+package com.chaw.concert.app.domain.concert.queue.scheduler;
 
 import com.chaw.concert.app.domain.concert.queue.entity.ReservationPhase;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
@@ -6,9 +6,9 @@ import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
 import com.chaw.concert.app.domain.concert.queue.repository.ReservationPhaseRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +19,11 @@ import java.util.stream.Collectors;
 /**
  * 대기열에서 예약페이즈로 넘어간다.
  */
-@Service
+@Component
 public class MoveToReservationPhaseFromWaitQueue {
 
-    private final Integer MAX_RESERVATION_PHASE_SIZE = 30;
+    @Value("${concert.queue.max.reservation.phase.size}")
+    private Integer MAX_RESERVATION_PHASE_SIZE = 30;
 
     private final ReservationPhaseRepository reservationPhaseRepository;
     private final WaitQueueRepository waitQueueRepository;

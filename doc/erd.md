@@ -48,19 +48,24 @@ erDiagram
     User {
         long id PK
         varchar name
-        int point_balance
     }
+    
+    Point {
+        long id PK
+        long user_id FK
+        int point_balance "포인트 잔액"
+    }
+    Point ||--|| User : "1:1"
 
     PointHistory {
         long id PK
-        long user_id FK
+        long point_id FK
         long ticket_id FK
         enum type "충전,결제"
         decimal amount "변경 금액"
         datetime dateTransaction "변경일"
     }
-    PointHistory }o--|| User : ""
-    PointHistory }o--|| Ticket : "결제,환불,재결제를 고려하여 1:N"
+    PointHistory }o--|| Point : ""
 
     WaitQueue {
         long id PK
@@ -117,11 +122,27 @@ erDiagram
         long concert_schedule_id FK
         enum type "VIP,1등석,2등석"
         enum status "공석, 예약, 결제완료"
-        int price "가격"
+        decimal price "가격"
         long reserve_user_id FK "예약한 사용자"
         datetime reserve_end_at "예약 마감일"
     }
     Ticket }o--|| ConcertSchedule : "콘서트 일정이 여러 티켓을 가질 수 있음"
     Ticket }o--|| User : "예약한 사용자"
 
+    TicketTransaction {
+        long id PK
+        long user_id FK
+        long ticket_id FK
+        long point_history_id FK
+        varchar idempotency_key "멱등성 키"
+        varchar transaction_status "트랜잭션 상태 (pending, completed, failed, expired)"
+        varchar payment_method "결제 수단 (포인트, 카드, 계좌이체)"
+        jsonb payment_data "결제 데이터"
+        decimal amount "결제 금액"
+        datetime created_at "생성일"
+        datetime updated_at "마지막 업데이트 시간"
+        tinyint is_deleted "만료로 인한 삭제 여부"
+    }
+    TicketTransaction }o--|| Ticket : "1:1"
+    TicketTransaction ||--|| PointHistory : "1:1, 결제 완료시 포인트이력에 저장"
 ```

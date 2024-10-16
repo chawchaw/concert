@@ -1,4 +1,4 @@
-package com.chaw.app.domain.concert.queue.usecase;
+package com.chaw.app.domain.concert.queue.scheduler;
 
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.queue.entity.ReservationPhase;
@@ -7,7 +7,7 @@ import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
 import com.chaw.concert.app.domain.concert.queue.repository.ReservationPhaseRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.MoveToReservationPhaseFromWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.scheduler.MoveToReservationPhaseFromWaitQueue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

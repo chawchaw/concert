@@ -18,7 +18,12 @@ public class TicketRepositoryImpl implements TicketRepository {
     }
 
     @Override
-    public Optional<Ticket> findByIdWithLock(Long ticketId) {
+    public Ticket findById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Ticket findByIdWithLock(Long ticketId) {
         return repository.findByIdWithLock(ticketId);
     }
 
@@ -28,13 +33,13 @@ public class TicketRepositoryImpl implements TicketRepository {
     }
 
     @Override
-    public Ticket save(Ticket ticket) {
-        return repository.save(ticket);
+    public List<Ticket> findByReserveExpired() {
+        return repository.findByReserveEndAtBeforeAndStatus(LocalDateTime.now(), TicketStatus.RESERVE);
     }
 
     @Override
-    public Optional<Ticket> findById(Long id) {
-        return repository.findById(id);
+    public Ticket save(Ticket ticket) {
+        return repository.save(ticket);
     }
 
     @Override
@@ -43,7 +48,7 @@ public class TicketRepositoryImpl implements TicketRepository {
     }
 
     @Override
-    public List<Ticket> findByReserveExpired() {
-        return repository.findByReserveEndAtBeforeAndStatus(LocalDateTime.now(), TicketStatus.RESERVE);
+    public void deleteAll() {
+        repository.deleteAll();
     }
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,11 +49,12 @@ public class RequestReserveConcurrencyTest {
 
     @Test
     void testConcurrencyRequestReserve() throws InterruptedException {
+        // When
         int threadCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         List<Future<RequestReserve.Output>> futures = new ArrayList<>();
 
-        // 5명의 사용자에게 같은 티켓을 동시에 예약하도록 요청
+        // Then 5명의 사용자에게 같은 티켓을 동시에 예약하도록 요청
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
             futures.add(executorService.submit(() -> {
@@ -61,7 +63,7 @@ public class RequestReserveConcurrencyTest {
             }));
         }
 
-        // 결과 확인
+        // Verify
         int successCount = 0;
         int failureCount = 0;
 
@@ -77,8 +79,8 @@ public class RequestReserveConcurrencyTest {
         assertEquals(1, successCount);  // 성공한 요청은 1개여야 함
         assertEquals(4, failureCount);  // 실패한 요청은 4개여야 함
 
-        // 최종적으로 티켓 상태가 TEMP_RESERVATION으로 변경되었는지 확인
-        Ticket updatedTicket = ticketRepository.findById(ticket.getId()).orElseThrow();
+        // 최종적으로 티켓 상태가 RESERVE 로 변경되었는지 확인
+        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
 
         executorService.shutdown();

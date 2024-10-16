@@ -8,15 +8,17 @@ import java.util.Optional;
 
 public interface TicketRepository {
 
-    Optional<Ticket> findByIdWithLock(Long ticketId);
+    Ticket findById(Long id);
+
+    Ticket findByIdWithLock(Long id);
 
     List<Ticket> findByConcertScheduleIdAndStatus(Long concertScheduleId, TicketStatus ticketStatus);
 
-    Ticket save(Ticket ticket);
+    List<Ticket> findByReserveExpired();
 
-    Optional<Ticket> findById(Long id);
+    Ticket save(Ticket ticket);
 
     void deleteById(Long id);
 
-    List<Ticket> findByReserveExpired();
+    void deleteAll();
 }

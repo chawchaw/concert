@@ -23,11 +23,10 @@ public class RequestReserve {
 
     @Transactional
     public Output execute(Input input) {
-        Optional<Ticket> ticketOptional = ticketRepository.findByIdWithLock(input.ticketId());
-        if (ticketOptional.isEmpty()) {
+        Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
+        if (ticket == null) {
             throw new TicketNotFound();
         }
-        Ticket ticket = ticketOptional.get();
         if (!ticket.getStatus().equals(TicketStatus.EMPTY)) {
             throw new TicketAlreadyReserved();
         }

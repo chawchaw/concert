@@ -36,7 +36,7 @@ public class RequestReserveUnitTest {
         // Given
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.EMPTY).build();
 
-        when(ticketRepository.findByIdWithLock(1L)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.findByIdWithLock(1L)).thenReturn(ticket);
         when(ticketRepository.save(ticket)).thenReturn(ticket);
 
         // When
@@ -49,7 +49,7 @@ public class RequestReserveUnitTest {
     @Test
     void testExecuteWhenTicketNotFound() {
         // Given
-        when(ticketRepository.findByIdWithLock(1L)).thenReturn(Optional.empty());
+        when(ticketRepository.findByIdWithLock(1L)).thenReturn(null);
 
         // When & Then
         assertThrows(TicketNotFound.class, () -> requestReserve.execute(new RequestReserve.Input(1L, 1L)));
@@ -60,7 +60,7 @@ public class RequestReserveUnitTest {
         // Given
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
 
-        when(ticketRepository.findByIdWithLock(1L)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.findByIdWithLock(1L)).thenReturn(ticket);
 
         // When & Then
         assertThrows(TicketAlreadyReserved.class, () -> requestReserve.execute(new RequestReserve.Input(1L, 1L)));

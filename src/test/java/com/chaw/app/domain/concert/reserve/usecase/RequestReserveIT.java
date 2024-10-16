@@ -61,7 +61,7 @@ public class RequestReserveIT {
 
         // Then
         Ticket reservedTicket = output.ticket();
-        Ticket foundTicket = ticketRepository.findById(reservedTicket.getId()).get();
+        Ticket foundTicket = ticketRepository.findByIdWithLock(reservedTicket.getId());
         assertEquals(reservedTicket, foundTicket);
         assertEquals(TicketStatus.RESERVE, foundTicket.getStatus());
         assertEquals(userId, foundTicket.getReserveUserId());
