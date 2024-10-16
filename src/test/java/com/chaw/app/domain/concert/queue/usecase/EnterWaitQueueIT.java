@@ -1,12 +1,10 @@
 package com.chaw.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.domain.concert.queue.entity.QueuePositionTracker;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.repository.QueuePositionTrackerRepository;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -22,65 +23,69 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EnterWaitQueueIT {
 
     @Autowired
-    private EnterWaitQueue enterWaitQueue;
-
-    @Autowired
     private WaitQueueRepository waitQueueRepository;
 
     @Autowired
-    private QueuePositionTrackerRepository queuePositionTrackerRepository;
+    private EnterWaitQueue enterWaitQueue;
 
     @Test
-    @DisplayName("사용자가 대기열에 성공적으로 참가할 수 있어야 한다")
-    void shouldEnterQueueSuccessfully() {
-        // given
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L, 1L);
-
-        // when
+    void testNewUserEntersQueue() {
+        // When
+        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L);
         EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
-        // then
-        WaitQueue waitQueue = output.waitQueue();
-        assertNotNull(waitQueue);
-        assertEquals(input.userId(), waitQueue.getUserId());
-        assertEquals(input.concertScheduleId(), waitQueue.getConcertScheduleId());
-        assertNotNull(waitQueue.getUuid());
+        // Then
+        assertEquals("WAIT", output.status());
+        assertEquals(0L, output.order());
 
-        // 데이터베이스에 대기열이 추가되었는지 확인
-        assertTrue(waitQueueRepository.existsByConcertScheduleIdAndUuid(input.concertScheduleId(), waitQueue.getUuid()));
-
-        // 대기열 인디케이터가 생성되었는지 확인
-        QueuePositionTracker indicator = queuePositionTrackerRepository.findByConcertScheduleId(input.concertScheduleId());
-        assertNotNull(indicator);
-        assertTrue(indicator.getIsWaitQueueExist());
+        // Verify
+        WaitQueue savedQueue = waitQueueRepository.findByUserId(1L);
+        assertNotNull(savedQueue);
+        assertEquals(1L, savedQueue.getUserId());
+        assertEquals(WaitQueueStatus.WAIT, savedQueue.getStatus());
     }
 
     @Test
-    @DisplayName("대기열 인디케이터가 있을 때 대기 상태가 아닌 경우 업데이트한다")
-    void shouldUpdateIndicatorWhenNotWaiting() {
-        // given
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L, 1L);
-
-        // 이미 대기열 인디케이터가 존재하고 대기 상태가 아닌 경우
-        QueuePositionTracker indicator = QueuePositionTracker.builder()
-                .concertScheduleId(input.concertScheduleId())
-                .waitQueueId(0L)
-                .isWaitQueueExist(false)
+    void testExistingUserInQueue() {
+        // Given: 기존 사용자가 대기열에 있을 때
+        WaitQueue existingQueue = WaitQueue.builder()
+                .userId(1L)
+                .status(WaitQueueStatus.WAIT)
+                .createdAt(LocalDateTime.now())
                 .build();
-        queuePositionTrackerRepository.save(indicator);
+        waitQueueRepository.save(existingQueue);
 
-        // when
+        // When: 대기열 상태 확인
+        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L);
         EnterWaitQueue.Output output = enterWaitQueue.execute(input);
 
-        // then
-        WaitQueue waitQueue = output.waitQueue();
-        assertNotNull(waitQueue);
-        assertEquals(input.userId(), waitQueue.getUserId());
-        assertEquals(input.concertScheduleId(), waitQueue.getConcertScheduleId());
-        assertNotNull(waitQueue.getUuid());
+        // Then: 대기열 상태가 WAIT이고, 대기순번이 0이어야 함 (첫 번째 사용자이므로 순번 0)
+        assertEquals("WAIT", output.status());
+        assertEquals(0L, output.order());
+    }
 
-        // 대기열 인디케이터가 업데이트되었는지 확인
-        QueuePositionTracker updatedIndicator = queuePositionTrackerRepository.findByConcertScheduleId(input.concertScheduleId());
-        assertTrue(updatedIndicator.getIsWaitQueueExist());
+    @Test
+    void testQueueOrderWithMultipleUsers() {
+        // Given: 여러 사용자가 대기열에 있을 때
+        WaitQueue firstUser = WaitQueue.builder()
+                .userId(1L)
+                .status(WaitQueueStatus.WAIT)
+                .createdAt(LocalDateTime.now())
+                .build();
+        WaitQueue secondUser = WaitQueue.builder()
+                .userId(2L)
+                .status(WaitQueueStatus.WAIT)
+                .createdAt(LocalDateTime.now().plusMinutes(1))
+                .build();
+        waitQueueRepository.save(firstUser);
+        waitQueueRepository.save(secondUser);
+
+        // When: 두 번째 사용자의 대기 상태 확인
+        EnterWaitQueue.Input input = new EnterWaitQueue.Input(2L);
+        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
+
+        // Then: 대기 순번이 1이어야 함 (두 번째 사용자이므로)
+        assertEquals("WAIT", output.status());
+        assertEquals(1L, output.order());
     }
 }

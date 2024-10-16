@@ -1,6 +1,7 @@
 package com.chaw.concert.app.infrastructure.mysql.conert.queue;
 
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,17 +22,12 @@ public class WaitQueueRepositoryImpl implements WaitQueueRepository {
     }
 
     @Override
-    public Boolean existsByConcertScheduleIdAndUuid(Long concertScheduleId, String uuid) {
-        return repository.existsByConcertScheduleIdAndUuid(concertScheduleId, uuid);
+    public WaitQueue findByUserId(Long userId) {
+        return repository.findByUserId(userId);
     }
 
     @Override
-    public List<WaitQueue> findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(Long concertScheduleId, Long lastTransferredWaitingUserId) {
-        return repository.findByConcertScheduleIdAndIdGreaterThanOrderByIdAsc(concertScheduleId, lastTransferredWaitingUserId);
-    }
-
-    @Override
-    public void saveAll(List<WaitQueue> waitQueues) {
-        repository.saveAll(waitQueues);
+    public Long countByStatusAndIdLessThan(WaitQueueStatus waitQueueStatus, Long id) {
+        return repository.countByStatusAndIdLessThan(waitQueueStatus, id);
     }
 }
