@@ -1,10 +1,12 @@
 package com.chaw.concert.app.domain.concert.query.exception;
 
-public class ConcertNotFound extends RuntimeException {
+import jakarta.persistence.EntityNotFoundException;
+
+public class ConcertNotFoundException extends EntityNotFoundException {
 
     public static final String DEFAULT_MESSAGE = "존재하지 않는 콘서트입니다.";
 
-    public ConcertNotFound() {
+    public ConcertNotFoundException() {
         super(DEFAULT_MESSAGE);
     }
 

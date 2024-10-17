@@ -2,8 +2,8 @@ package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
-import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
+import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
+import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -42,7 +42,7 @@ public class RequestReserveUnitTest {
 
         // When / Then
         RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
-        assertThrows(TicketNotFound.class, () -> requestReserve.execute(input));
+        assertThrows(TicketNotFoundException.class, () -> requestReserve.execute(input));
 
         verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
         verify(reserveRepository, never()).save(any());
@@ -58,7 +58,7 @@ public class RequestReserveUnitTest {
 
         // When / Then
         RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
-        assertThrows(TicketAlreadyReserved.class, () -> requestReserve.execute(input));
+        assertThrows(TicketAlreadyReservedException.class, () -> requestReserve.execute(input));
 
         verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
         verify(reserveRepository, never()).save(any());

@@ -3,7 +3,7 @@ package com.chaw.app.domain.concert.reserve.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
-import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalance;
+import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
@@ -17,10 +17,10 @@ import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.AlreadyPaidReserve;
-import com.chaw.concert.app.domain.concert.reserve.exception.CanceledReserve;
-import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserve;
-import com.chaw.concert.app.domain.concert.reserve.exception.TicketNotInStatusReserve;
+import com.chaw.concert.app.domain.concert.reserve.exception.AlreadyPaidReserveException;
+import com.chaw.concert.app.domain.concert.reserve.exception.CanceledReserveException;
+import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
+import com.chaw.concert.app.domain.concert.reserve.exception.TicketNotInStatusReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
@@ -159,7 +159,7 @@ public class PayTicketIT {
         pointRepository.save(point);
         PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
 
-        assertThrows(NotEnoughBalance.class, () -> { payTicket.execute(input); });
+        assertThrows(NotEnoughBalanceException.class, () -> { payTicket.execute(input); });
     }
 
     @Test
@@ -168,7 +168,7 @@ public class PayTicketIT {
         ticketRepository.save(ticket);
         PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
 
-        assertThrows(TicketNotInStatusReserve.class, () -> { payTicket.execute(input); });
+        assertThrows(TicketNotInStatusReserveException.class, () -> { payTicket.execute(input); });
     }
 
     @Test
@@ -177,7 +177,7 @@ public class PayTicketIT {
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
 
-        assertThrows(AlreadyPaidReserve.class, () -> { payTicket.execute(input); });
+        assertThrows(AlreadyPaidReserveException.class, () -> { payTicket.execute(input); });
     }
 
     @Test
@@ -186,7 +186,7 @@ public class PayTicketIT {
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
 
-        assertThrows(CanceledReserve.class, () -> { payTicket.execute(input); });
+        assertThrows(CanceledReserveException.class, () -> { payTicket.execute(input); });
     }
 
     @Test
@@ -195,6 +195,6 @@ public class PayTicketIT {
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
 
-        assertThrows(ExpiredReserve.class, () -> { payTicket.execute(input); });
+        assertThrows(ExpiredReserveException.class, () -> { payTicket.execute(input); });
     }
 }

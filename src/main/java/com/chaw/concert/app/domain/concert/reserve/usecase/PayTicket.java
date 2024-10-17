@@ -3,19 +3,19 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
-import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalance;
-import com.chaw.concert.app.domain.common.user.exception.PointNotFound;
+import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
+import com.chaw.concert.app.domain.common.user.exception.PointNotFoundException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFound;
-import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
+import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFoundException;
+import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.exception.WaitQueueNotFound;
+import com.chaw.concert.app.domain.concert.queue.exception.WaitQueueNotFoundException;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
@@ -121,39 +121,39 @@ public class PayTicket {
      */
     public void validate(Point point, ConcertSchedule concertSchedule, Ticket ticket, Reserve reserve, WaitQueue waitQueue) {
         if (point == null) {
-            throw new PointNotFound();
+            throw new PointNotFoundException();
         }
         if (concertSchedule == null) {
-            throw new ConcertScheduleNotFound();
+            throw new ConcertScheduleNotFoundException();
         }
         if (ticket == null) {
-            throw new TicketNotFound();
+            throw new TicketNotFoundException();
         }
         if (reserve == null) {
-            throw new ReserveNotFound();
+            throw new ReserveNotFoundException();
         }
         if (waitQueue == null) {
-            throw new WaitQueueNotFound();
+            throw new WaitQueueNotFoundException();
         }
 
         LocalDateTime now = LocalDateTime.now();
 
         // 잔액 체크
         if (point.getBalance() < reserve.getAmount()) {
-            throw new NotEnoughBalance();
+            throw new NotEnoughBalanceException();
         }
 
         // 티켓 예약 상태 체크
         if (ticket.getStatus() != TicketStatus.RESERVE) {
-            throw new TicketNotInStatusReserve();
+            throw new TicketNotInStatusReserveException();
         }
 
         // 예약 상태 체크
         if (reserve.getReserveStatus() == ReserveStatus.PAID) {
-            throw new AlreadyPaidReserve();
+            throw new AlreadyPaidReserveException();
         }
         else if (reserve.getReserveStatus() == ReserveStatus.CANCEL) {
-            throw new CanceledReserve();
+            throw new CanceledReserveException();
         }
 
         // 예약제한시간 체크
@@ -167,7 +167,7 @@ public class PayTicket {
 
             waitQueueRepository.delete(waitQueue);
 
-            throw new ExpiredReserve();
+            throw new ExpiredReserveException();
         }
     }
 

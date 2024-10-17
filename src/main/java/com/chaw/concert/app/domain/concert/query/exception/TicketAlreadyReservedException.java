@@ -1,10 +1,10 @@
 package com.chaw.concert.app.domain.concert.query.exception;
 
-public class TicketAlreadyReserved extends RuntimeException {
+public class TicketAlreadyReservedException extends IllegalStateException {
 
     public static final String DEFAULT_MESSAGE = "예약할 수 없는 티켓입니다.";
 
-    public TicketAlreadyReserved() {
+    public TicketAlreadyReservedException() {
         super(DEFAULT_MESSAGE);
     }
 

@@ -3,7 +3,7 @@ package com.chaw.app.domain.concert.reserve.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
+import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import org.junit.jupiter.api.AfterEach;
@@ -91,7 +91,7 @@ public class RequestReserveConcurrencyTest {
 
         // 발생한 예외들이 TicketAlreadyReserved인지 확인
         for (Throwable exception : exceptions) {
-            assertTrue(exception instanceof TicketAlreadyReserved);
+            assertTrue(exception instanceof TicketAlreadyReservedException);
         }
 
         executorService.shutdown();

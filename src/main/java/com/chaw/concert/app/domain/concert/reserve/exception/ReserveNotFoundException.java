@@ -1,10 +1,12 @@
 package com.chaw.concert.app.domain.concert.reserve.exception;
 
-public class ReserveNotFound extends RuntimeException {
+import jakarta.persistence.EntityNotFoundException;
+
+public class ReserveNotFoundException extends EntityNotFoundException {
 
     public static final String DEFAULT_MESSAGE = "예약 내역이 없습니다.";
 
-    public ReserveNotFound() {
+    public ReserveNotFoundException() {
         super(DEFAULT_MESSAGE);
     }
 

@@ -2,7 +2,7 @@ package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
-import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalance;
+import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
@@ -173,7 +173,7 @@ class PayTicketUnitTest {
         PayTicket.Input input = new PayTicket.Input(userId, ticketId);
 
         // when & then
-        assertThrows(NotEnoughBalance.class, () -> payTicket.execute(input));
+        assertThrows(NotEnoughBalanceException.class, () -> payTicket.execute(input));
 
         verify(waitQueueRepository, never()).delete(any()); // 잔액 부족 시 대기열 삭제되지 않음
     }

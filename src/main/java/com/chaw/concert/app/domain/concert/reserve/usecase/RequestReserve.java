@@ -2,8 +2,8 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
-import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
+import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
+import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
@@ -27,10 +27,10 @@ public class RequestReserve {
     public Output execute(Input input) {
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
         if (ticket == null) {
-            throw new TicketNotFound();
+            throw new TicketNotFoundException();
         }
         if (!ticket.getStatus().equals(TicketStatus.EMPTY)) {
-            throw new TicketAlreadyReserved();
+            throw new TicketAlreadyReservedException();
         }
 
         ticket.setStatus(TicketStatus.RESERVE);

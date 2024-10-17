@@ -46,7 +46,7 @@ public class ExpireReserveIT {
 
     @BeforeEach
     void setUp() {
-        // Given: 대기열, 티켓, 예약 데이터를 저장
+        // Given
         Long userId = 1L;
         ticket = Ticket.builder()
                 .status(TicketStatus.RESERVE)
@@ -71,9 +71,9 @@ public class ExpireReserveIT {
 
     @AfterEach
     void tearDown() {
-        waitQueueRepository.deleteAll();
-        reserveRepository.deleteAll();
         ticketRepository.deleteAll();
+        reserveRepository.deleteAll();
+        waitQueueRepository.deleteAll();
     }
 
     @Test

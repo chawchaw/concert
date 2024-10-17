@@ -2,7 +2,7 @@ package com.chaw.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFound;
+import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
@@ -43,7 +43,7 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
 
         // When / Then
         GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
-        assertThrows(ConcertNotFound.class, () -> getConcertSchedulesNotSoldOut.execute(input));
+        assertThrows(ConcertNotFoundException.class, () -> getConcertSchedulesNotSoldOut.execute(input));
 
         verify(concertRepository, times(1)).findById(concertId);
         verify(concertScheduleRepository, never()).findByConcertIdAndIsSold(anyLong(), anyBoolean());
