@@ -229,4 +229,10 @@ public class ConcertE2E {
         );
         assertEquals(true, payResult.getBody().success());
     }
+
+    @Test
+    @Disabled // 테스트 데이터 만들기용
+    void testForData() {
+        // do nothing
+    }
 }
