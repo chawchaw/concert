@@ -18,7 +18,15 @@ public class GetTicketsInEmptyStatus {
 
     public Output execute(Input input) {
         List<Ticket> tickets = ticketRepository.findByConcertScheduleIdAndStatus(input.concertScheduleId(), TicketStatus.EMPTY);
-        return new Output(tickets);
+        return new Output(
+                input.concertScheduleId(),
+                tickets.stream().map(ticket -> new Output.Item(
+                        ticket.getId(),
+                        ticket.getType().name(),
+                        ticket.getSeatNo(),
+                        ticket.getPrice()
+                )).toList()
+        );
     }
 
     public record Input (
@@ -26,6 +34,14 @@ public class GetTicketsInEmptyStatus {
     ) {}
 
     public record Output (
-        List<Ticket> tickets
-    ) {}
+            Long concertScheduleId,
+            List<Item> tickets
+    ) {
+        public record Item (
+            Long id,
+            String type,
+            String seatNo,
+            Integer price
+        ) {}
+    }
 }
