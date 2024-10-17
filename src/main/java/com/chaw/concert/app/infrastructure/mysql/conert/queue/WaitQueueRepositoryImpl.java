@@ -5,6 +5,7 @@ import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -30,4 +31,20 @@ public class WaitQueueRepositoryImpl implements WaitQueueRepository {
     public Long countByStatusAndIdLessThan(WaitQueueStatus waitQueueStatus, Long id) {
         return repository.countByStatusAndIdLessThan(waitQueueStatus, id);
     }
+
+    @Override
+    public int countByStatus(WaitQueueStatus status) {
+        return repository.countByStatus(status);
+    }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
+    @Override
+    public List<WaitQueue> findByStatusByLimit(WaitQueueStatus waitQueueStatus, Integer passSize) {
+        return repository.findByStatusByLimit(waitQueueStatus, passSize);
+    }
+
 }

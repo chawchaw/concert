@@ -14,4 +14,18 @@ public interface WaitQueueJpaRepository extends JpaRepository<WaitQueue, Long> {
     WaitQueue findByUserId(Long userId);
 
     Long countByStatusAndIdLessThan(WaitQueueStatus waitQueueStatus, Long id);
+
+    int countByStatus(WaitQueueStatus status);
+
+    @Query(
+        value = """
+            SELECT *
+            FROM wait_queue
+            WHERE status = :waitQueueStatus
+            ORDER BY id ASC
+            LIMIT :passSize
+            """,
+        nativeQuery = true
+    )
+    List<WaitQueue> findByStatusByLimit(WaitQueueStatus waitQueueStatus, Integer passSize);
 }

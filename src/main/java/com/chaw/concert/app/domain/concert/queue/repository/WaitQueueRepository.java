@@ -11,4 +11,10 @@ public interface WaitQueueRepository {
     WaitQueue findByUserId(Long userId);
 
     Long countByStatusAndIdLessThan(WaitQueueStatus waitQueueStatus, Long id);
+
+    int countByStatus(WaitQueueStatus status);
+
+    void deleteAll();
+
+    List<WaitQueue> findByStatusByLimit(WaitQueueStatus waitQueueStatus, Integer passSize);
 }
