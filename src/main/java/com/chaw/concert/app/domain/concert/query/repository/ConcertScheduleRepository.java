@@ -8,4 +8,8 @@ public interface ConcertScheduleRepository {
     List<ConcertSchedule> findByConcertIdAndIsSold(Long concertId, boolean isSold);
 
     ConcertSchedule save(ConcertSchedule concertSchedule);
+
+    ConcertSchedule findById(Long id);
+
+    ConcertSchedule findByIdWithLock(Long id);
 }

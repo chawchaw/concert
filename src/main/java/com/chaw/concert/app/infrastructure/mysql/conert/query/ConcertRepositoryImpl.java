@@ -28,4 +28,9 @@ public class ConcertRepositoryImpl implements ConcertRepository {
     public Boolean existsById(Long concertId) {
         return repository.existsById(concertId);
     }
+
+    @Override
+    public Concert findById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
 }

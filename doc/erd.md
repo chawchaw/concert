@@ -4,9 +4,6 @@
 - WaitQueue
   - Queue 처럼 사용하기 위한 테이블입니다.
   - 사용자가 대기열에 들어가면 여기에 기록됩니다.
-- Hall
-  - 공연장소 정보입니다. 
-  - ex) KSPO DOME, 잠실실내체육관
 - Concert
   - 공연 정보입니다
   - ex) 2024 윤하 연말 콘서트, 2024 레드벨벳 콘서트
@@ -55,14 +52,6 @@ erDiagram
     }
     WaitQueue ||--|| User : "1:1"
 
-    Hall {
-        long id PK
-        varchar name "공연장 이름"
-        varchar address "주소"
-        varchar address_detail "상세주소"
-        geometry location "위/경도"
-    }
-
     Concert {
         long id PK
         varchar name "공연이름"
@@ -74,14 +63,12 @@ erDiagram
     ConcertSchedule {
         long id PK
         long concert_id FK
-        long hall_id FK
         tinyint isSold "판매 중,판매 완료"
         int total_seat "총 좌석수"
         int available_seat "남은 좌석수"
         datetime dateConcert "공연일"
     }
     ConcertSchedule }o--|| Concert : "콘서트는 여러 일정을 가질 수 있음"
-    ConcertSchedule }o--|| Hall : "각 콘서트 일정은 여러 장소에서 열릴 수 있음"
 
     Ticket {
         long id PK

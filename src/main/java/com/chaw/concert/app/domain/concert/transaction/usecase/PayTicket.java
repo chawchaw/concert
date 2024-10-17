@@ -6,9 +6,11 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.exception.PointNotFound;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.transaction.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.transaction.entity.TicketTransaction;
@@ -25,12 +27,14 @@ import java.time.LocalDateTime;
 @Service
 public class PayTicket {
 
+    private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketTransactionRepository ticketTransactionRepository;
     private final PointHistoryRepository pointHistoryRepository;
     private final PointRepository pointRepository;
     private final TicketRepository ticketRepository;
 
-    public PayTicket(TicketTransactionRepository ticketTransactionRepository, PointHistoryRepository pointHistoryRepository, PointRepository pointRepository, TicketRepository ticketRepository) {
+    public PayTicket(ConcertScheduleRepository concertScheduleRepository, TicketTransactionRepository ticketTransactionRepository, PointHistoryRepository pointHistoryRepository, PointRepository pointRepository, TicketRepository ticketRepository) {
+        this.concertScheduleRepository = concertScheduleRepository;
         this.ticketTransactionRepository = ticketTransactionRepository;
         this.pointHistoryRepository = pointHistoryRepository;
         this.pointRepository = pointRepository;
@@ -95,6 +99,13 @@ public class PayTicket {
 
         ticket.setStatus(TicketStatus.PAID);
         ticketRepository.save(ticket);
+
+        ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId());
+        concertSchedule.setAvailableSeat(concertSchedule.getAvailableSeat() - 1);
+        if (concertSchedule.getAvailableSeat() == 0) {
+            concertSchedule.setIsSold(true);
+        }
+        concertScheduleRepository.save(concertSchedule);
 
         return new Output(ticketTransaction.getTransactionStatus().name(), "결제가 완료되었습니다. 잔액: " + balance);
     }

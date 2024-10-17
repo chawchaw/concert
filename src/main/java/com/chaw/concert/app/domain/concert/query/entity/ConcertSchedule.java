@@ -1,13 +1,13 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,9 +20,6 @@ public class ConcertSchedule {
     @Column(name = "concert_id")
     private Long concertId; // 공연ID
 
-    @Column(name = "hall_id")
-    private Long hallId; // 공연장ID
-
     @Column(name = "is_sold")
     private Boolean isSold; // 판매 여부
 
@@ -33,5 +30,5 @@ public class ConcertSchedule {
     private Integer availableSeat; // 남은 좌석 수
 
     @Column(name = "date_concert")
-    private Integer dateConcert; // 공연일
+    private LocalDateTime dateConcert; // 공연일
 }

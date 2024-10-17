@@ -6,7 +6,6 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,18 +39,27 @@ public class GetConcertSchedulesNotSoldOutIT {
     void setUp() {
         concert = Concert.builder()
                 .name("Test Concert")
+                .info("Test Concert Info")
+                .artist("Test Artist")
+                .host("Test Host")
                 .build();
         concertRepository.save(concert);
 
         ConcertSchedule schedule1 = ConcertSchedule.builder()
                 .concertId(concert.getId())
                 .isSold(false)  // 판매 중
+                .totalSeat(100)
+                .availableSeat(50)
+                .dateConcert(LocalDateTime.now().plusDays(1))
                 .build();
         concertScheduleRepository.save(schedule1);
 
         ConcertSchedule schedule2 = ConcertSchedule.builder()
                 .concertId(concert.getId())
                 .isSold(true)  // 판매 완료
+                .totalSeat(100)
+                .availableSeat(0)
+                .dateConcert(LocalDateTime.now().plusDays(2))
                 .build();
         concertScheduleRepository.save(schedule2);
     }
@@ -64,9 +73,19 @@ public class GetConcertSchedulesNotSoldOutIT {
         GetConcertSchedulesNotSoldOut.Output output = getConcertSchedulesNotSoldOut.execute(input);
 
         // Then
-        List<ConcertSchedule> concertSchedules = output.concertSchedules();
+        assertNotNull(output);
+        assertEquals(concert.getId(), output.id());
+        assertEquals(concert.getName(), output.name());
+        assertEquals("Test Concert Info", output.info());
+        assertEquals("Test Artist", output.artist());
+        assertEquals("Test Host", output.host());
+
+        List<GetConcertSchedulesNotSoldOut.Output.Item> concertSchedules = output.schedules();
         assertNotNull(concertSchedules);
         assertEquals(1, concertSchedules.size());
-        assertEquals(false, concertSchedules.get(0).getIsSold());
+        GetConcertSchedulesNotSoldOut.Output.Item schedule = concertSchedules.get(0);
+        assertEquals(false, schedule.isSold());
+        assertEquals(100, schedule.totalSeat());
+        assertEquals(50, schedule.availableSeat());
     }
 }

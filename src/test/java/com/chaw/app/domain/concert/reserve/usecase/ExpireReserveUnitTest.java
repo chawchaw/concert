@@ -2,7 +2,7 @@ package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.scheduler.ReleaseReserveExpired;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ExpireReserve;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,13 +15,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
-public class ReleaseReserveExpiredUnitTest {
+public class ExpireReserveUnitTest {
 
     @Mock
     private TicketRepository ticketRepository;
 
     @InjectMocks
-    private ReleaseReserveExpired releaseReserveExpired;
+    private ExpireReserve expireReserve;
 
     @BeforeEach
     void setUp() {
@@ -44,7 +44,7 @@ public class ReleaseReserveExpiredUnitTest {
         when(ticketRepository.findByReserveExpired()).thenReturn(expiredTickets);
 
         // When
-        releaseReserveExpired.execute();
+        expireReserve.execute();
 
         // Then
         verify(ticketRepository, times(1)).findByReserveExpired();

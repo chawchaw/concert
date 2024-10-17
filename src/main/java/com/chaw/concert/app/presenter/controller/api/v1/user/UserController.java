@@ -1,9 +1,9 @@
-package com.chaw.concert.app.presentation.api.v1.user;
+package com.chaw.concert.app.presenter.controller.api.v1.user;
 
-import com.chaw.concert.app.presentation.api.v1.user.dto.ChargePointInput;
-import com.chaw.concert.app.presentation.api.v1.user.dto.ChargePointOutput;
-import com.chaw.concert.app.presentation.api.v1.user.dto.GetPointOutput;
-import com.chaw.concert.app.presentation.api.v1.user.dto.RequestTokenOutput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointInput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointOutput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.GetPointOutput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.RequestTokenOutput;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

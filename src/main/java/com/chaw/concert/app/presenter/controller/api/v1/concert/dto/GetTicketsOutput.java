@@ -1,4 +1,4 @@
-package com.chaw.concert.app.presentation.api.v1.concert.dto;
+package com.chaw.concert.app.presenter.controller.api.v1.concert.dto;
 
 import java.util.List;
 

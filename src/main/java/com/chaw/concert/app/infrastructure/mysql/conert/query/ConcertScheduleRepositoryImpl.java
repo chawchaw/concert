@@ -23,4 +23,14 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
     public ConcertSchedule save(ConcertSchedule concertSchedule) {
         return repository.save(concertSchedule);
     }
+
+    @Override
+    public ConcertSchedule findById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    @Override
+    public ConcertSchedule findByIdWithLock(Long id) {
+        return repository.findByIdWithLock(id);
+    }
 }

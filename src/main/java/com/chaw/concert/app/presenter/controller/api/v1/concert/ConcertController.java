@@ -1,6 +1,6 @@
-package com.chaw.concert.app.presentation.api.v1.concert;
+package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
-import com.chaw.concert.app.presentation.api.v1.concert.dto.*;
+import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 

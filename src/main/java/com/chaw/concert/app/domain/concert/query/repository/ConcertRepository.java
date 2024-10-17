@@ -10,4 +10,6 @@ public interface ConcertRepository {
     List<Concert> findAll();
 
     Boolean existsById(Long concertId);
+
+    Concert findById(Long id);
 }
