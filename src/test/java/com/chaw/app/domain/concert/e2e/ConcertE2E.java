@@ -12,6 +12,7 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -87,6 +88,19 @@ public class ConcertE2E {
                 .seatNo("A1")
                 .build();
         ticketRepository.save(ticket);
+    }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
+        pointRepository.deleteAll();
+        pointHistoryRepository.deleteAll();
+        waitQueueRepository.deleteAll();
+        concertRepository.deleteAll();
+        concertScheduleRepository.deleteAll();
+        ticketRepository.deleteAll();
+        reserveRepository.deleteAll();
+        paymentRepository.deleteAll();
     }
 
     @Test

@@ -1,11 +1,12 @@
 package com.chaw.app.domain.concert.query.usecase;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.entity.TicketType;
+import com.chaw.concert.app.domain.concert.query.entity.*;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,25 +26,66 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class GetTicketsInEmptyReserveStatusIT {
 
     @Autowired
+    private ConcertRepository concertRepository;
+
+    @Autowired
+    private ConcertScheduleRepository concertScheduleRepository;
+
+    @Autowired
     private TicketRepository ticketRepository;
 
     @Autowired
     private GetTicketsInEmptyStatus getTicketsInEmptyStatus;
 
+    private Concert concert;
+    private ConcertSchedule concertSchedule;
+
     @BeforeEach
     void setUp() {
-        Ticket ticket1 = Ticket.builder().concertScheduleId(1L).type(TicketType.VIP).status(TicketStatus.EMPTY).seatNo("A1").price(100).build();
-        Ticket ticket2 = Ticket.builder().concertScheduleId(1L).type(TicketType.VIP).status(TicketStatus.EMPTY).seatNo("A2").price(120).build();
+        concert = Concert.builder()
+                .name("concert")
+                .build();
+        concertRepository.save(concert);
+
+        concertSchedule = ConcertSchedule.builder()
+                .concertId(1L)
+                .isSold(false)
+                .totalSeat(10)
+                .availableSeat(10)
+                .dateConcert(LocalDateTime.now().plusDays(1))
+                .build();
+        concertScheduleRepository.save(concertSchedule);
+
+        Ticket ticket1 = Ticket.builder()
+                .concertScheduleId(concertSchedule.getId())
+                .type(TicketType.VIP)
+                .status(TicketStatus.EMPTY)
+                .seatNo("A1")
+                .price(100)
+                .build();
+        Ticket ticket2 = Ticket.builder()
+                .concertScheduleId(concertSchedule.getId())
+                .type(TicketType.VIP)
+                .status(TicketStatus.EMPTY)
+                .seatNo("A2")
+                .price(120)
+                .build();
 
         ticketRepository.save(ticket1);
         ticketRepository.save(ticket2);
     }
 
+    @AfterEach
+    void tearDown() {
+        concertRepository.deleteAll();
+        concertScheduleRepository.deleteAll();
+        ticketRepository.deleteAll();
+    }
+
     @Test
     void testGetTicketsInEmptyStatus() {
         // Given
-        Long concertScheduleId = 1L;
-        GetTicketsInEmptyStatus.Input input = new GetTicketsInEmptyStatus.Input(concertScheduleId);
+        GetTicketsInEmptyStatus.Input input = new GetTicketsInEmptyStatus.Input(concert.getId(), concertSchedule.getId());
 
         // When
         GetTicketsInEmptyStatus.Output output = getTicketsInEmptyStatus.execute(input);

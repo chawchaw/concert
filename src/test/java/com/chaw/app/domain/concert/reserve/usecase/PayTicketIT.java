@@ -6,9 +6,11 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
@@ -50,6 +52,9 @@ public class PayTicketIT {
     private PointHistoryRepository pointHistoryRepository;
 
     @Autowired
+    private ConcertRepository concertRepository;
+
+    @Autowired
     private ConcertScheduleRepository concertScheduleRepository;
 
     @Autowired
@@ -69,6 +74,7 @@ public class PayTicketIT {
     private Integer price = 100;
 
     private Point point;
+    private Concert concert;
     private ConcertSchedule concertSchedule;
     private WaitQueue waitQueue;
     private Ticket ticket;
@@ -81,6 +87,11 @@ public class PayTicketIT {
                 .balance(balance)
                 .build();
         pointRepository.save(point);
+
+        concert = Concert.builder()
+                .name("concert")
+                .build();
+        concertRepository.save(concert);
 
         concertSchedule = ConcertSchedule.builder()
                 .concertId(1L)
@@ -120,6 +131,7 @@ public class PayTicketIT {
         waitQueueRepository.deleteAll();
         pointRepository.deleteAll();
         pointHistoryRepository.deleteAll();
+        concertRepository.deleteAll();
         concertScheduleRepository.deleteAll();
         ticketRepository.deleteAll();
         reserveRepository.deleteAll();
@@ -128,7 +140,7 @@ public class PayTicketIT {
 
     @Test
     void payTicketSuccess() {
-        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
         PayTicket.Output output = payTicket.execute(input);
 
         ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
@@ -157,7 +169,7 @@ public class PayTicketIT {
     void validate_NotEnoughBalance() {
         point.setBalance(50);
         pointRepository.save(point);
-        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         assertThrows(NotEnoughBalanceException.class, () -> { payTicket.execute(input); });
     }
@@ -166,7 +178,7 @@ public class PayTicketIT {
     void validate_TicketNotInStatusReserve() {
         ticket.setStatus(TicketStatus.PAID);
         ticketRepository.save(ticket);
-        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         assertThrows(TicketNotInStatusReserveException.class, () -> { payTicket.execute(input); });
     }
@@ -175,7 +187,7 @@ public class PayTicketIT {
     void validate_AlreadyPaidReserve() {
         reserve.setReserveStatus(ReserveStatus.PAID);
         reserveRepository.save(reserve);
-        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         assertThrows(AlreadyPaidReserveException.class, () -> { payTicket.execute(input); });
     }
@@ -184,7 +196,7 @@ public class PayTicketIT {
     void validate_CanceledReserve() {
         reserve.setReserveStatus(ReserveStatus.CANCEL);
         reserveRepository.save(reserve);
-        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         assertThrows(CanceledReserveException.class, () -> { payTicket.execute(input); });
     }
@@ -193,7 +205,7 @@ public class PayTicketIT {
     void validate_ExpiredReserve() {
         reserve.setCreatedAt(LocalDateTime.now().minusMinutes(31));
         reserveRepository.save(reserve);
-        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         assertThrows(ExpiredReserveException.class, () -> { payTicket.execute(input); });
     }

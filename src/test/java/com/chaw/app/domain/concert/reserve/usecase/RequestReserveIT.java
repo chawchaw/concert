@@ -1,8 +1,12 @@
 package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
+import com.chaw.concert.app.domain.concert.query.entity.Concert;
+import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
@@ -16,12 +20,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
 @Transactional
 public class RequestReserveIT {
+
+    @Autowired
+    private ConcertRepository concertRepository;
+
+    @Autowired
+    private ConcertScheduleRepository concertScheduleRepository;
 
     @Autowired
     private TicketRepository ticketRepository;
@@ -32,10 +44,26 @@ public class RequestReserveIT {
     @Autowired
     private RequestReserve requestReserve;
 
+    private Concert concert;
+    private ConcertSchedule concertSchedule;
     private Ticket ticket;
 
     @BeforeEach
     void setUp() {
+        concert = Concert.builder()
+                .name("concert")
+                .build();
+        concertRepository.save(concert);
+
+        concertSchedule = ConcertSchedule.builder()
+                .concertId(1L)
+                .isSold(false)
+                .totalSeat(10)
+                .availableSeat(10)
+                .dateConcert(LocalDateTime.now().plusDays(1))
+                .build();
+        concertScheduleRepository.save(concertSchedule);
+
         ticket = Ticket.builder()
                 .status(TicketStatus.EMPTY)
                 .price(100)
@@ -49,7 +77,7 @@ public class RequestReserveIT {
         Long ticketId = ticket.getId();
         Long userId = 1L;
 
-        RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
+        RequestReserve.Input input = new RequestReserve.Input(userId, concert.getId(), concertSchedule.getId(), ticketId);
 
         // When
         RequestReserve.Output output = requestReserve.execute(input);

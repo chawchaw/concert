@@ -1,10 +1,15 @@
 package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
+import com.chaw.concert.app.domain.concert.query.entity.Concert;
+import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,15 +35,40 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RequestReserveConcurrencyTest {
 
     @Autowired
+    private ConcertRepository concertRepository;
+
+    @Autowired
+    private ConcertScheduleRepository concertScheduleRepository;
+
+    @Autowired
     private TicketRepository ticketRepository;
+
+    @Autowired
+    private ReserveRepository reserveRepository;
 
     @Autowired
     private RequestReserve requestReserve;
 
+    private Concert concert;
+    private ConcertSchedule concertSchedule;
     private Ticket ticket;
 
     @BeforeEach
     void setUp() {
+        concert = Concert.builder()
+                .name("concert")
+                .build();
+        concertRepository.save(concert);
+
+        concertSchedule = ConcertSchedule.builder()
+                .concertId(1L)
+                .isSold(false)
+                .totalSeat(10)
+                .availableSeat(10)
+                .dateConcert(LocalDateTime.now().plusDays(1))
+                .build();
+        concertScheduleRepository.save(concertSchedule);
+
         ticket = new Ticket();
         ticket.setStatus(TicketStatus.EMPTY);
         ticket = ticketRepository.save(ticket);
@@ -45,7 +76,10 @@ public class RequestReserveConcurrencyTest {
 
     @AfterEach
     void tearDown() {
-        ticketRepository.deleteById(ticket.getId());
+        concertRepository.deleteAll();
+        concertScheduleRepository.deleteAll();
+        ticketRepository.deleteAll();
+        reserveRepository.deleteAll();
     }
 
     @Test
@@ -59,7 +93,7 @@ public class RequestReserveConcurrencyTest {
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
             futures.add(executorService.submit(() -> {
-                RequestReserve.Input input = new RequestReserve.Input(userId, ticket.getId());
+                RequestReserve.Input input = new RequestReserve.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
                 return requestReserve.execute(input);
             }));
         }

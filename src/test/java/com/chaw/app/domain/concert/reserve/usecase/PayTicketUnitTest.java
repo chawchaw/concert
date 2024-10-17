@@ -5,9 +5,11 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
@@ -42,6 +44,9 @@ class PayTicketUnitTest {
 
     @Mock
     private PointHistoryRepository pointHistoryRepository;
+
+    @Mock
+    private ConcertRepository concertRepository;
 
     @Mock
     private ConcertScheduleRepository concertScheduleRepository;
@@ -85,6 +90,11 @@ class PayTicketUnitTest {
                 .concertScheduleId(1L)
                 .build();
 
+        Concert concert = Concert.builder()
+                .id(1L)
+                .name("concert")
+                .build();
+
         ConcertSchedule concertSchedule = ConcertSchedule.builder()
                 .id(1L)
                 .availableSeat(10)
@@ -106,11 +116,12 @@ class PayTicketUnitTest {
 
         when(pointRepository.findByUserIdWithLock(userId)).thenReturn(point);
         when(ticketRepository.findById(ticketId)).thenReturn(ticket);
+        when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
         when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
         when(waitQueueRepository.findByUserId(userId)).thenReturn(waitQueue);
 
-        PayTicket.Input input = new PayTicket.Input(userId, ticketId);
+        PayTicket.Input input = new PayTicket.Input(userId, 1L, 1L, ticketId);
 
         // when
         PayTicket.Output output = payTicket.execute(input);
@@ -145,6 +156,11 @@ class PayTicketUnitTest {
                 .concertScheduleId(1L)
                 .build();
 
+        Concert concert = Concert.builder()
+                .id(1L)
+                .name("concert")
+                .build();
+
         ConcertSchedule concertSchedule = ConcertSchedule.builder()
                 .id(1L)
                 .availableSeat(10)
@@ -166,11 +182,12 @@ class PayTicketUnitTest {
 
         when(pointRepository.findByUserIdWithLock(userId)).thenReturn(point);
         when(ticketRepository.findById(ticketId)).thenReturn(ticket);
+        when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
         when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
         when(waitQueueRepository.findByUserId(userId)).thenReturn(waitQueue);
 
-        PayTicket.Input input = new PayTicket.Input(userId, ticketId);
+        PayTicket.Input input = new PayTicket.Input(userId, 1L, 1L, ticketId);
 
         // when & then
         assertThrows(NotEnoughBalanceException.class, () -> payTicket.execute(input));

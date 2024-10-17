@@ -4,6 +4,7 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcerts;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,11 @@ public class GetConcertsIT {
 
         concertRepository.save(concert1);
         concertRepository.save(concert2);
+    }
+
+    @AfterEach
+    void tearDown() {
+        concertRepository.deleteAll();
     }
 
     @Test
