@@ -1,6 +1,6 @@
 package com.chaw.concert.app.presenter.scheduler.concert;
 
-import com.chaw.concert.app.domain.concert.reserve.usecase.ExpireReserve;
+import com.chaw.concert.app.domain.concert.reserve.scheduler.ExpireReserve;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

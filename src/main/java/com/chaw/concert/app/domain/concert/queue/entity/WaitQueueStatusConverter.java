@@ -1,6 +1,5 @@
 package com.chaw.concert.app.domain.concert.queue.entity;
 
-import com.chaw.concert.app.domain.concert.transaction.entity.TransactionStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

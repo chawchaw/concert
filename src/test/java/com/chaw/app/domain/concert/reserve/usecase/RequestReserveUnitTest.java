@@ -5,6 +5,8 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,16 +14,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class RequestReserveUnitTest {
 
     @Mock
     private TicketRepository ticketRepository;
+
+    @Mock
+    private ReserveRepository reserveRepository;
 
     @InjectMocks
     private RequestReserve requestReserve;
@@ -32,37 +34,58 @@ public class RequestReserveUnitTest {
     }
 
     @Test
-    void testExecute() {
+    void testExecute_TicketNotFound() {
         // Given
-        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.EMPTY).build();
+        Long ticketId = 1L;
+        Long userId = 1L;
+        when(ticketRepository.findByIdWithLock(ticketId)).thenReturn(null);
 
-        when(ticketRepository.findByIdWithLock(1L)).thenReturn(ticket);
-        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        // When / Then
+        RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
+        assertThrows(TicketNotFound.class, () -> requestReserve.execute(input));
+
+        verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
+        verify(reserveRepository, never()).save(any());
+    }
+
+    @Test
+    void testExecute_TicketAlreadyReserved() {
+        // Given
+        Long ticketId = 1L;
+        Long userId = 1L;
+        Ticket ticket = Ticket.builder().id(ticketId).status(TicketStatus.RESERVE).build();
+        when(ticketRepository.findByIdWithLock(ticketId)).thenReturn(ticket);
+
+        // When / Then
+        RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
+        assertThrows(TicketAlreadyReserved.class, () -> requestReserve.execute(input));
+
+        verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
+        verify(reserveRepository, never()).save(any());
+    }
+
+    @Test
+    void testExecute_Success() {
+        // Given
+        Long ticketId = 1L;
+        Long userId = 1L;
+        Ticket ticket = Ticket.builder()
+                .id(ticketId)
+                .status(TicketStatus.EMPTY)
+                .price(100)
+                .build();
+        when(ticketRepository.findByIdWithLock(ticketId)).thenReturn(ticket);
 
         // When
-        RequestReserve.Output output = requestReserve.execute(new RequestReserve.Input(1L, 1L));
+        RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
+        RequestReserve.Output output = requestReserve.execute(input);
 
         // Then
-        assertEquals(ticket, output.ticket());
-    }
+        assertNotNull(output);
+        assertEquals(TicketStatus.RESERVE, output.ticket().getStatus());
 
-    @Test
-    void testExecuteWhenTicketNotFound() {
-        // Given
-        when(ticketRepository.findByIdWithLock(1L)).thenReturn(null);
-
-        // When & Then
-        assertThrows(TicketNotFound.class, () -> requestReserve.execute(new RequestReserve.Input(1L, 1L)));
-    }
-
-    @Test
-    void testExecuteWhenTicketAlreadyReserved() {
-        // Given
-        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
-
-        when(ticketRepository.findByIdWithLock(1L)).thenReturn(ticket);
-
-        // When & Then
-        assertThrows(TicketAlreadyReserved.class, () -> requestReserve.execute(new RequestReserve.Input(1L, 1L)));
+        verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
+        verify(ticketRepository, times(1)).save(ticket);
+        verify(reserveRepository, times(1)).save(any(Reserve.class));
     }
 }

@@ -3,10 +3,12 @@ package com.chaw.app.domain.concert.reserve.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReserved;
-import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -26,44 +27,44 @@ public class RequestReserveIT {
     private TicketRepository ticketRepository;
 
     @Autowired
+    private ReserveRepository reserveRepository;
+
+    @Autowired
     private RequestReserve requestReserve;
 
-    @Test
-    void testRequestReserveThrowTicketNotFound() {
-        // Given
-        RequestReserve.Input input = new RequestReserve.Input(1L, 1L);
+    private Ticket ticket;
 
-        // When & Then
-        assertThrows(TicketNotFound.class, () -> requestReserve.execute(input));
-    }
-
-    @Test
-    void testRequestReserveThrowTicketAlreadyReserved() {
-        // Given
-        Ticket ticket = Ticket.builder().status(TicketStatus.RESERVE).build();
+    @BeforeEach
+    void setUp() {
+        ticket = Ticket.builder()
+                .status(TicketStatus.EMPTY)
+                .price(100)
+                .build();
         ticketRepository.save(ticket);
-        RequestReserve.Input input = new RequestReserve.Input(1L, ticket.getId());
-
-        // When & Then
-        assertThrows(TicketAlreadyReserved.class, () -> requestReserve.execute(input));
     }
 
     @Test
-    void testRequestReserve() {
+    void testExecute_Success() {
         // Given
+        Long ticketId = ticket.getId();
         Long userId = 1L;
-        Ticket ticket = Ticket.builder().status(TicketStatus.EMPTY).build();
-        ticketRepository.save(ticket);
-        RequestReserve.Input input = new RequestReserve.Input(userId, ticket.getId());
+
+        RequestReserve.Input input = new RequestReserve.Input(userId, ticketId);
 
         // When
         RequestReserve.Output output = requestReserve.execute(input);
 
         // Then
-        Ticket reservedTicket = output.ticket();
-        Ticket foundTicket = ticketRepository.findByIdWithLock(reservedTicket.getId());
-        assertEquals(reservedTicket, foundTicket);
-        assertEquals(TicketStatus.RESERVE, foundTicket.getStatus());
-        assertEquals(userId, foundTicket.getReserveUserId());
+        assertNotNull(output);
+        assertEquals(TicketStatus.RESERVE, output.ticket().getStatus());
+
+        Ticket updatedTicket = ticketRepository.findById(ticketId);
+        assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
+        assertEquals(userId, updatedTicket.getReserveUserId());
+
+        Reserve reserve = reserveRepository.findByTicketId(ticketId);
+        assertEquals(ReserveStatus.RESERVE, reserve.getReserveStatus());
+        assertEquals(ticketId, reserve.getTicketId());
+        assertEquals(userId, reserve.getUserId());
     }
 }

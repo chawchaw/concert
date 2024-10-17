@@ -14,8 +14,6 @@ public interface TicketRepository {
 
     List<Ticket> findByConcertScheduleIdAndStatus(Long concertScheduleId, TicketStatus ticketStatus);
 
-    List<Ticket> findByReserveExpired();
-
     Ticket save(Ticket ticket);
 
     void deleteById(Long id);

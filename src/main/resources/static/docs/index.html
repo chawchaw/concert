@@ -665,7 +665,7 @@ Content-Length: 549
 {
   "id" : 1,
   "name" : "콜드플레이 내한공연",
-  "status" : "판매 중",
+  "reserveStatus" : "판매 중",
   "info" : "LIVE NATION PRESENTS COLDPLAY : MUSIC OF THE SPHERES DELIVERED BY DHL",
   "artist" : "콜드플레이",
   "host" : "인터파크",
@@ -704,7 +704,7 @@ Content-Length: 549
 <td class="tableblock halign-left valign-top"><p class="tableblock">콘서트 이름</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reserveStatus</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">콘서트 상태 (판매 중, 판매 완료, 취소)</p></td>
 </tr>
@@ -804,14 +804,14 @@ Content-Length: 314
 {
   "items" : [ {
     "id" : 1,
-    "status" : "공석",
+    "reserveStatus" : "공석",
     "seat_zone" : "A",
     "seat_no" : "A32",
     "seat_type" : "VIP",
     "seat_price" : 200000
   }, {
     "id" : 2,
-    "status" : "예약완료",
+    "reserveStatus" : "예약완료",
     "seat_zone" : "B",
     "seat_no" : "B15",
     "seat_type" : "1등석",
@@ -840,7 +840,7 @@ Content-Length: 314
 <td class="tableblock halign-left valign-top"><p class="tableblock">티켓 ID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>items[].reserveStatus</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">예매 상태 (공석, 임시예약, 예약완료)</p></td>
 </tr>
@@ -909,7 +909,7 @@ Content-Length: 99
 
 {
   "id" : 1,
-  "status" : "임시예약",
+  "reserveStatus" : "임시예약",
   "temp_booking_end_at" : "2024-10-11T04:39:07.847799"
 }</code></pre>
 </div>
@@ -934,7 +934,7 @@ Content-Length: 99
 <td class="tableblock halign-left valign-top"><p class="tableblock">티켓 ID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reserveStatus</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">예매 상태 (공석, 임시예약, 예약완료)</p></td>
 </tr>
@@ -988,7 +988,7 @@ Content-Length: 138
 
 {
   "id" : 1,
-  "status" : "임시예약",
+  "reserveStatus" : "임시예약",
   "booked_at" : "2024-10-11T04:34:07.928687",
   "point_used" : 1000,
   "point_balance" : 9000
@@ -1015,7 +1015,7 @@ Content-Length: 138
 <td class="tableblock halign-left valign-top"><p class="tableblock">티켓 ID</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reserveStatus</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">예매 상태 (공석, 임시예약, 예약완료)</p></td>
 </tr>

@@ -33,11 +33,6 @@ public class TicketRepositoryImpl implements TicketRepository {
     }
 
     @Override
-    public List<Ticket> findByReserveExpired() {
-        return repository.findByReserveEndAtBeforeAndStatus(LocalDateTime.now(), TicketStatus.RESERVE);
-    }
-
-    @Override
     public Ticket save(Ticket ticket) {
         return repository.save(ticket);
     }

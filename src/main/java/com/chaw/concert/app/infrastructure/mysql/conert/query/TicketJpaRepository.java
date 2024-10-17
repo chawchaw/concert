@@ -20,6 +20,4 @@ public interface TicketJpaRepository extends JpaRepository<Ticket, Long> {
     @Query("SELECT t FROM Ticket t WHERE t.id = :ticketId")
     Ticket findByIdWithLock(Long ticketId);
 
-    @Query("SELECT t FROM Ticket t WHERE t.reserveEndAt < :now AND t.status = :ticketStatus")
-    List<Ticket> findByReserveEndAtBeforeAndStatus(LocalDateTime now, TicketStatus ticketStatus);
 }
