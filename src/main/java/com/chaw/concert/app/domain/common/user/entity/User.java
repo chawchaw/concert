@@ -1,8 +1,10 @@
 package com.chaw.concert.app.domain.common.user.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 public class User {
 
     @Id
