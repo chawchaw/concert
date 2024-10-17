@@ -1,7 +1,7 @@
 package com.chaw.concert.app.presenter.scheduler.concert;
 
-import com.chaw.concert.app.domain.concert.queue.usecase.ExpireWaitQueue;
-import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.scheduler.ExpireWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.scheduler.PassWaitQueue;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

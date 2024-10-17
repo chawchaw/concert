@@ -3,7 +3,7 @@ package com.chaw.app.domain.concert.queue.usecase;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.ExpireWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.scheduler.ExpireWaitQueue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

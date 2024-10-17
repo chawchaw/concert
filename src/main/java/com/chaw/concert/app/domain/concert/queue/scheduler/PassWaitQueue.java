@@ -1,4 +1,4 @@
-package com.chaw.concert.app.domain.concert.queue.usecase;
+package com.chaw.concert.app.domain.concert.queue.scheduler;
 
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
