@@ -1,9 +1,8 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
 public enum PaymentMethod {
-    POINT("포인트"),
-    CARD("카드"),
-    ACCOUNT_TRANSFER("계좌이체");
+    POINT("POINT"), // 포인트
+    CARD("CARD"); // 카드
 
     private final String dbValue;
 

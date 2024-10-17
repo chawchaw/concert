@@ -1,8 +1,8 @@
 package com.chaw.concert.app.domain.concert.queue.entity;
 
 public enum WaitQueueStatus {
-    WAIT("대기"),
-    PASS("통과");
+    WAIT("WAIT"), // 대기
+    PASS("PASS"); // 통과
 
     private final String dbValue;
 

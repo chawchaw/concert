@@ -7,11 +7,14 @@ import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceExcepti
 import com.chaw.concert.app.domain.common.user.exception.PointNotFoundException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundException;
 import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFoundException;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
@@ -36,15 +39,17 @@ public class PayTicket {
     @Value("${concert.reserve.expired.minutes}")
     private Integer EXPIRED_MINUTES;
 
-    private final WaitQueueRepository waitQueueRepository;
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
+    private final WaitQueueRepository waitQueueRepository;
+    private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
 
-    public PayTicket(WaitQueueRepository waitQueueRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository) {
+    public PayTicket(ConcertRepository concertRepository, WaitQueueRepository waitQueueRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository) {
+        this.concertRepository = concertRepository;
         this.waitQueueRepository = waitQueueRepository;
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;
@@ -57,12 +62,13 @@ public class PayTicket {
     @Transactional
     public Output execute(Input input) {
         Point point = pointRepository.findByUserIdWithLock(input.userId()); // 중복 결제 방지를 위해 비관 락 사용
+        Concert concert = concertRepository.findById(input.concertId());
         Ticket ticket = ticketRepository.findById(input.ticketId());
         ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
         WaitQueue waitQueue = waitQueueRepository.findByUserId(input.userId());
 
-        validate(point, concertSchedule, ticket, reserve, waitQueue);
+        validate(point, concert, concertSchedule, ticket, reserve, waitQueue);
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -119,9 +125,12 @@ public class PayTicket {
      * ticket 예약 상태
      * reserve 예약 상태, 예약제한시간
      */
-    public void validate(Point point, ConcertSchedule concertSchedule, Ticket ticket, Reserve reserve, WaitQueue waitQueue) {
+    public void validate(Point point, Concert concert, ConcertSchedule concertSchedule, Ticket ticket, Reserve reserve, WaitQueue waitQueue) {
         if (point == null) {
             throw new PointNotFoundException();
+        }
+        if (concert == null) {
+            throw new ConcertNotFoundException();
         }
         if (concertSchedule == null) {
             throw new ConcertScheduleNotFoundException();
@@ -173,6 +182,8 @@ public class PayTicket {
 
     public record Input (
         Long userId,
+        Long concertId,
+        Long concertScheduleId,
         Long ticketId
     ) {}
 

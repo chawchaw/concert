@@ -12,4 +12,6 @@ public interface ConcertRepository {
     Boolean existsById(Long concertId);
 
     Concert findById(Long id);
+
+    void deleteAll();
 }

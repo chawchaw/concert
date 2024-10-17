@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**");
 
         registry.addInterceptor(waitQueueInterceptor)
-                .addPathPatterns("/api/*/concert")
-                .excludePathPatterns("/api/*/concert/queue");
+                .addPathPatterns("/api/**")
+                .excludePathPatterns("/api/**/concert/queue");
     }
 }

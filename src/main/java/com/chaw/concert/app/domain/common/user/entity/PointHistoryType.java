@@ -1,8 +1,8 @@
 package com.chaw.concert.app.domain.common.user.entity;
 
 public enum PointHistoryType {
-    CHARGE("충전"),
-    PAY("결제");
+    CHARGE("CHARGE"), // 충전
+    PAY("PAY"); // 결제
 
     private final String dbValue;
 

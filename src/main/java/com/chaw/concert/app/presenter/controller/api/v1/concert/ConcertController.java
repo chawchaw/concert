@@ -1,75 +1,109 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
-import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcerts;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatus;
+import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/concerts")
+@RequestMapping("/api/v1/concert")
 public class ConcertController {
 
-    @PostMapping("/")
-    @ResponseStatus(HttpStatus.OK)
-    public GetConcertsOutput getConcerts(@RequestBody GetConcertsInput input) {
-        return new GetConcertsOutput(
-                1L,
-                "콜드플레이 내한공연",
-                "판매 중",
-                "LIVE NATION PRESENTS COLDPLAY : MUSIC OF THE SPHERES DELIVERED BY DHL",
-                "콜드플레이",
-                "인터파크",
-                "2025-04-16",
-                "2024-09-27",
-                "2025-04-15",
-                "고양종합운동장 주경기장",
-                "경기도 고양시 일산서구 대화동",
-                "2320 고양종합운동장 주경기장",
-                "37.6757812,126.742595");
+    private final EnterWaitQueue enterWaitQueue;
+    private final GetConcerts getConcerts;
+    private final GetConcertSchedulesNotSoldOut getConcertSchedulesNotSoldOut;
+    private final GetTicketsInEmptyStatus getTicketsInEmptyStatus;
+    private final RequestReserve requestReserve;
+    private final PayTicket payTicket;
+
+    public ConcertController(EnterWaitQueue enterWaitQueue, GetConcerts getConcerts, GetConcertSchedulesNotSoldOut getConcertSchedulesNotSoldOut, GetTicketsInEmptyStatus getTicketsInEmptyStatus, RequestReserve requestReserve, PayTicket payTicket) {
+        this.enterWaitQueue = enterWaitQueue;
+        this.getConcerts = getConcerts;
+        this.getConcertSchedulesNotSoldOut = getConcertSchedulesNotSoldOut;
+        this.getTicketsInEmptyStatus = getTicketsInEmptyStatus;
+        this.requestReserve = requestReserve;
+        this.payTicket = payTicket;
     }
 
-    @GetMapping("/{id}/tickets")
+    @PostMapping("/queue")
     @ResponseStatus(HttpStatus.OK)
-    public GetTicketsOutput getTickets(@PathVariable Long id) {
-        List<GetTicketsOutput.Item> items = List.of(
-                new GetTicketsOutput.Item(
-                        1L,
-                        "공석",
-                        "A",
-                        "A32",
-                        "VIP",
-                        200000),
-                new GetTicketsOutput.Item(
-                        2L,
-                        "예약완료",
-                        "B",
-                        "B15",
-                        "1등석",
-                        150000)
+    public EnterWaitQueue.Output enterWaitQueue(
+            @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
+            @RequestHeader("uuid") String uuid,
+            @RequestAttribute("userId") Long userId
+    ) {
+        return enterWaitQueue.execute(
+                new EnterWaitQueue.Input(userId)
         );
-
-        return new GetTicketsOutput(items);
     }
 
-    @PostMapping("/tickets/{id}")
+    @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    public TempBookingOutput tempBooking(@PathVariable Long id) {
-        return new TempBookingOutput(
-                1L,
-                "임시예약",
-                LocalDateTime.now().plusMinutes(5));
+    public GetConcerts.Output getConcerts(
+            @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
+            @RequestHeader("uuid") String uuid
+    ) {
+        return getConcerts.execute();
     }
 
-    @PostMapping("/tickets/{id}/pay")
+    @GetMapping("/{concertId}/schedule")
     @ResponseStatus(HttpStatus.OK)
-    public PayOutput pay(@PathVariable Long id) {
-        return new PayOutput(
-                1L,
-                "임시예약",
-                LocalDateTime.now(),
-                1000,
-                9000);
+    public GetConcertSchedulesNotSoldOut.Output getSchedules(
+            @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
+            @RequestHeader("uuid") String uuid,
+            @RequestParam Long concertId
+    ) {
+        return getConcertSchedulesNotSoldOut.execute(
+                new GetConcertSchedulesNotSoldOut.Input(concertId)
+        );
+    }
+
+    @GetMapping("/{concertId}/schedule/{concertScheduleId}/tickets")
+    @ResponseStatus(HttpStatus.OK)
+    public GetTicketsInEmptyStatus.Output getTickets(
+            @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
+            @RequestHeader("uuid") String uuid,
+            @RequestParam Long concertId,
+            @RequestParam Long concertScheduleId
+    ) {
+        return getTicketsInEmptyStatus.execute(
+                new GetTicketsInEmptyStatus.Input(concertId, concertScheduleId)
+        );
+    }
+
+    @PostMapping("/{concertId}/schedule/{concertScheduleId}/tickets/{ticketId}/reserve")
+    @ResponseStatus(HttpStatus.OK)
+    public RequestReserve.Output reserve(
+            @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
+            @RequestHeader("uuid") String uuid,
+            @RequestAttribute("userId") Long userId,
+            @RequestParam Long concertId,
+            @RequestParam Long concertScheduleId,
+            @RequestParam Long ticketId
+    ) {
+        return requestReserve.execute(
+                new RequestReserve.Input(userId, concertId, concertScheduleId, ticketId)
+        );
+    }
+
+    @PostMapping("/{concertId}/schedule/{concertScheduleId}/tickets/{ticketId}/pay")
+    @ResponseStatus(HttpStatus.OK)
+    public PayTicket.Output pay(
+            @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
+            @RequestHeader("uuid") String uuid,
+            @RequestAttribute("userId") Long userId,
+            @RequestParam Long concertId,
+            @RequestParam Long concertScheduleId,
+            @RequestParam Long ticketId
+    ) {
+        return payTicket.execute(
+                new PayTicket.Input(userId, concertId, concertScheduleId, ticketId)
+        );
     }
 }

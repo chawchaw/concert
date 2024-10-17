@@ -33,4 +33,9 @@ public class ConcertRepositoryImpl implements ConcertRepository {
     public Concert findById(Long id) {
         return repository.findById(id).orElse(null);
     }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

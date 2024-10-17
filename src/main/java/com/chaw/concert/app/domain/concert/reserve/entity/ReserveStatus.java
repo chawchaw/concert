@@ -1,9 +1,9 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
 public enum ReserveStatus {
-    RESERVE("예약"),
-    PAID("결제완료"),
-    CANCEL("취소");
+    RESERVE("RESERVE"), // 예약
+    PAID("PAID"), // 결제완료
+    CANCEL("CANCEL"); // 취소
 
     private final String dbValue;
 

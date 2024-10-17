@@ -17,4 +17,14 @@ public class UserRepositoryImpl implements UserRepository {
     public User findByUuid(String uuid) {
         return repository.findByUuid(uuid);
     }
+
+    @Override
+    public void save(User user) {
+        repository.save(user);
+    }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

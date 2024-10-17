@@ -1,9 +1,9 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
 public enum TicketType {
-    VIP("VIP"),
-    FIRST_CLASS("1등석"),
-    SECOND_CLASS("2등석");
+    VIP("VIP"), // VIP
+    FIRST("FIRST"), // 1등석
+    SECOND("SECOND"); // 2등석
 
     private final String dbValue;
 
