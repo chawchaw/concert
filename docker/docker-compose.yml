@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0   # 안정적인 MySQL 8.0 버전 사용
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: zjxA8!9d*a
+      MYSQL_DATABASE: hhplus
+      MYSQL_USER: concert
+      MYSQL_PASSWORD: d&xjzlAX7z@L
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+    driver: local
