@@ -43,7 +43,7 @@ public class ConcertController {
         );
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     public GetConcerts.Output getConcerts(
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
@@ -57,7 +57,7 @@ public class ConcertController {
     public GetConcertSchedulesNotSoldOut.Output getSchedules(
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
             @RequestHeader("uuid") String uuid,
-            @RequestParam Long concertId
+            @PathVariable Long concertId
     ) {
         return getConcertSchedulesNotSoldOut.execute(
                 new GetConcertSchedulesNotSoldOut.Input(concertId)
@@ -69,8 +69,8 @@ public class ConcertController {
     public GetTicketsInEmptyStatus.Output getTickets(
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
             @RequestHeader("uuid") String uuid,
-            @RequestParam Long concertId,
-            @RequestParam Long concertScheduleId
+            @PathVariable Long concertId,
+            @PathVariable Long concertScheduleId
     ) {
         return getTicketsInEmptyStatus.execute(
                 new GetTicketsInEmptyStatus.Input(concertId, concertScheduleId)
@@ -83,9 +83,9 @@ public class ConcertController {
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
             @RequestHeader("uuid") String uuid,
             @RequestAttribute("userId") Long userId,
-            @RequestParam Long concertId,
-            @RequestParam Long concertScheduleId,
-            @RequestParam Long ticketId
+            @PathVariable Long concertId,
+            @PathVariable Long concertScheduleId,
+            @PathVariable Long ticketId
     ) {
         return requestReserve.execute(
                 new RequestReserve.Input(userId, concertId, concertScheduleId, ticketId)
@@ -98,9 +98,9 @@ public class ConcertController {
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
             @RequestHeader("uuid") String uuid,
             @RequestAttribute("userId") Long userId,
-            @RequestParam Long concertId,
-            @RequestParam Long concertScheduleId,
-            @RequestParam Long ticketId
+            @PathVariable Long concertId,
+            @PathVariable Long concertScheduleId,
+            @PathVariable Long ticketId
     ) {
         return payTicket.execute(
                 new PayTicket.Input(userId, concertId, concertScheduleId, ticketId)
