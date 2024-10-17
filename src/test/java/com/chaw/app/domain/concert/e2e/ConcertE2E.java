@@ -231,7 +231,7 @@ public class ConcertE2E {
     }
 
     @Test
-    @Disabled // 테스트 데이터 만들기용
+    @Disabled // 테스트 데이터 만들기
     void testForData() {
         // do nothing
     }
