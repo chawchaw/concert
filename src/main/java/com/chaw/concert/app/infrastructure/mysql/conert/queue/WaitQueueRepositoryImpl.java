@@ -47,4 +47,14 @@ public class WaitQueueRepositoryImpl implements WaitQueueRepository {
         return repository.findByStatusByLimit(waitQueueStatus, passSize);
     }
 
+    @Override
+    public List<WaitQueue> findByStatusAndUpdatedAtBefore(WaitQueueStatus status, LocalDateTime expiredAt) {
+        return repository.findByStatusAndUpdatedAtBefore(status, expiredAt);
+    }
+
+    @Override
+    public void delete(WaitQueue waitQueue) {
+        repository.delete(waitQueue);
+    }
+
 }

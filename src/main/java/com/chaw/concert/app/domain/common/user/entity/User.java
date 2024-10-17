@@ -10,5 +10,8 @@ public class User {
     private Long id;
 
     @Column(name = "name")
-    private Long name;
+    private String name;
+
+    @Column(name = "uuid")
+    private String uuid;
 }

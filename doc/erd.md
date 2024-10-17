@@ -24,6 +24,7 @@
 erDiagram
     User {
         long id PK
+        varchar uuid
         varchar name
     }
     
