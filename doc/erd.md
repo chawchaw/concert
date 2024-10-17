@@ -1,22 +1,4 @@
 # ERD
-- User
-  - 우리 서비스를 사용해주는 고객님입니다. 충성충성! 포인트 잔액 필드가 있습니다.
-- WaitQueue
-  - Queue 처럼 사용하기 위한 테이블입니다.
-  - 사용자가 대기열에 들어가면 여기에 기록됩니다.
-- Concert
-  - 공연 정보입니다
-  - ex) 2024 윤하 연말 콘서트, 2024 레드벨벳 콘서트
-- ConcertSchedule
-  - 공연 일정 정보입니다. 
-  - ex) 2024 윤하 연말 콘서트 1회차, 2024 레드벨벳 콘서트 2회차
-- Ticket
-  - 티켓 정보입니다.
-  - 공석, 예약, 결제완료 상태를 가집니다.
-- PointHistory
-  - 포인트 변동 내역입니다.
-  - 충전, 결제, 환불을 기록합니다.
-
 ```mermaid
 erDiagram
     User {
@@ -35,7 +17,6 @@ erDiagram
     PointHistory {
         long id PK
         long point_id FK
-        long ticket_id FK
         enum type "충전,결제"
         decimal amount "변경 금액"
         datetime dateTransaction "변경일"
@@ -68,31 +49,41 @@ erDiagram
         int available_seat "남은 좌석수"
         datetime dateConcert "공연일"
     }
-    ConcertSchedule }o--|| Concert : "콘서트는 여러 일정을 가질 수 있음"
+    ConcertSchedule }o--|| Concert : "1:N"
 
     Ticket {
         long id PK
+        long reserve_user_id FK "예약한 사용자"
         long concert_schedule_id FK
         enum type "VIP,1등석,2등석"
         enum reserveStatus "공석, 예약, 결제완료"
         decimal price "가격"
         varchar seat_no "좌석번호"
-        long reserve_user_id FK "예약한 사용자"
     }
+    Ticket }o--|| User : "1:N"
     Ticket }o--|| ConcertSchedule : "1:N"
-    Ticket }o--|| User : "예약한 사용자"
 
     Reserve {
         long id PK
         long user_id FK
         long ticket_id FK
-        long point_history_id FK
         varchar reserveStatus "상태 (reserve, paid, canceled)"
-        varchar payment_method "결제 수단 (포인트, 카드, 계좌이체)"
-        decimal amount "결제 금액"
+        decimal amount "결제 예정 금액"
         datetime created_at "생성일"
         datetime updated_at "마지막 업데이트 시간"
     }
-    Reserve }o--|| Ticket : "1:1"
-    Reserve ||--|| PointHistory : "1:1, 결제 완료시 포인트이력에 저장"
+    Reserve }o--|| User : "1:N"
+    Reserve ||--|| Ticket : "1:1"
+    
+    Payment {
+        long id PK
+        long userId FK
+        long reserve_id FK
+        long point_history_id FK
+        varchar payment_method "결제 수단 (포인트, 카드, 계좌이체)"
+        decimal amount "결제 금액"
+    }
+    Payment }o--|| User : "1:N"
+    Payment ||--|| Reserve : "1:1"
+    Payment ||--|| PointHistory : "1:1"
 ```

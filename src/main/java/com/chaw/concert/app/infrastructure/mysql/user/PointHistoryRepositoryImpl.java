@@ -34,4 +34,9 @@ public class PointHistoryRepositoryImpl implements PointHistoryRepository {
     public void deleteAll() {
         repository.deleteAll();
     }
+
+    @Override
+    public PointHistory findById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
 }

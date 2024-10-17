@@ -41,4 +41,9 @@ public class ReserveRepositoryImpl implements ReserveRepository {
     public Reserve findByTicketId(Long ticketId) {
         return repository.findByTicketId(ticketId);
     }
+
+    @Override
+    public Reserve findByUserIdAndTicketIdOrderByIdDescLimit(Long userId, Long ticketId, Integer limit) {
+        return repository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, limit);
+    }
 }

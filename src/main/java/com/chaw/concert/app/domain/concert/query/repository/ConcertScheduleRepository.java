@@ -12,4 +12,6 @@ public interface ConcertScheduleRepository {
     ConcertSchedule findById(Long id);
 
     ConcertSchedule findByIdWithLock(Long id);
+
+    void deleteAll();
 }

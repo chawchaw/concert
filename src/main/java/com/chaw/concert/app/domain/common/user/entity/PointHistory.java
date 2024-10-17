@@ -35,12 +35,4 @@ public class PointHistory {
     @Column(name = "date_transaction")
     private LocalDateTime dateTransaction; // 변경일
 
-    public Integer getChangedAmount() {
-        if (type == PointHistoryType.PAY) {
-            return -amount;
-        } else if (type == PointHistoryType.CHARGE) {
-            return amount;
-        }
-        return 0;
-    }
 }

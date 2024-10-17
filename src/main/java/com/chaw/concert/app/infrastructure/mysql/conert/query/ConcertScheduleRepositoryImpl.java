@@ -33,4 +33,9 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
     public ConcertSchedule findByIdWithLock(Long id) {
         return repository.findByIdWithLock(id);
     }
+
+    @Override
+    public void deleteAll() {
+        repository.deleteAll();
+    }
 }

@@ -17,4 +17,6 @@ public interface ReserveRepository {
     void deleteAll();
 
     Reserve findByTicketId(Long ticketId);
+
+    Reserve findByUserIdAndTicketIdOrderByIdDescLimit(Long userId, Long ticketId, Integer limit);
 }

@@ -1,152 +1,200 @@
-//package com.chaw.app.domain.concert.reserve.usecase;
-//
-//import com.chaw.concert.ConcertApplication;
-//import com.chaw.concert.app.domain.common.user.entity.Point;
-//import com.chaw.concert.app.domain.common.user.entity.PointHistory;
-//import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
-//import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-//import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-//import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-//import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-//import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-//import com.chaw.concert.app.domain.concert.reserve.entity.TransactionStatus;
-//import com.chaw.concert.app.domain.concert.reserve.repository.TicketTransactionRepository;
-//import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.test.context.junit.jupiter.SpringExtension;
-//
-//import java.time.LocalDateTime;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//@SpringBootTest(classes = ConcertApplication.class)
-//@ExtendWith(SpringExtension.class)
-//public class PayTicketIT {
-//
-//    @Autowired
-//    private TicketTransactionRepository ticketTransactionRepository;
-//
-//    @Autowired
-//    private PointRepository pointRepository;
-//
-//    @Autowired
-//    private PointHistoryRepository pointHistoryRepository;
-//
-//    @Autowired
-//    private TicketRepository ticketRepository;
-//
-//    @Autowired
-//    private PayTicket payTicket;
-//
-//    private Long userId = 1L;
-//    private Ticket ticket;
-//    private Point point;
-//    private Reserve reserve;
-//
-//    @BeforeEach
-//    void setUp() {
-//        // 티켓 설정
-//        ticket = new Ticket();
-//        ticket.setStatus(TicketStatus.RESERVE); // 예약 가능한 상태
-//        ticket.setPrice(100);
-//        ticket = ticketRepository.save(ticket);
-//
-//        // 포인트 설정
-//        point = new Point();
-//        point.setUserId(userId);
-//        point.setBalance(200); // 충분한 잔액
-//        pointRepository.save(point);
-//
-//        // 트랜잭션 설정
-//        reserve = new Reserve();
-//        reserve.setTicketId(ticket.getId());
-//        reserve.setUserId(point.getUserId()); // 포인트의 사용자
-//        reserve.setAmount(100);
-//        reserve.setTransactionStatus(TransactionStatus.PENDING);
-//        reserve.setIdempotencyKey("test-key");
-//        reserve.setCreatedAt(LocalDateTime.now());
-//        reserve.setUpdatedAt(LocalDateTime.now());
-//        reserve.setExpiredAt(LocalDateTime.now().plusMinutes(1));
-//        reserve.setIsDeleted(false);
-//        ticketTransactionRepository.save(reserve);
-//    }
-//
-//    @AfterEach
-//    void tearDown() {
-//        pointHistoryRepository.deleteAll();
-//        ticketTransactionRepository.deleteAll();
-//        pointRepository.deleteAll();
-//        ticketRepository.deleteAll();
-//    }
-//
-//    @Test
-//    void testExecute_SuccessfulPayment() {
-//        // Given: 결제 요청 생성
-//        PayTicket.Input input = new PayTicket.Input(reserve.getIdempotencyKey(), point.getUserId());
-//
-//        // When: 결제 실행
-//        PayTicket.Output output = payTicket.execute(input);
-//
-//        // Then: 결제가 성공했는지 확인
-//        assertEquals("COMPLETED", output.status());
-//        assertEquals("결제가 완료되었습니다. 잔액: 100", output.message());
-//
-//        // 트랜잭션 상태 확인
-//        Reserve updatedTransaction = ticketTransactionRepository.findById(reserve.getId());
-//        assertEquals(TransactionStatus.COMPLETED, updatedTransaction.getTransactionStatus());
-//
-//        // 티켓 상태 확인
-//        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
-//        assertEquals(TicketStatus.PAID, updatedTicket.getStatus());
-//
-//        // 포인트 잔액 확인
-//        Point updatedPoint = pointRepository.findById(point.getId());
-//        assertEquals(100, updatedPoint.getBalance());
-//
-//        // 포인트 히스토리 확인
-//        PointHistory pointHistory = pointHistoryRepository.findAll().get(0);
-//        assertEquals(point.getId(), pointHistory.getPointId());
-//        assertEquals(reserve.getAmount(), pointHistory.getAmount());
-//        assertEquals("PAY", pointHistory.getType().name());
-//    }
-//
-//    @Test
-//    void testExecute_InsufficientBalance() {
-//        // Given: 포인트 잔액이 부족한 상황으로 설정
-//        point.setBalance(0); // 잔액 부족
-//        pointRepository.save(point);
-//        PayTicket.Input input = new PayTicket.Input(reserve.getIdempotencyKey(), point.getUserId());
-//
-//        // When: 결제 실행
-//        PayTicket.Output output = payTicket.execute(input);
-//
-//        // Then: 결제가 실패했는지 확인
-//        assertEquals("FAILED", output.status());
-//        assertEquals("잔액이 부족합니다.", output.message());
-//
-//        // 트랜잭션 상태 확인
-//        Reserve updatedTransaction = ticketTransactionRepository.findById(reserve.getId());
-//        assertEquals(TransactionStatus.FAILED, updatedTransaction.getTransactionStatus());
-//    }
-//
-//    @Test
-//    void testExecute_TransactionExpired() {
-//        // Given: 트랜잭션이 만료된 상황으로 설정
-//        reserve.setExpiredAt(LocalDateTime.now().minusMinutes(1)); // 이미 만료된 트랜잭션
-//        reserve = ticketTransactionRepository.save(reserve);
-//        PayTicket.Input input = new PayTicket.Input(reserve.getIdempotencyKey(), point.getUserId());
-//
-//        // When: 결제 실행
-//        PayTicket.Output output = payTicket.execute(input);
-//
-//        // Then: 트랜잭션 상태 확인
-//        Reserve updatedTransaction = ticketTransactionRepository.findById(reserve.getId());
-//        assertEquals(TransactionStatus.EXPIRED.name(), output.status());
-//        assertEquals(TransactionStatus.EXPIRED, updatedTransaction.getTransactionStatus());
-//    }
-//}
+package com.chaw.app.domain.concert.reserve.usecase;
+
+import com.chaw.concert.ConcertApplication;
+import com.chaw.concert.app.domain.common.user.entity.Point;
+import com.chaw.concert.app.domain.common.user.entity.PointHistory;
+import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalance;
+import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
+import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
+import com.chaw.concert.app.domain.concert.query.entity.Ticket;
+import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
+import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
+import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
+import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.exception.AlreadyPaidReserve;
+import com.chaw.concert.app.domain.concert.reserve.exception.CanceledReserve;
+import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserve;
+import com.chaw.concert.app.domain.concert.reserve.exception.TicketNotInStatusReserve;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest(classes = ConcertApplication.class)
+@ExtendWith(SpringExtension.class)
+public class PayTicketIT {
+
+    @Autowired
+    private WaitQueueRepository waitQueueRepository;
+
+    @Autowired
+    private PointRepository pointRepository;
+
+    @Autowired
+    private PointHistoryRepository pointHistoryRepository;
+
+    @Autowired
+    private ConcertScheduleRepository concertScheduleRepository;
+
+    @Autowired
+    private TicketRepository ticketRepository;
+
+    @Autowired
+    private ReserveRepository reserveRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private PayTicket payTicket;
+
+    private Long userId = 1L;
+    private Integer balance = 1000;
+    private Integer price = 100;
+
+    private Point point;
+    private ConcertSchedule concertSchedule;
+    private WaitQueue waitQueue;
+    private Ticket ticket;
+    private Reserve reserve;
+
+    @BeforeEach
+    void setUp() {
+        point = Point.builder()
+                .userId(userId)
+                .balance(balance)
+                .build();
+        pointRepository.save(point);
+
+        concertSchedule = ConcertSchedule.builder()
+                .concertId(1L)
+                .isSold(false)
+                .totalSeat(10)
+                .availableSeat(10)
+                .dateConcert(LocalDateTime.now().plusDays(1))
+                .build();
+        concertScheduleRepository.save(concertSchedule);
+
+        waitQueue = WaitQueue.builder()
+                .userId(userId)
+                .status(WaitQueueStatus.PASS)
+                .build();
+        waitQueueRepository.save(waitQueue);
+
+        ticket = Ticket.builder()
+                .concertScheduleId(concertSchedule.getId())
+                .status(TicketStatus.RESERVE)
+                .price(price)
+                .reserveUserId(userId)
+                .build();
+        ticketRepository.save(ticket);
+
+        reserve = Reserve.builder()
+                .userId(userId)
+                .ticketId(ticket.getId())
+                .reserveStatus(ReserveStatus.RESERVE)
+                .amount(ticket.getPrice())
+                .createdAt(LocalDateTime.now())
+                .build();
+        reserveRepository.save(reserve);
+    }
+
+    @AfterEach
+    void tearDown() {
+        waitQueueRepository.deleteAll();
+        pointRepository.deleteAll();
+        pointHistoryRepository.deleteAll();
+        concertScheduleRepository.deleteAll();
+        ticketRepository.deleteAll();
+        reserveRepository.deleteAll();
+        paymentRepository.deleteAll();
+    }
+
+    @Test
+    void payTicketSuccess() {
+        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+        PayTicket.Output output = payTicket.execute(input);
+
+        ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
+        Ticket ticketAfter = ticketRepository.findById(ticket.getId());
+        Reserve reserveAfter = reserveRepository.findById(reserve.getId());
+        Point pointAfter = pointRepository.findByUserId(userId);
+        WaitQueue waitQueueAfter = waitQueueRepository.findByUserId(userId);
+        Payment payment = paymentRepository.findById(output.paymentId());
+        PointHistory pointHistory = pointHistoryRepository.findById(payment.getPointHistoryId());
+
+        assertEquals(true, output.success());
+        assertNotNull(output.paymentId());
+        assertEquals(1000 - 100, output.balance());
+
+        assertEquals(9, concertScheduleAfter.getAvailableSeat());
+        assertEquals(false, concertScheduleAfter.getIsSold());
+        assertEquals(TicketStatus.PAID, ticketAfter.getStatus());
+        assertEquals(ReserveStatus.PAID, reserveAfter.getReserveStatus());
+        assertEquals(900, pointAfter.getBalance());
+        assertEquals(100, pointHistory.getAmount());
+        assertEquals(100, payment.getAmount());
+        assertNull(waitQueueAfter);
+    }
+
+    @Test
+    void validate_NotEnoughBalance() {
+        point.setBalance(50);
+        pointRepository.save(point);
+        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+
+        assertThrows(NotEnoughBalance.class, () -> { payTicket.execute(input); });
+    }
+
+    @Test
+    void validate_TicketNotInStatusReserve() {
+        ticket.setStatus(TicketStatus.PAID);
+        ticketRepository.save(ticket);
+        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+
+        assertThrows(TicketNotInStatusReserve.class, () -> { payTicket.execute(input); });
+    }
+
+    @Test
+    void validate_AlreadyPaidReserve() {
+        reserve.setReserveStatus(ReserveStatus.PAID);
+        reserveRepository.save(reserve);
+        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+
+        assertThrows(AlreadyPaidReserve.class, () -> { payTicket.execute(input); });
+    }
+
+    @Test
+    void validate_CanceledReserve() {
+        reserve.setReserveStatus(ReserveStatus.CANCEL);
+        reserveRepository.save(reserve);
+        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+
+        assertThrows(CanceledReserve.class, () -> { payTicket.execute(input); });
+    }
+
+    @Test
+    void validate_ExpiredReserve() {
+        reserve.setCreatedAt(LocalDateTime.now().minusMinutes(31));
+        reserveRepository.save(reserve);
+        PayTicket.Input input = new PayTicket.Input(userId, ticket.getId());
+
+        assertThrows(ExpiredReserve.class, () -> { payTicket.execute(input); });
+    }
+}

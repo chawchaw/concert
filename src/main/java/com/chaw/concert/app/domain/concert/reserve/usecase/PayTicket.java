@@ -1,121 +1,184 @@
-//package com.chaw.concert.app.domain.concert.reserve.usecase;
-//
-//import com.chaw.concert.app.domain.common.user.entity.Point;
-//import com.chaw.concert.app.domain.common.user.entity.PointHistory;
-//import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
-//import com.chaw.concert.app.domain.common.user.exception.PointNotFound;
-//import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
-//import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-//import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
-//import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-//import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-//import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
-//import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
-//import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-//import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
-//import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-//import com.chaw.concert.app.domain.concert.reserve.entity.TransactionStatus;
-//import com.chaw.concert.app.domain.concert.reserve.exception.IdempotencyNotFound;
-//import com.chaw.concert.app.domain.concert.reserve.exception.TicketNotInStatusReserve;
-//import com.chaw.concert.app.domain.concert.reserve.repository.TicketTransactionRepository;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.time.LocalDateTime;
-//
-//@Service
-//public class PayTicket {
-//
-//    private final ConcertScheduleRepository concertScheduleRepository;
-//    private final TicketTransactionRepository ticketTransactionRepository;
-//    private final PointHistoryRepository pointHistoryRepository;
-//    private final PointRepository pointRepository;
-//    private final TicketRepository ticketRepository;
-//
-//    public PayTicket(ConcertScheduleRepository concertScheduleRepository, TicketTransactionRepository ticketTransactionRepository, PointHistoryRepository pointHistoryRepository, PointRepository pointRepository, TicketRepository ticketRepository) {
-//        this.concertScheduleRepository = concertScheduleRepository;
-//        this.ticketTransactionRepository = ticketTransactionRepository;
-//        this.pointHistoryRepository = pointHistoryRepository;
-//        this.pointRepository = pointRepository;
-//        this.ticketRepository = ticketRepository;
-//    }
-//
-//    @Transactional
-//    public Output execute(Input input) {
-//        LocalDateTime now = LocalDateTime.now();
-//
-//        Reserve reserve = ticketTransactionRepository.findByIdempotencyKeyAndIsDeletedWithLock(input.idempotencyKey(), false);
-//        if (reserve == null) {
-//            throw new IdempotencyNotFound();
-//        }
-//        if (now.isAfter(reserve.getExpiredAt())) {
-//            reserve.setTransactionStatus(TransactionStatus.EXPIRED);
-//            reserve.setIsDeleted(true);
-//            ticketTransactionRepository.save(reserve);
-//            return new Output(reserve.getTransactionStatus().name(), "결제 유효기간이 만료되었습니다.");
-//        }
-//
-//        Ticket ticket = ticketRepository.findById(reserve.getTicketId());
-//        if (ticket == null) {
-//            throw new TicketNotFound();
-//        } else if (ticket.getStatus() != TicketStatus.RESERVE) {
-//            throw new TicketNotInStatusReserve();
-//        }
-//
-//        Point point = pointRepository.findByUserIdWithLock(reserve.getUserId());
-//        if (point == null) {
-//            throw new PointNotFound();
-//        }
-//
-//        if (reserve.getTransactionStatus() == TransactionStatus.COMPLETED) {
-//            return new Output(reserve.getTransactionStatus().name(), "이미 결제가 완료되었습니다.");
-//        }
-//
-//        if (point.getBalance() < reserve.getAmount()) {
-//            reserve.setTransactionStatus(TransactionStatus.FAILED);
-//            ticketTransactionRepository.save(reserve);
-//            return new Output(reserve.getTransactionStatus().name(), "잔액이 부족합니다.");
-//        }
-//
-//        reserve.setPaymentMethod(PaymentMethod.POINT);
-//        reserve.setTransactionStatus(TransactionStatus.COMPLETED);
-//        reserve.setUpdatedAt(now);
-//        ticketTransactionRepository.save(reserve);
-//
-//        PointHistory pointHistory = PointHistory.builder()
-//                .pointId(point.getId())
-//                .ticketId(reserve.getTicketId())
-//                .type(PointHistoryType.PAY)
-//                .amount(reserve.getAmount())
-//                .dateTransaction(now)
-//                .build();
-//        pointHistoryRepository.save(pointHistory);
-//
-//        Integer changedAmount = pointHistory.getChangedAmount();
-//        Integer balance = point.getBalance() + changedAmount;
-//        point.setBalance(balance);
-//        pointRepository.save(point);
-//
-//        ticket.setStatus(TicketStatus.PAID);
-//        ticketRepository.save(ticket);
-//
-//        ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId());
-//        concertSchedule.setAvailableSeat(concertSchedule.getAvailableSeat() - 1);
-//        if (concertSchedule.getAvailableSeat() == 0) {
-//            concertSchedule.setIsSold(true);
-//        }
-//        concertScheduleRepository.save(concertSchedule);
-//
-//        return new Output(reserve.getTransactionStatus().name(), "결제가 완료되었습니다. 잔액: " + balance);
-//    }
-//
-//    public record Input (
-//        String idempotencyKey,
-//        Long userId
-//    ) {}
-//
-//    public record Output (
-//        String status,
-//        String message
-//    ) {}
-//}
+package com.chaw.concert.app.domain.concert.reserve.usecase;
+
+import com.chaw.concert.app.domain.common.user.entity.Point;
+import com.chaw.concert.app.domain.common.user.entity.PointHistory;
+import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
+import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalance;
+import com.chaw.concert.app.domain.common.user.exception.PointNotFound;
+import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
+import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
+import com.chaw.concert.app.domain.concert.query.entity.Ticket;
+import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
+import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFound;
+import com.chaw.concert.app.domain.concert.query.exception.TicketNotFound;
+import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
+import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
+import com.chaw.concert.app.domain.concert.queue.exception.WaitQueueNotFound;
+import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
+import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
+import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.exception.*;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+
+@Service
+public class PayTicket {
+
+    @Value("${concert.reserve.expired.minutes}")
+    private Integer EXPIRED_MINUTES;
+
+    private final WaitQueueRepository waitQueueRepository;
+    private final PointRepository pointRepository;
+    private final PointHistoryRepository pointHistoryRepository;
+    private final ConcertScheduleRepository concertScheduleRepository;
+    private final TicketRepository ticketRepository;
+    private final ReserveRepository reserveRepository;
+    private final PaymentRepository paymentRepository;
+
+    public PayTicket(WaitQueueRepository waitQueueRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository) {
+        this.waitQueueRepository = waitQueueRepository;
+        this.pointRepository = pointRepository;
+        this.pointHistoryRepository = pointHistoryRepository;
+        this.concertScheduleRepository = concertScheduleRepository;
+        this.ticketRepository = ticketRepository;
+        this.reserveRepository = reserveRepository;
+        this.paymentRepository = paymentRepository;
+    }
+
+    @Transactional
+    public Output execute(Input input) {
+        Point point = pointRepository.findByUserIdWithLock(input.userId()); // 중복 결제 방지를 위해 비관 락 사용
+        Ticket ticket = ticketRepository.findById(input.ticketId());
+        ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
+        Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
+        WaitQueue waitQueue = waitQueueRepository.findByUserId(input.userId());
+
+        validate(point, concertSchedule, ticket, reserve, waitQueue);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // (예약가능 좌석수, 재고없음) 업데이트
+        concertSchedule.setAvailableSeat(concertSchedule.getAvailableSeat() - 1);
+        if (concertSchedule.getAvailableSeat() == 0) {
+            concertSchedule.setIsSold(true);
+        }
+        concertScheduleRepository.save(concertSchedule);
+
+        // 티켓 상태 업데이트
+        ticket.setStatus(TicketStatus.PAID);
+        ticketRepository.save(ticket);
+
+        // 예약 상태 업데이트
+        reserve.setReserveStatus(ReserveStatus.PAID);
+        reserve.setUpdatedAt(now);
+        reserveRepository.save(reserve);
+
+        // 포인트 차감
+        point.setBalance(point.getBalance() - reserve.getAmount());
+        pointRepository.save(point);
+
+        // 포인트 히스토리 추가
+        PointHistory pointHistory = PointHistory.builder()
+                .pointId(point.getId())
+                .ticketId(ticket.getId())
+                .type(PointHistoryType.PAY)
+                .amount(reserve.getAmount())
+                .dateTransaction(now)
+                .build();
+        pointHistoryRepository.save(pointHistory);
+
+        // 결제 추가
+        Payment payment = Payment.builder()
+                .userId(input.userId())
+                .reserveId(reserve.getId())
+                .pointHistoryId(pointHistory.getId())
+                .paymentMethod(PaymentMethod.POINT)
+                .amount(reserve.getAmount())
+                .createdAt(now)
+                .build();
+        paymentRepository.save(payment);
+
+        // 대기열 삭제
+        waitQueueRepository.delete(waitQueue);
+
+        return new Output(true, payment.getId(), point.getBalance());
+    }
+
+    /**
+     * 공통: not null
+     * point 잔액
+     * ticket 예약 상태
+     * reserve 예약 상태, 예약제한시간
+     */
+    public void validate(Point point, ConcertSchedule concertSchedule, Ticket ticket, Reserve reserve, WaitQueue waitQueue) {
+        if (point == null) {
+            throw new PointNotFound();
+        }
+        if (concertSchedule == null) {
+            throw new ConcertScheduleNotFound();
+        }
+        if (ticket == null) {
+            throw new TicketNotFound();
+        }
+        if (reserve == null) {
+            throw new ReserveNotFound();
+        }
+        if (waitQueue == null) {
+            throw new WaitQueueNotFound();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 잔액 체크
+        if (point.getBalance() < reserve.getAmount()) {
+            throw new NotEnoughBalance();
+        }
+
+        // 티켓 예약 상태 체크
+        if (ticket.getStatus() != TicketStatus.RESERVE) {
+            throw new TicketNotInStatusReserve();
+        }
+
+        // 예약 상태 체크
+        if (reserve.getReserveStatus() == ReserveStatus.PAID) {
+            throw new AlreadyPaidReserve();
+        }
+        else if (reserve.getReserveStatus() == ReserveStatus.CANCEL) {
+            throw new CanceledReserve();
+        }
+
+        // 예약제한시간 체크
+        if (now.isAfter(reserve.getCreatedAt().plusMinutes(EXPIRED_MINUTES))) {
+            ticket.setStatus(TicketStatus.EMPTY);
+            ticket.setReserveUserId(null);
+            ticketRepository.save(ticket);
+
+            reserve.setReserveStatus(ReserveStatus.CANCEL);
+            reserveRepository.save(reserve);
+
+            waitQueueRepository.delete(waitQueue);
+
+            throw new ExpiredReserve();
+        }
+    }
+
+    public record Input (
+        Long userId,
+        Long ticketId
+    ) {}
+
+    public record Output (
+        Boolean success,
+        Long paymentId,
+        Integer balance
+    ) {}
+}
