@@ -94,7 +94,7 @@ public class PayTicketIT {
         concertRepository.save(concert);
 
         concertSchedule = ConcertSchedule.builder()
-                .concertId(1L)
+                .concertId(concert.getId())
                 .isSold(false)
                 .totalSeat(10)
                 .availableSeat(10)

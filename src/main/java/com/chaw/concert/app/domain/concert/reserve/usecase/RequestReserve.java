@@ -13,7 +13,10 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepos
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.exception.IllegalConcertAndScheduleException;
+import com.chaw.concert.app.domain.concert.reserve.exception.IllegalScheduleAndTicketException;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +29,14 @@ public class RequestReserve {
     private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
+    private final ReserveValidation reserveValidation;
 
-    public RequestReserve(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository) {
+    public RequestReserve(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, ReserveValidation reserveValidation) {
         this.concertRepository = concertRepository;
         this.concertScheduleRepository = concertScheduleRepository;
         this.ticketRepository = ticketRepository;
         this.reserveRepository = reserveRepository;
+        this.reserveValidation = reserveValidation;
     }
 
     @Transactional
@@ -40,19 +45,8 @@ public class RequestReserve {
         ConcertSchedule concertSchedule = concertScheduleRepository.findById(input.concertScheduleId());
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
 
-        if (concert == null) {
-            throw new ConcertNotFoundException();
-        }
-        if (concertSchedule == null) {
-            throw new ConcertScheduleNotFoundException();
-        }
-        if (ticket == null) {
-            throw new TicketNotFoundException();
-        }
-
-        if (!ticket.getStatus().equals(TicketStatus.EMPTY)) {
-            throw new TicketAlreadyReservedException();
-        }
+        reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
+        reserveValidation.validateReserveDetails(ticket);
 
         ticket.setStatus(TicketStatus.RESERVE);
         ticket.setReserveUserId(input.userId());
