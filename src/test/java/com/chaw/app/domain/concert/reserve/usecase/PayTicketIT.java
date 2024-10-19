@@ -147,7 +147,6 @@ public class PayTicketIT {
         Ticket ticketAfter = ticketRepository.findById(ticket.getId());
         Reserve reserveAfter = reserveRepository.findById(reserve.getId());
         Point pointAfter = pointRepository.findByUserId(userId);
-        WaitQueue waitQueueAfter = waitQueueRepository.findByUserId(userId);
         Payment payment = paymentRepository.findById(output.paymentId());
         PointHistory pointHistory = pointHistoryRepository.findById(payment.getPointHistoryId());
 
@@ -162,7 +161,6 @@ public class PayTicketIT {
         assertEquals(900, pointAfter.getBalance());
         assertEquals(100, pointHistory.getAmount());
         assertEquals(100, payment.getAmount());
-        assertNull(waitQueueAfter);
     }
 
     @Test

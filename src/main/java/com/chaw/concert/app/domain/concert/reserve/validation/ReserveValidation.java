@@ -11,8 +11,6 @@ import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundExcept
 import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFoundException;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.exception.WaitQueueNotFoundException;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.exception.*;
@@ -51,10 +49,7 @@ public class ReserveValidation {
      * ticket 예약 상태
      * reserve 예약 상태, 예약제한시간
      */
-    public void validatePayTicketDetails(WaitQueue waitQueue, Point point, Reserve reserve, Ticket ticket) {
-        if (waitQueue == null) {
-            throw new WaitQueueNotFoundException();
-        }
+    public void validatePayTicketDetails(Point point, Reserve reserve, Ticket ticket) {
         if (point == null) {
             throw new PointNotFoundException();
         }

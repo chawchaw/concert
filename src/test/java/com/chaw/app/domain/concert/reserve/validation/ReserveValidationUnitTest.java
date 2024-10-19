@@ -11,7 +11,6 @@ import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundExcept
 import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFoundException;
 import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
 import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.exception.*;
@@ -104,19 +103,17 @@ class ReserveValidationUnitTest {
 
     @Test
     void validatePayTicketDetails_PointNotFoundException() {
-        WaitQueue waitQueue = new WaitQueue();
         Point point = null;  // 포인트 없음
         Reserve reserve = new Reserve();
         Ticket ticket = new Ticket();
 
         assertThrows(PointNotFoundException.class, () -> {
-            reserveValidation.validatePayTicketDetails(waitQueue, point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
     }
 
     @Test
     void validatePayTicketDetails_NotEnoughBalanceException() {
-        WaitQueue waitQueue = new WaitQueue();
         Point point = new Point();
         point.setBalance(50);  // 잔액 부족
         Reserve reserve = new Reserve();
@@ -124,13 +121,12 @@ class ReserveValidationUnitTest {
         Ticket ticket = new Ticket();
 
         assertThrows(NotEnoughBalanceException.class, () -> {
-            reserveValidation.validatePayTicketDetails(waitQueue, point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
     }
 
     @Test
     void validatePayTicketDetails_TicketNotInStatusReserveException() {
-        WaitQueue waitQueue = new WaitQueue();
         Point point = new Point();
         point.setBalance(100);
         Reserve reserve = new Reserve();
@@ -139,13 +135,12 @@ class ReserveValidationUnitTest {
         ticket.setStatus(TicketStatus.PAID);  // 티켓이 RESERVE 상태가 아님
 
         assertThrows(TicketNotInStatusReserveException.class, () -> {
-            reserveValidation.validatePayTicketDetails(waitQueue, point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
     }
 
     @Test
     void validatePayTicketDetails_AlreadyPaidReserveException() {
-        WaitQueue waitQueue = new WaitQueue();
         Point point = new Point();
         point.setBalance(100);
         Reserve reserve = new Reserve();
@@ -155,13 +150,12 @@ class ReserveValidationUnitTest {
         ticket.setStatus(TicketStatus.RESERVE);
 
         assertThrows(AlreadyPaidReserveException.class, () -> {
-            reserveValidation.validatePayTicketDetails(waitQueue, point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
     }
 
     @Test
     void validatePayTicketDetails_CanceledReserveException() {
-        WaitQueue waitQueue = new WaitQueue();
         Point point = new Point();
         point.setBalance(100);
         Reserve reserve = new Reserve();
@@ -171,7 +165,7 @@ class ReserveValidationUnitTest {
         ticket.setStatus(TicketStatus.RESERVE);
 
         assertThrows(CanceledReserveException.class, () -> {
-            reserveValidation.validatePayTicketDetails(waitQueue, point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
     }
 }

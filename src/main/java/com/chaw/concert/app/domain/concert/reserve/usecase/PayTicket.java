@@ -3,8 +3,6 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
-import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
-import com.chaw.concert.app.domain.common.user.exception.PointNotFoundException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
@@ -14,14 +12,11 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.exception.WaitQueueNotFoundException;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.*;
+import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
@@ -39,7 +34,6 @@ public class PayTicket {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
-    private final WaitQueueRepository waitQueueRepository;
     private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
@@ -47,9 +41,8 @@ public class PayTicket {
     private final PaymentRepository paymentRepository;
     private final ReserveValidation reserveValidation;
 
-    public PayTicket(ConcertRepository concertRepository, WaitQueueRepository waitQueueRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
+    public PayTicket(ConcertRepository concertRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
         this.concertRepository = concertRepository;
-        this.waitQueueRepository = waitQueueRepository;
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;
         this.concertScheduleRepository = concertScheduleRepository;
@@ -66,12 +59,11 @@ public class PayTicket {
         Ticket ticket = ticketRepository.findById(input.ticketId());
         ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
-        WaitQueue waitQueue = waitQueueRepository.findByUserId(input.userId());
 
         reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        reserveValidation.validatePayTicketDetails(waitQueue, point, reserve, ticket);
+        reserveValidation.validatePayTicketDetails(point, reserve, ticket);
 
-        handleExpiredReserve(ticket, reserve, waitQueue);
+        handleExpiredReserve(ticket, reserve);
 
         LocalDateTime now = LocalDateTime.now();
         // (예약가능 좌석수, 재고없음) 업데이트
@@ -115,14 +107,11 @@ public class PayTicket {
                 .build();
         paymentRepository.save(payment);
 
-        // 대기열 삭제
-        waitQueueRepository.delete(waitQueue);
-
         return new Output(true, payment.getId(), point.getBalance());
     }
 
     // 예약제한시간 체크
-    public void handleExpiredReserve(Ticket ticket, Reserve reserve, WaitQueue waitQueue) {
+    public void handleExpiredReserve(Ticket ticket, Reserve reserve) {
         LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(reserve.getCreatedAt().plusMinutes(EXPIRED_MINUTES))) {
             ticket.setStatus(TicketStatus.EMPTY);
@@ -131,8 +120,6 @@ public class PayTicket {
 
             reserve.setReserveStatus(ReserveStatus.CANCEL);
             reserveRepository.save(reserve);
-
-            waitQueueRepository.delete(waitQueue);
 
             throw new ExpiredReserveException();
         }

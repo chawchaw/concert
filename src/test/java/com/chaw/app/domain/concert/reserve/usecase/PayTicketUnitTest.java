@@ -11,8 +11,6 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
@@ -36,9 +34,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class PayTicketUnitTest {
-
-    @Mock
-    private WaitQueueRepository waitQueueRepository;
 
     @Mock
     private PointRepository pointRepository;
@@ -113,19 +108,13 @@ class PayTicketUnitTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        WaitQueue waitQueue = WaitQueue.builder()
-                .id(1L)
-                .userId(userId)
-                .build();
-
         when(pointRepository.findByUserIdWithLock(userId)).thenReturn(point);
         when(ticketRepository.findById(ticketId)).thenReturn(ticket);
         when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
         when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
-        when(waitQueueRepository.findByUserId(userId)).thenReturn(waitQueue);
         doNothing().when(reserveValidation).validateConcertDetails(concert, concertSchedule, ticket);
-        doNothing().when(reserveValidation).validatePayTicketDetails(waitQueue, point, reserve, ticket);
+        doNothing().when(reserveValidation).validatePayTicketDetails(point, reserve, ticket);
 
         PayTicket.Input input = new PayTicket.Input(userId, 1L, 1L, ticketId);
 
@@ -136,7 +125,7 @@ class PayTicketUnitTest {
         assertEquals(500, output.balance()); // 남은 포인트 확인
 
         verify(reserveValidation, times(1)).validateConcertDetails(concert, concertSchedule, ticket);
-        verify(reserveValidation, times(1)).validatePayTicketDetails(waitQueue, point, reserve, ticket);
+        verify(reserveValidation, times(1)).validatePayTicketDetails(point, reserve, ticket);
 
         verify(concertScheduleRepository).save(any(ConcertSchedule.class));
         verify(ticketRepository).save(any(Ticket.class));
@@ -144,7 +133,6 @@ class PayTicketUnitTest {
         verify(pointRepository).save(any(Point.class));
         verify(pointHistoryRepository).save(any(PointHistory.class));
         verify(paymentRepository).save(any(Payment.class));
-        verify(waitQueueRepository).delete(waitQueue);
     }
 
     @Test
@@ -152,22 +140,19 @@ class PayTicketUnitTest {
         // Given
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
         Reserve reserve = Reserve.builder().amount(500).createdAt(LocalDateTime.now().minusMinutes(60)).reserveStatus(ReserveStatus.RESERVE).build(); // 만료된 상태
-        WaitQueue waitQueue = new WaitQueue();
 
         // Mocking
         when(ticketRepository.save(ticket)).thenReturn(ticket);
         when(reserveRepository.save(reserve)).thenReturn(reserve);
-        doNothing().when(waitQueueRepository).delete(waitQueue);
 
         // When / Then
         assertThrows(ExpiredReserveException.class, () -> {
-            payTicket.handleExpiredReserve(ticket, reserve, waitQueue);
+            payTicket.handleExpiredReserve(ticket, reserve);
         });
 
         // Verify
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
-        verify(waitQueueRepository, times(1)).delete(waitQueue);
     }
 
     @Test
@@ -175,15 +160,13 @@ class PayTicketUnitTest {
         // Given
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
         Reserve reserve = Reserve.builder().amount(500).createdAt(LocalDateTime.now()).reserveStatus(ReserveStatus.RESERVE).build(); // 만료되지 않은 상태
-        WaitQueue waitQueue = new WaitQueue();
 
         // When
-        payTicket.handleExpiredReserve(ticket, reserve, waitQueue);
+        payTicket.handleExpiredReserve(ticket, reserve);
 
         // Verify (아무 작업도 발생하지 않음)
         verify(ticketRepository, never()).save(any());
         verify(reserveRepository, never()).save(any());
-        verify(waitQueueRepository, never()).delete(any());
     }
 
     @Test
@@ -198,7 +181,6 @@ class PayTicketUnitTest {
         Ticket ticket = Ticket.builder().id(ticketId).concertScheduleId(1L).status(TicketStatus.RESERVE).build();
         ConcertSchedule concertSchedule = ConcertSchedule.builder().id(1L).availableSeat(10).build();
         Reserve reserve = Reserve.builder().amount(500).createdAt(LocalDateTime.now().minusMinutes(60)).reserveStatus(ReserveStatus.RESERVE).build(); // 만료된 상태
-        WaitQueue waitQueue = new WaitQueue();
 
         // Mocking
         when(pointRepository.findByUserIdWithLock(userId)).thenReturn(point);
@@ -206,7 +188,6 @@ class PayTicketUnitTest {
         when(ticketRepository.findById(ticketId)).thenReturn(ticket);
         when(concertScheduleRepository.findByIdWithLock(1L)).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
-        when(waitQueueRepository.findByUserId(userId)).thenReturn(waitQueue);
 
         // When / Then
         PayTicket.Input input = new PayTicket.Input(userId, concertId, 1L, ticketId);
@@ -215,6 +196,5 @@ class PayTicketUnitTest {
         // Verify
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
-        verify(waitQueueRepository, times(1)).delete(waitQueue);
     }
 }
