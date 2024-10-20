@@ -14,6 +14,7 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.exception.AvailableSeatNotExistException;
 import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -115,6 +116,7 @@ class PayTicketUnitTest {
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
         doNothing().when(reserveValidation).validateConcertDetails(concert, concertSchedule, ticket);
         doNothing().when(reserveValidation).validatePayTicketDetails(point, reserve, ticket);
+        when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
         PayTicket.Input input = new PayTicket.Input(userId, 1L, 1L, ticketId);
 
@@ -127,12 +129,42 @@ class PayTicketUnitTest {
         verify(reserveValidation, times(1)).validateConcertDetails(concert, concertSchedule, ticket);
         verify(reserveValidation, times(1)).validatePayTicketDetails(point, reserve, ticket);
 
-        verify(concertScheduleRepository).save(any(ConcertSchedule.class));
+        verify(concertScheduleRepository).decreaseAvailableSeat(anyLong());
         verify(ticketRepository).save(any(Ticket.class));
         verify(reserveRepository).save(any(Reserve.class));
         verify(pointRepository).save(any(Point.class));
         verify(pointHistoryRepository).save(any(PointHistory.class));
         verify(paymentRepository).save(any(Payment.class));
+    }
+
+    @Test
+    public void testExecute_AvailableSeatNotExist() {
+        // given
+        Long userId = 1L;
+        Long concertScheduleId = 1L;
+        Long ticketId = 1L;
+        Reserve reserve = Reserve.builder()
+                .id(1L)
+                .userId(userId)
+                .ticketId(ticketId)
+                .amount(500)
+                .reserveStatus(ReserveStatus.RESERVE)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(pointRepository.findByUserIdWithLock(anyLong())).thenReturn(Point.builder().build());
+        when(ticketRepository.findById(anyLong())).thenReturn(Ticket.builder().concertScheduleId(concertScheduleId).build());
+        when(concertRepository.findById(anyLong())).thenReturn(Concert.builder().build());
+        when(concertScheduleRepository.findByIdWithLock(anyLong())).thenReturn(ConcertSchedule.builder().id(concertScheduleId).build());
+        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(anyLong(), anyLong(), anyInt())).thenReturn(reserve);
+
+        doNothing().when(reserveValidation).validateConcertDetails(any(), any(), any());
+        doNothing().when(reserveValidation).validatePayTicketDetails(any(), any(), any());
+
+        when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
+
+        // when / then
+        assertThrows(AvailableSeatNotExistException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
     }
 
     @Test

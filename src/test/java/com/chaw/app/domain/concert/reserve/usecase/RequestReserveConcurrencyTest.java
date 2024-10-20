@@ -62,7 +62,7 @@ public class RequestReserveConcurrencyTest {
 
         concertSchedule = ConcertSchedule.builder()
                 .concertId(concert.getId())
-                .isSold(false)
+                .isSoldOut(false)
                 .totalSeat(10)
                 .availableSeat(10)
                 .dateConcert(LocalDateTime.now().plusDays(1))

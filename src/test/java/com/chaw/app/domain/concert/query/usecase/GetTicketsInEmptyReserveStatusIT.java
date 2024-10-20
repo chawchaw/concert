@@ -49,7 +49,7 @@ public class GetTicketsInEmptyReserveStatusIT {
 
         concertSchedule = ConcertSchedule.builder()
                 .concertId(1L)
-                .isSold(false)
+                .isSoldOut(false)
                 .totalSeat(10)
                 .availableSeat(10)
                 .dateConcert(LocalDateTime.now().plusDays(1))

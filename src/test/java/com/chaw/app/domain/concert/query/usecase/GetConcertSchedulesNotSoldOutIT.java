@@ -47,7 +47,7 @@ public class GetConcertSchedulesNotSoldOutIT {
 
         ConcertSchedule schedule1 = ConcertSchedule.builder()
                 .concertId(concert.getId())
-                .isSold(false)  // 판매 중
+                .isSoldOut(false)  // 판매 중
                 .totalSeat(100)
                 .availableSeat(50)
                 .dateConcert(LocalDateTime.now().plusDays(1))
@@ -56,7 +56,7 @@ public class GetConcertSchedulesNotSoldOutIT {
 
         ConcertSchedule schedule2 = ConcertSchedule.builder()
                 .concertId(concert.getId())
-                .isSold(true)  // 판매 완료
+                .isSoldOut(true)  // 판매 완료
                 .totalSeat(100)
                 .availableSeat(0)
                 .dateConcert(LocalDateTime.now().plusDays(2))
@@ -84,7 +84,7 @@ public class GetConcertSchedulesNotSoldOutIT {
         assertNotNull(concertSchedules);
         assertEquals(1, concertSchedules.size());
         GetConcertSchedulesNotSoldOut.Output.Item schedule = concertSchedules.get(0);
-        assertEquals(false, schedule.isSold());
+        assertEquals(false, schedule.isSoldOut());
         assertEquals(100, schedule.totalSeat());
         assertEquals(50, schedule.availableSeat());
     }

@@ -5,13 +5,15 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import java.util.List;
 
 public interface ConcertScheduleRepository {
-    List<ConcertSchedule> findByConcertIdAndIsSold(Long concertId, boolean isSold);
-
-    ConcertSchedule save(ConcertSchedule concertSchedule);
+    List<ConcertSchedule> findByConcertIdAndIsSoldOut(Long concertId, boolean isSoldOut);
 
     ConcertSchedule findById(Long id);
 
     ConcertSchedule findByIdWithLock(Long id);
+
+    ConcertSchedule save(ConcertSchedule concertSchedule);
+
+    boolean decreaseAvailableSeat(Long concertScheduleId);
 
     void deleteAll();
 }

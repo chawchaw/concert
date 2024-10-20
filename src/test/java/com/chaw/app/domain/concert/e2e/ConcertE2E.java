@@ -101,7 +101,7 @@ public class ConcertE2E {
 
         ConcertSchedule concertSchedule = ConcertSchedule.builder()
                 .concertId(concert.getId())
-                .isSold(false)
+                .isSoldOut(false)
                 .totalSeat(50)
                 .availableSeat(50)
                 .dateConcert(LocalDateTime.now().plusDays(1))

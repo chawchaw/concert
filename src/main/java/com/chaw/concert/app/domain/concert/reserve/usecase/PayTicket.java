@@ -16,6 +16,7 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.exception.AvailableSeatNotExistException;
 import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -67,11 +68,10 @@ public class PayTicket {
 
         LocalDateTime now = LocalDateTime.now();
         // (예약가능 좌석수, 재고없음) 업데이트
-        concertSchedule.setAvailableSeat(concertSchedule.getAvailableSeat() - 1);
-        if (concertSchedule.getAvailableSeat() == 0) {
-            concertSchedule.setIsSold(true);
+        boolean result = concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId());
+        if (!result) {
+            throw new AvailableSeatNotExistException();
         }
-        concertScheduleRepository.save(concertSchedule);
 
         // 티켓 상태 업데이트
         ticket.setStatus(TicketStatus.PAID);
