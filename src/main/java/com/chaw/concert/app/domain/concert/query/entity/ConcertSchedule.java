@@ -20,8 +20,8 @@ public class ConcertSchedule {
     @Column(name = "concert_id")
     private Long concertId; // 공연ID
 
-    @Column(name = "is_sold")
-    private Boolean isSold; // 판매 여부
+    @Column(name = "is_sold_out")
+    private Boolean isSoldOut; // 판매 여부
 
     @Column(name = "total_seat")
     private Integer totalSeat; // 총 좌석 수

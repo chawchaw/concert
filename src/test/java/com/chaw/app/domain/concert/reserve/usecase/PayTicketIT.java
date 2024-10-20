@@ -19,10 +19,7 @@ import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.AlreadyPaidReserveException;
-import com.chaw.concert.app.domain.concert.reserve.exception.CanceledReserveException;
-import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
-import com.chaw.concert.app.domain.concert.reserve.exception.TicketNotInStatusReserveException;
+import com.chaw.concert.app.domain.concert.reserve.exception.*;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
@@ -94,8 +91,8 @@ public class PayTicketIT {
         concertRepository.save(concert);
 
         concertSchedule = ConcertSchedule.builder()
-                .concertId(1L)
-                .isSold(false)
+                .concertId(concert.getId())
+                .isSoldOut(false)
                 .totalSeat(10)
                 .availableSeat(10)
                 .dateConcert(LocalDateTime.now().plusDays(1))
@@ -147,7 +144,6 @@ public class PayTicketIT {
         Ticket ticketAfter = ticketRepository.findById(ticket.getId());
         Reserve reserveAfter = reserveRepository.findById(reserve.getId());
         Point pointAfter = pointRepository.findByUserId(userId);
-        WaitQueue waitQueueAfter = waitQueueRepository.findByUserId(userId);
         Payment payment = paymentRepository.findById(output.paymentId());
         PointHistory pointHistory = pointHistoryRepository.findById(payment.getPointHistoryId());
 
@@ -156,13 +152,28 @@ public class PayTicketIT {
         assertEquals(1000 - 100, output.balance());
 
         assertEquals(9, concertScheduleAfter.getAvailableSeat());
-        assertEquals(false, concertScheduleAfter.getIsSold());
+        assertEquals(false, concertScheduleAfter.getIsSoldOut());
         assertEquals(TicketStatus.PAID, ticketAfter.getStatus());
         assertEquals(ReserveStatus.PAID, reserveAfter.getReserveStatus());
         assertEquals(900, pointAfter.getBalance());
         assertEquals(100, pointHistory.getAmount());
         assertEquals(100, payment.getAmount());
-        assertNull(waitQueueAfter);
+    }
+
+    @Test
+    void payTicketSuccessSoldOut() {
+        concertSchedule.setAvailableSeat(1);
+        concertScheduleRepository.save(concertSchedule);
+
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicket.Output output = payTicket.execute(input);
+
+        ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
+
+        assertEquals(true, output.success());
+
+        assertEquals(0, concertScheduleAfter.getAvailableSeat());
+        assertEquals(true, concertScheduleAfter.getIsSoldOut());
     }
 
     @Test
@@ -199,6 +210,16 @@ public class PayTicketIT {
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         assertThrows(CanceledReserveException.class, () -> { payTicket.execute(input); });
+    }
+
+    @Test
+    void validate_AvailableSeatNotExist() {
+        concertSchedule.setAvailableSeat(0);
+        concertScheduleRepository.save(concertSchedule);
+
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+
+        assertThrows(AvailableSeatNotExistException.class, () -> { payTicket.execute(input); });
     }
 
     @Test

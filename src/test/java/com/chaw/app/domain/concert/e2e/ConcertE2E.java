@@ -101,7 +101,7 @@ public class ConcertE2E {
 
         ConcertSchedule concertSchedule = ConcertSchedule.builder()
                 .concertId(concert.getId())
-                .isSold(false)
+                .isSoldOut(false)
                 .totalSeat(50)
                 .availableSeat(50)
                 .dateConcert(LocalDateTime.now().plusDays(1))
@@ -231,7 +231,7 @@ public class ConcertE2E {
     }
 
     @Test
-    @Disabled // 테스트 데이터 만들기용
+    @Disabled // 테스트 데이터 만들기
     void testForData() {
         // do nothing
     }

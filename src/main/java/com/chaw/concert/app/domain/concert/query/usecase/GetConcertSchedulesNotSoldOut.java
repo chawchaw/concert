@@ -27,7 +27,7 @@ public class GetConcertSchedulesNotSoldOut {
             throw new ConcertNotFoundException();
         }
 
-        List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSold(input.concertId(), false);
+        List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSoldOut(input.concertId(), false);
 
         return new Output(
                 concert.getId(),
@@ -37,7 +37,7 @@ public class GetConcertSchedulesNotSoldOut {
                 concert.getHost(),
                 concertSchedules.stream().map(schedule -> new Output.Item(
                         schedule.getId(),
-                        schedule.getIsSold(),
+                        schedule.getIsSoldOut(),
                         schedule.getTotalSeat(),
                         schedule.getAvailableSeat(),
                         schedule.getDateConcert()
@@ -59,7 +59,7 @@ public class GetConcertSchedulesNotSoldOut {
     ) {
         public record Item (
                 Long id,
-                Boolean isSold,
+                Boolean isSoldOut,
                 Integer totalSeat,
                 Integer availableSeat,
                 LocalDateTime dateConcert

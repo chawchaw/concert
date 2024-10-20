@@ -61,17 +61,19 @@ public class RequestReserveConcurrencyTest {
         concertRepository.save(concert);
 
         concertSchedule = ConcertSchedule.builder()
-                .concertId(1L)
-                .isSold(false)
+                .concertId(concert.getId())
+                .isSoldOut(false)
                 .totalSeat(10)
                 .availableSeat(10)
                 .dateConcert(LocalDateTime.now().plusDays(1))
                 .build();
         concertScheduleRepository.save(concertSchedule);
 
-        ticket = new Ticket();
-        ticket.setStatus(TicketStatus.EMPTY);
-        ticket = ticketRepository.save(ticket);
+        ticket = Ticket.builder()
+                .concertScheduleId(concertSchedule.getId())
+                .status(TicketStatus.EMPTY)
+                .build();
+        ticketRepository.save(ticket);
     }
 
     @AfterEach

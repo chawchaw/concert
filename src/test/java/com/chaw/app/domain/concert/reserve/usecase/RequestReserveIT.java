@@ -22,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -56,8 +57,8 @@ public class RequestReserveIT {
         concertRepository.save(concert);
 
         concertSchedule = ConcertSchedule.builder()
-                .concertId(1L)
-                .isSold(false)
+                .concertId(concert.getId())
+                .isSoldOut(false)
                 .totalSeat(10)
                 .availableSeat(10)
                 .dateConcert(LocalDateTime.now().plusDays(1))
@@ -65,6 +66,7 @@ public class RequestReserveIT {
         concertScheduleRepository.save(concertSchedule);
 
         ticket = Ticket.builder()
+                .concertScheduleId(concertSchedule.getId())
                 .status(TicketStatus.EMPTY)
                 .price(100)
                 .build();

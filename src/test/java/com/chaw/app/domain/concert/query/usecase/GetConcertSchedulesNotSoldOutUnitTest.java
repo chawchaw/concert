@@ -46,7 +46,7 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
         assertThrows(ConcertNotFoundException.class, () -> getConcertSchedulesNotSoldOut.execute(input));
 
         verify(concertRepository, times(1)).findById(concertId);
-        verify(concertScheduleRepository, never()).findByConcertIdAndIsSold(anyLong(), anyBoolean());
+        verify(concertScheduleRepository, never()).findByConcertIdAndIsSoldOut(anyLong(), anyBoolean());
     }
 
     @Test
@@ -67,7 +67,7 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
                 ConcertSchedule.builder()
                         .id(1L)
                         .concertId(concertId)
-                        .isSold(false)
+                        .isSoldOut(false)
                         .totalSeat(100)
                         .availableSeat(50)
                         .dateConcert(LocalDateTime.now().plusDays(1))
@@ -75,14 +75,14 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
                 ConcertSchedule.builder()
                         .id(2L)
                         .concertId(concertId)
-                        .isSold(false)
+                        .isSoldOut(false)
                         .totalSeat(200)
                         .availableSeat(100)
                         .dateConcert(LocalDateTime.now().plusDays(2))
                         .build()
         );
 
-        when(concertScheduleRepository.findByConcertIdAndIsSold(concertId, false)).thenReturn(concertSchedules);
+        when(concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)).thenReturn(concertSchedules);
 
         // When
         GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
@@ -101,18 +101,18 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
 
         GetConcertSchedulesNotSoldOut.Output.Item firstSchedule = scheduleItems.get(0);
         assertEquals(1L, firstSchedule.id());
-        assertEquals(false, firstSchedule.isSold());
+        assertEquals(false, firstSchedule.isSoldOut());
         assertEquals(100, firstSchedule.totalSeat());
         assertEquals(50, firstSchedule.availableSeat());
 
         GetConcertSchedulesNotSoldOut.Output.Item secondSchedule = scheduleItems.get(1);
         assertEquals(2L, secondSchedule.id());
-        assertEquals(false, secondSchedule.isSold());
+        assertEquals(false, secondSchedule.isSoldOut());
         assertEquals(200, secondSchedule.totalSeat());
         assertEquals(100, secondSchedule.availableSeat());
 
         verify(concertRepository, times(1)).findById(concertId);
-        verify(concertScheduleRepository, times(1)).findByConcertIdAndIsSold(concertId, false);
+        verify(concertScheduleRepository, times(1)).findByConcertIdAndIsSoldOut(concertId, false);
     }
 
 }

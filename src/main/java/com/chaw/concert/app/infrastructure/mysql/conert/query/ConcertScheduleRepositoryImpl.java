@@ -15,13 +15,18 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
     }
 
     @Override
-    public List<ConcertSchedule> findByConcertIdAndIsSold(Long concertId, boolean isSold) {
-        return repository.findByConcertIdAndIsSold(concertId, isSold);
+    public List<ConcertSchedule> findByConcertIdAndIsSoldOut(Long concertId, boolean isSoldOut) {
+        return repository.findByConcertIdAndIsSoldOut(concertId, isSoldOut);
     }
 
     @Override
     public ConcertSchedule save(ConcertSchedule concertSchedule) {
         return repository.save(concertSchedule);
+    }
+
+    @Override
+    public boolean decreaseAvailableSeat(Long concertScheduleId) {
+        return repository.decreaseAvailableSeat(concertScheduleId) > 0;
     }
 
     @Override
