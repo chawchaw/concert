@@ -4,8 +4,9 @@ import com.chaw.concert.app.domain.common.user.entity.User;
 import com.chaw.concert.app.domain.common.user.repository.UserRepository;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
-import com.chaw.concert.app.domain.concert.queue.exception.WaitQueueNotFoundException;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,7 @@ public class WaitQueueInterceptor implements HandlerInterceptor {
         WaitQueue waitQueue = getWaitQueue(uuid);
 
         if (waitQueue == null) {
-            throw new WaitQueueNotFoundException();
+            throw new BaseException(ErrorType.CONFLICT, "대기열이 존재하지 않습니다.");
         }
 
         return true;

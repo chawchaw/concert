@@ -1,5 +1,8 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
+
 public enum PaymentMethod {
     POINT("POINT"), // 포인트
     CARD("CARD"); // 카드
@@ -20,6 +23,6 @@ public enum PaymentMethod {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown dbValue: " + dbValue);
+        throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "Invalid PaymentMethod value: " + dbValue);
     }
 }

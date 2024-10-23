@@ -16,7 +16,5 @@ public interface TicketRepository {
 
     Ticket save(Ticket ticket);
 
-    void deleteById(Long id);
-
     void deleteAll();
 }

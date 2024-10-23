@@ -1,5 +1,8 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
+
 public enum ReserveStatus {
     RESERVE("RESERVE"), // 예약
     PAID("PAID"), // 결제완료
@@ -21,6 +24,6 @@ public enum ReserveStatus {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown dbValue: " + dbValue);
+        throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "Invalid ReserveStatus value: " + dbValue);
     }
 }
