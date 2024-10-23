@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0") // Swagger 의존성 추가
     implementation("mysql:mysql-connector-java:8.0.33") // MySQL 8.0 의존성 추가
     implementation("org.springframework.boot:spring-boot-starter-data-jpa") // Spring Data JPA 추가
+    implementation("org.springframework.boot:spring-boot-starter-security") // Spring Security 의존성 추가
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 
