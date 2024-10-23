@@ -14,12 +14,12 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.AvailableSeatNotExistException;
-import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -164,7 +164,8 @@ class PayTicketUnitTest {
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // when / then
-        assertThrows(AvailableSeatNotExistException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
+        BaseException baseException = assertThrows(BaseException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 
     @Test
@@ -178,11 +179,12 @@ class PayTicketUnitTest {
         when(reserveRepository.save(reserve)).thenReturn(reserve);
 
         // When / Then
-        assertThrows(ExpiredReserveException.class, () -> {
+        BaseException exception = assertThrows(BaseException.class, () -> {
             payTicket.handleExpiredReserve(ticket, reserve);
         });
 
         // Verify
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
     }
@@ -223,9 +225,10 @@ class PayTicketUnitTest {
 
         // When / Then
         PayTicket.Input input = new PayTicket.Input(userId, concertId, 1L, ticketId);
-        assertThrows(ExpiredReserveException.class, () -> payTicket.execute(input));
+        BaseException exception = assertThrows(BaseException.class, () -> payTicket.execute(input));
 
         // Verify
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
     }

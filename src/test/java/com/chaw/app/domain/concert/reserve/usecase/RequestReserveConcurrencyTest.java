@@ -5,12 +5,13 @@ import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -125,9 +125,9 @@ public class RequestReserveConcurrencyTest {
         Ticket updatedTicket = ticketRepository.findById(ticket.getId());
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
 
-        // 발생한 예외들이 TicketAlreadyReserved인지 확인
         for (Throwable exception : exceptions) {
-            assertTrue(exception instanceof TicketAlreadyReservedException);
+            BaseException baseException = (BaseException) exception;
+            assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
         }
 
         executorService.shutdown();

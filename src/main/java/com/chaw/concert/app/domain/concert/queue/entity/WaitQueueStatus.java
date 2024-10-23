@@ -1,5 +1,8 @@
 package com.chaw.concert.app.domain.concert.queue.entity;
 
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
+
 public enum WaitQueueStatus {
     WAIT("WAIT"), // 대기
     PASS("PASS"); // 통과
@@ -20,6 +23,6 @@ public enum WaitQueueStatus {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown dbValue: " + dbValue);
+        throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "Invalid WaitQueueStatus value: " + dbValue);
     }
 }

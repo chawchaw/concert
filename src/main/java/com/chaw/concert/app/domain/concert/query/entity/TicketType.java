@@ -1,5 +1,8 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
+
 public enum TicketType {
     VIP("VIP"), // VIP
     FIRST("FIRST"), // 1등석
@@ -21,6 +24,6 @@ public enum TicketType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown dbValue: " + dbValue);
+        throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "Invalid TicketType value: " + dbValue);
     }
 }

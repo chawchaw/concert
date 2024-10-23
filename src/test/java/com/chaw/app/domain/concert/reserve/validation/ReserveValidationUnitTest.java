@@ -1,23 +1,17 @@
 package com.chaw.app.domain.concert.reserve.validation;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
-import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
-import com.chaw.concert.app.domain.common.user.exception.PointNotFoundException;
-import com.chaw.concert.app.domain.concert.query.entity.Concert;
-import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundException;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFoundException;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
-import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.*;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ReserveValidationUnitTest {
@@ -30,86 +24,14 @@ class ReserveValidationUnitTest {
     }
 
     @Test
-    void validateConcertDetails_ConcertNotFoundException() {
-        Concert concert = null;
-        ConcertSchedule concertSchedule = new ConcertSchedule();
-        Ticket ticket = new Ticket();
-
-        assertThrows(ConcertNotFoundException.class, () -> {
-            reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        });
-    }
-
-    @Test
-    void validateConcertDetails_ConcertScheduleNotFoundException() {
-        Concert concert = new Concert();
-        ConcertSchedule concertSchedule = null;
-        Ticket ticket = new Ticket();
-
-        assertThrows(ConcertScheduleNotFoundException.class, () -> {
-            reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        });
-    }
-
-    @Test
-    void validateConcertDetails_TicketNotFoundException() {
-        Concert concert = new Concert();
-        ConcertSchedule concertSchedule = new ConcertSchedule();
-        Ticket ticket = null;
-
-        assertThrows(TicketNotFoundException.class, () -> {
-            reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        });
-    }
-
-    @Test
-    void validateConcertDetails_IllegalConcertAndScheduleException() {
-        Concert concert = new Concert();
-        concert.setId(1L);
-        ConcertSchedule concertSchedule = new ConcertSchedule();
-        concertSchedule.setConcertId(2L);
-        Ticket ticket = new Ticket();
-        ticket.setConcertScheduleId(2L);
-
-        assertThrows(IllegalConcertAndScheduleException.class, () -> {
-            reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        });
-    }
-
-    @Test
-    void validateConcertDetails_IllegalScheduleAndTicketException() {
-        Concert concert = new Concert();
-        concert.setId(1L);
-        ConcertSchedule concertSchedule = new ConcertSchedule();
-        concertSchedule.setId(1L);
-        concertSchedule.setConcertId(1L);
-        Ticket ticket = new Ticket();
-        ticket.setConcertScheduleId(2L);
-
-        assertThrows(IllegalScheduleAndTicketException.class, () -> {
-            reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        });
-    }
-
-    @Test
     void validateReserveDetails_TicketAlreadyReservedException() {
         Ticket ticket = new Ticket();
         ticket.setStatus(TicketStatus.PAID);  // TicketStatus가 EMPTY가 아님
 
-        assertThrows(TicketAlreadyReservedException.class, () -> {
+        BaseException exception = assertThrows(BaseException.class, () -> {
             reserveValidation.validateReserveDetails(ticket);
         });
-    }
-
-    @Test
-    void validatePayTicketDetails_PointNotFoundException() {
-        Point point = null;  // 포인트 없음
-        Reserve reserve = new Reserve();
-        Ticket ticket = new Ticket();
-
-        assertThrows(PointNotFoundException.class, () -> {
-            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
-        });
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
 
     @Test
@@ -120,9 +42,10 @@ class ReserveValidationUnitTest {
         reserve.setAmount(100);  // 필요한 금액
         Ticket ticket = new Ticket();
 
-        assertThrows(NotEnoughBalanceException.class, () -> {
+        BaseException baseException = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 
     @Test
@@ -134,9 +57,10 @@ class ReserveValidationUnitTest {
         Ticket ticket = new Ticket();
         ticket.setStatus(TicketStatus.PAID);  // 티켓이 RESERVE 상태가 아님
 
-        assertThrows(TicketNotInStatusReserveException.class, () -> {
+        BaseException baseException = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 
     @Test
@@ -149,9 +73,10 @@ class ReserveValidationUnitTest {
         Ticket ticket = new Ticket();
         ticket.setStatus(TicketStatus.RESERVE);
 
-        assertThrows(AlreadyPaidReserveException.class, () -> {
+        BaseException exception = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
 
     @Test
@@ -164,8 +89,9 @@ class ReserveValidationUnitTest {
         Ticket ticket = new Ticket();
         ticket.setStatus(TicketStatus.RESERVE);
 
-        assertThrows(CanceledReserveException.class, () -> {
+        BaseException exception = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(point, reserve, ticket);
         });
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
 }

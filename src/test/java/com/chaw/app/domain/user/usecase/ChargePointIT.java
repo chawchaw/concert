@@ -7,6 +7,7 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,11 @@ public class ChargePointIT {
     @Autowired
     private ChargePoint chargePoint;
 
+    @AfterEach
+    void tearDown() {
+        pointRepository.deleteAll();
+        pointHistoryRepository.deleteAll();
+    }
 
     @Test
     void testChargeExistingUser() {

@@ -24,13 +24,6 @@ public class ChargePoint {
     @Transactional
     public Output execute(Input input) {
         Point point = pointRepository.findByUserIdWithLock(input.userId());
-        if (point == null) {
-            point = Point.builder()
-                    .userId(input.userId())
-                    .balance(0)
-                    .build();
-        }
-
         point.setBalance(point.getBalance() + input.point());
         pointRepository.save(point);
 

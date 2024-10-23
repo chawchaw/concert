@@ -16,11 +16,11 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.AvailableSeatNotExistException;
-import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,7 +70,7 @@ public class PayTicket {
         // (예약가능 좌석수, 재고없음) 업데이트
         boolean result = concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId());
         if (!result) {
-            throw new AvailableSeatNotExistException();
+            throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "남은 좌석이 없습니다. 일정 ID: " + concertSchedule.getId() + ", 티켓 ID: " + ticket.getId());
         }
 
         // 티켓 상태 업데이트
@@ -121,7 +121,7 @@ public class PayTicket {
             reserve.setReserveStatus(ReserveStatus.CANCEL);
             reserveRepository.save(reserve);
 
-            throw new ExpiredReserveException();
+            throw new BaseException(ErrorType.CONFLICT, "결제 유효기간이 만료되었습니다.");
         }
     }
 

@@ -1,8 +1,9 @@
 package com.chaw.concert.app.infrastructure.web;
 
 import com.chaw.concert.app.domain.common.user.entity.User;
-import com.chaw.concert.app.domain.common.user.exception.UserNotFoundException;
 import com.chaw.concert.app.domain.common.user.repository.UserRepository;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,7 @@ public class UuidInterceptor implements HandlerInterceptor {
         User user = userRepository.findByUuid(uuid);
 
         if (user == null) {
-            throw new UserNotFoundException();
+            throw new BaseException(ErrorType.NOT_FOUND, "잘못된 UUID 입니다");
         }
 
         request.setAttribute("userId", user.getId());

@@ -1,5 +1,8 @@
 package com.chaw.concert.app.domain.common.user.entity;
 
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
+
 public enum PointHistoryType {
     CHARGE("CHARGE"), // 충전
     PAY("PAY"); // 결제
@@ -20,6 +23,6 @@ public enum PointHistoryType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown dbValue: " + dbValue);
+        throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "Invalid PointHistoryType value: " + dbValue);
     }
 }

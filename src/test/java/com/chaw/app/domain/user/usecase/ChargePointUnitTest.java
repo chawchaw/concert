@@ -50,19 +50,4 @@ public class ChargePointUnitTest {
         verify(pointRepository, times(1)).save(any(Point.class));
         verify(pointHistoryRepository, times(1)).save(any(PointHistory.class));
     }
-
-    @Test
-    void testChargeNewUser() {
-        // Given: 새로운 사용자 (포인트 없음)
-        when(pointRepository.findByUserIdWithLock(1L)).thenReturn(null);
-
-        // When: 포인트 충전 요청
-        ChargePoint.Input input = new ChargePoint.Input(1L, 50);
-        ChargePoint.Output output = chargePoint.execute(input);
-
-        // Then: 새로운 사용자의 포인트가 생성되었는지 확인
-        assertEquals(50, output.balance());
-        verify(pointRepository, times(1)).save(any(Point.class));
-        verify(pointHistoryRepository, times(1)).save(any(PointHistory.class));
-    }
 }

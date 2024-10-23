@@ -3,7 +3,6 @@ package com.chaw.app.domain.concert.reserve.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
-import com.chaw.concert.app.domain.common.user.exception.NotEnoughBalanceException;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
@@ -19,10 +18,11 @@ import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.*;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
+import com.chaw.concert.app.infrastructure.exception.BaseException;
+import com.chaw.concert.app.infrastructure.exception.ErrorType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -182,7 +182,8 @@ public class PayTicketIT {
         pointRepository.save(point);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
-        assertThrows(NotEnoughBalanceException.class, () -> { payTicket.execute(input); });
+        BaseException exception = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
 
     @Test
@@ -191,7 +192,8 @@ public class PayTicketIT {
         ticketRepository.save(ticket);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
-        assertThrows(TicketNotInStatusReserveException.class, () -> { payTicket.execute(input); });
+        BaseException exception = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
 
     @Test
@@ -200,7 +202,8 @@ public class PayTicketIT {
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
-        assertThrows(AlreadyPaidReserveException.class, () -> { payTicket.execute(input); });
+        BaseException baseException = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 
     @Test
@@ -209,7 +212,8 @@ public class PayTicketIT {
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
-        assertThrows(CanceledReserveException.class, () -> { payTicket.execute(input); });
+        BaseException baseException = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 
     @Test
@@ -219,7 +223,8 @@ public class PayTicketIT {
 
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
-        assertThrows(AvailableSeatNotExistException.class, () -> { payTicket.execute(input); });
+        BaseException baseException = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 
     @Test
@@ -228,6 +233,7 @@ public class PayTicketIT {
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
-        assertThrows(ExpiredReserveException.class, () -> { payTicket.execute(input); });
+        BaseException baseException = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
+        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
 }
