@@ -1,4 +1,4 @@
-package com.chaw.concert.app.infrastructure.exception;
+package com.chaw.concert.app.infrastructure.exception.common;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;

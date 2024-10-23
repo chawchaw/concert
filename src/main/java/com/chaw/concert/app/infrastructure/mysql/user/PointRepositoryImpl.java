@@ -2,8 +2,8 @@ package com.chaw.concert.app.infrastructure.mysql.user;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.infrastructure.exception.BaseException;
-import com.chaw.concert.app.infrastructure.exception.ErrorType;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,7 +26,9 @@ public class PointRepositoryImpl implements PointRepository {
 
     @Override
     public Point findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new BaseException(ErrorType.NOT_FOUND, "Point not found"));
+        Point point = repository.findById(id).orElse(null);
+        throwNotFoundException(point);
+        return point;
     }
 
     @Override
@@ -55,5 +57,11 @@ public class PointRepositoryImpl implements PointRepository {
     @Override
     public void deleteAll() {
         repository.deleteAll();
+    }
+
+    private void throwNotFoundException(Point point) {
+        if (point == null) {
+            throw new BaseException(ErrorType.NOT_FOUND, "포인트가 없습니다.");
+        }
     }
 }

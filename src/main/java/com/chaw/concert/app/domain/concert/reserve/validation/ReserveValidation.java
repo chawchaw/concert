@@ -7,8 +7,8 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.infrastructure.exception.BaseException;
-import com.chaw.concert.app.infrastructure.exception.ErrorType;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,10 +16,10 @@ public class ReserveValidation {
 
     public void validateConcertDetails(Concert concert, ConcertSchedule concertSchedule, Ticket ticket) {
         if (!concert.getId().equals(concertSchedule.getConcertId())) {
-            throw new BaseException(ErrorType.BAD_REQUEST, "concert and schedule not matched");
+            throw new BaseException(ErrorType.BAD_REQUEST, "콘서트와 일정이 일치하지 않습니다.");
         }
         if (!concertSchedule.getId().equals(ticket.getConcertScheduleId())) {
-            throw new BaseException(ErrorType.BAD_REQUEST, "schedule and ticket not matched");
+            throw new BaseException(ErrorType.BAD_REQUEST, "일정과 티켓이 일치하지 않습니다.");
         }
     }
 
