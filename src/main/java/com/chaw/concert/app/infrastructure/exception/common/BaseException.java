@@ -1,4 +1,4 @@
-package com.chaw.concert.app.infrastructure.exception;
+package com.chaw.concert.app.infrastructure.exception.common;
 
 public class BaseException extends RuntimeException {
     private final ErrorType errorType;

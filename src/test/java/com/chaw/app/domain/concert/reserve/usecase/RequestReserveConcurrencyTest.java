@@ -10,8 +10,8 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepos
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
-import com.chaw.concert.app.infrastructure.exception.BaseException;
-import com.chaw.concert.app.infrastructure.exception.ErrorType;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

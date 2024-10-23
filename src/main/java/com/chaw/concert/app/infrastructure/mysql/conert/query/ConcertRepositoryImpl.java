@@ -2,8 +2,8 @@ package com.chaw.concert.app.infrastructure.mysql.conert.query;
 
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
-import com.chaw.concert.app.infrastructure.exception.BaseException;
-import com.chaw.concert.app.infrastructure.exception.ErrorType;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,11 +33,19 @@ public class ConcertRepositoryImpl implements ConcertRepository {
 
     @Override
     public Concert findById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new BaseException(ErrorType.NOT_FOUND, "Concert not found"));
+        Concert concert = repository.findById(id).orElse(null);
+        throwNotFoundException(concert);
+        return concert;
     }
 
     @Override
     public void deleteAll() {
         repository.deleteAll();
+    }
+
+    private void throwNotFoundException(Concert concert) {
+        if (concert == null) {
+            throw new BaseException(ErrorType.NOT_FOUND, "없는 콘서트입니다.");
+        }
     }
 }

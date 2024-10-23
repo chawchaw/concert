@@ -1,7 +1,7 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
-import com.chaw.concert.app.infrastructure.exception.BaseException;
-import com.chaw.concert.app.infrastructure.exception.ErrorType;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 
 public enum ReserveStatus {
     RESERVE("RESERVE"), // 예약

@@ -2,8 +2,8 @@ package com.chaw.concert.app.infrastructure.web;
 
 import com.chaw.concert.app.domain.common.user.entity.User;
 import com.chaw.concert.app.domain.common.user.repository.UserRepository;
-import com.chaw.concert.app.infrastructure.exception.BaseException;
-import com.chaw.concert.app.infrastructure.exception.ErrorType;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
