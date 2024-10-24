@@ -3,6 +3,8 @@ package com.chaw.concert.app.infrastructure.mysql.conert.reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -19,7 +21,23 @@ public class ReserveRepositoryImpl implements ReserveRepository {
 
     @Override
     public Reserve findById(Long id) {
-        return repository.findById(id).orElse(null);
+        Reserve reserve = repository.findById(id).orElse(null);
+        throwNotFoundException(reserve);
+        return reserve;
+    }
+
+    @Override
+    public Reserve findByTicketId(Long ticketId) {
+        Reserve reserve = repository.findByTicketId(ticketId);
+        throwNotFoundException(reserve);
+        return reserve;
+    }
+
+    @Override
+    public Reserve findByUserIdAndTicketIdOrderByIdDescLimit(Long userId, Long ticketId, Integer limit) {
+        Reserve reserve = repository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, limit);
+        throwNotFoundException(reserve);
+        return reserve;
     }
 
     @Override
@@ -37,13 +55,9 @@ public class ReserveRepositoryImpl implements ReserveRepository {
         repository.deleteAll();
     }
 
-    @Override
-    public Reserve findByTicketId(Long ticketId) {
-        return repository.findByTicketId(ticketId);
-    }
-
-    @Override
-    public Reserve findByUserIdAndTicketIdOrderByIdDescLimit(Long userId, Long ticketId, Integer limit) {
-        return repository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, limit);
+    private void throwNotFoundException(Reserve reserve) {
+        if (reserve == null) {
+            throw new BaseException(ErrorType.NOT_FOUND, "없는 예약입니다.");
+        }
     }
 }

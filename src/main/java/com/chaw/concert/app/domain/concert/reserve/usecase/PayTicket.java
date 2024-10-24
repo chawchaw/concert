@@ -15,19 +15,21 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.AvailableSeatNotExistException;
-import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class PayTicket {
 
     @Value("${concert.reserve.expired.minutes}")
@@ -61,8 +63,8 @@ public class PayTicket {
         ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
 
-        reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+        reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
+        reserveValidation.validatePayTicketDetails(input.userId(), point, reserve, ticket);
 
         handleExpiredReserve(ticket, reserve);
 
@@ -70,20 +72,19 @@ public class PayTicket {
         // (예약가능 좌석수, 재고없음) 업데이트
         boolean result = concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId());
         if (!result) {
-            throw new AvailableSeatNotExistException();
+            throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, MessageFormat.format("남은 좌석이 없습니다. 일정({0}), 티켓({1}) ", concertSchedule.getId(), ticket.getId()));
         }
 
         // 티켓 상태 업데이트
-        ticket.setStatus(TicketStatus.PAID);
+        ticket.pay();
         ticketRepository.save(ticket);
 
         // 예약 상태 업데이트
-        reserve.setReserveStatus(ReserveStatus.PAID);
-        reserve.setUpdatedAt(now);
+        reserve.pay();
         reserveRepository.save(reserve);
 
         // 포인트 차감
-        point.setBalance(point.getBalance() - reserve.getAmount());
+        point.decreaseBalance(reserve.getAmount());
         pointRepository.save(point);
 
         // 포인트 히스토리 추가
@@ -107,6 +108,7 @@ public class PayTicket {
                 .build();
         paymentRepository.save(payment);
 
+        log.info("결제({}) 완료", payment.getId());
         return new Output(true, payment.getId(), point.getBalance());
     }
 
@@ -114,14 +116,13 @@ public class PayTicket {
     public void handleExpiredReserve(Ticket ticket, Reserve reserve) {
         LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(reserve.getCreatedAt().plusMinutes(EXPIRED_MINUTES))) {
-            ticket.setStatus(TicketStatus.EMPTY);
-            ticket.setReserveUserId(null);
+            ticket.resetToEmpty();
             ticketRepository.save(ticket);
 
-            reserve.setReserveStatus(ReserveStatus.CANCEL);
+            reserve.cancel();
             reserveRepository.save(reserve);
 
-            throw new ExpiredReserveException();
+            throw new BaseException(ErrorType.CONFLICT, "결제 유효기간이 만료되었습니다.");
         }
     }
 
