@@ -7,19 +7,22 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
-import org.junit.jupiter.api.AfterEach;
+import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
-@Transactional
+@TestExecutionListeners(
+        listeners = DatabaseCleanupListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class ChargePointIT {
 
     @Autowired
@@ -30,12 +33,6 @@ public class ChargePointIT {
 
     @Autowired
     private ChargePoint chargePoint;
-
-    @AfterEach
-    void tearDown() {
-        pointRepository.deleteAll();
-        pointHistoryRepository.deleteAll();
-    }
 
     @Test
     void testChargeExistingUser() {

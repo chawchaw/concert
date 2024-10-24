@@ -22,7 +22,7 @@ import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointInput;
-import org.junit.jupiter.api.AfterEach;
+import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -33,6 +33,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -44,6 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
+@TestExecutionListeners(
+        listeners = DatabaseCleanupListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class ConcertE2E {
 
     @Autowired
@@ -116,19 +121,6 @@ public class ConcertE2E {
                 .seatNo("A1")
                 .build();
         ticketRepository.save(ticket);
-    }
-
-    @AfterEach
-    void tearDown() {
-        userRepository.deleteAll();
-        pointRepository.deleteAll();
-        pointHistoryRepository.deleteAll();
-        waitQueueRepository.deleteAll();
-        concertRepository.deleteAll();
-        concertScheduleRepository.deleteAll();
-        ticketRepository.deleteAll();
-        reserveRepository.deleteAll();
-        paymentRepository.deleteAll();
     }
 
     /**
@@ -230,9 +222,4 @@ public class ConcertE2E {
         assertEquals(true, payResult.getBody().success());
     }
 
-    @Test
-    @Disabled // 테스트 데이터 만들기
-    void testForData() {
-        // do nothing
-    }
 }
