@@ -3,6 +3,7 @@ package com.chaw.concert.app.domain.concert.queue.usecase;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
  * 대기열에 입장 및 대기순서, 상태 조회
  */
 @Service
+@Slf4j
 public class EnterWaitQueue {
 
     private final WaitQueueRepository waitQueueRepository;
@@ -34,6 +36,7 @@ public class EnterWaitQueue {
                     .createdAt(LocalDateTime.now())
                     .build();
             waitQueueRepository.save(waitQueue);
+            log.info("[사용자id({})] 대기열 입장", input.userId());
         }
 
         Long order = -1L;

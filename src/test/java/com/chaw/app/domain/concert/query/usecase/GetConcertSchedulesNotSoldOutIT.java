@@ -67,7 +67,7 @@ public class GetConcertSchedulesNotSoldOutIT {
     @Test
     void testGetConcertSchedulesNotSoldOut() {
         // Given
-        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concert.getId());
+        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(0L, concert.getId());
 
         // When
         GetConcertSchedulesNotSoldOut.Output output = getConcertSchedulesNotSoldOut.execute(input);

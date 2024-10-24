@@ -1,6 +1,8 @@
 package com.chaw.app.domain.concert.reserve.validation;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
+import com.chaw.concert.app.domain.concert.query.entity.Concert;
+import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
@@ -20,7 +22,33 @@ class ReserveValidationUnitTest {
 
     @BeforeEach
     void setUp() {
-        reserveValidation = new ReserveValidation();
+        reserveValidation = new
+                ReserveValidation();
+    }
+
+    @Test
+    void validateConcertDetails_콘서트와_일정이_일치하지_않음() {
+        Long userId = 0L;
+        Concert concert = Concert.builder().id(1L).build();
+        ConcertSchedule concertSchedule = ConcertSchedule.builder().concertId(2L).build();
+
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            reserveValidation.validateConcertDetails(userId, concert, concertSchedule, null);
+        });
+        assertEquals(ErrorType.BAD_REQUEST, exception.getErrorType());
+    }
+
+    @Test
+    void validateConcertDetails_일정과_티켓이_일치하지_않음() {
+        Long userId = 0L;
+        Concert concert = Concert.builder().id(1L).build();
+        ConcertSchedule concertSchedule = ConcertSchedule.builder().id(1L).concertId(1L).build();
+        Ticket ticket = Ticket.builder().concertScheduleId(2L).build();
+
+        BaseException exception = assertThrows(BaseException.class, () -> {
+            reserveValidation.validateConcertDetails(userId, concert, concertSchedule, ticket);
+        });
+        assertEquals(ErrorType.BAD_REQUEST, exception.getErrorType());
     }
 
     @Test
@@ -43,7 +71,7 @@ class ReserveValidationUnitTest {
         Ticket ticket = new Ticket();
 
         BaseException baseException = assertThrows(BaseException.class, () -> {
-            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);
         });
         assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
@@ -54,11 +82,11 @@ class ReserveValidationUnitTest {
         point.setBalance(100);
         Reserve reserve = new Reserve();
         reserve.setAmount(50);
-        Ticket ticket = new Ticket();
+        Ticket ticket = Ticket.builder().id(1L).build();
         ticket.setStatus(TicketStatus.PAID);  // 티켓이 RESERVE 상태가 아님
 
         BaseException baseException = assertThrows(BaseException.class, () -> {
-            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);
         });
         assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
     }
@@ -74,7 +102,7 @@ class ReserveValidationUnitTest {
         ticket.setStatus(TicketStatus.RESERVE);
 
         BaseException exception = assertThrows(BaseException.class, () -> {
-            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);
         });
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
@@ -90,7 +118,7 @@ class ReserveValidationUnitTest {
         ticket.setStatus(TicketStatus.RESERVE);
 
         BaseException exception = assertThrows(BaseException.class, () -> {
-            reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+            reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);
         });
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }

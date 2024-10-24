@@ -39,7 +39,7 @@ public class RequestReserve {
         ConcertSchedule concertSchedule = concertScheduleRepository.findById(input.concertScheduleId());
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
 
-        reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
+        reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
         reserveValidation.validateReserveDetails(ticket);
 
         ticket.setStatus(TicketStatus.RESERVE);

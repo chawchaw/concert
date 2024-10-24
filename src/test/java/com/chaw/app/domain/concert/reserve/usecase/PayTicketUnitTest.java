@@ -114,11 +114,11 @@ class PayTicketUnitTest {
         when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
         when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
-        doNothing().when(reserveValidation).validateConcertDetails(concert, concertSchedule, ticket);
-        doNothing().when(reserveValidation).validatePayTicketDetails(point, reserve, ticket);
+        doNothing().when(reserveValidation).validateConcertDetails(userId, concert, concertSchedule, ticket);
+        doNothing().when(reserveValidation).validatePayTicketDetails(userId, point, reserve, ticket);
         when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
-        PayTicket.Input input = new PayTicket.Input(userId, 1L, 1L, ticketId);
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         // when
         PayTicket.Output output = payTicket.execute(input);
@@ -126,8 +126,8 @@ class PayTicketUnitTest {
         // then
         assertEquals(500, output.balance()); // 남은 포인트 확인
 
-        verify(reserveValidation, times(1)).validateConcertDetails(concert, concertSchedule, ticket);
-        verify(reserveValidation, times(1)).validatePayTicketDetails(point, reserve, ticket);
+        verify(reserveValidation, times(1)).validateConcertDetails(userId, concert, concertSchedule, ticket);
+        verify(reserveValidation, times(1)).validatePayTicketDetails(userId, point, reserve, ticket);
 
         verify(concertScheduleRepository).decreaseAvailableSeat(anyLong());
         verify(ticketRepository).save(any(Ticket.class));
@@ -158,14 +158,14 @@ class PayTicketUnitTest {
         when(concertScheduleRepository.findByIdWithLock(anyLong())).thenReturn(ConcertSchedule.builder().id(concertScheduleId).build());
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(anyLong(), anyLong(), anyInt())).thenReturn(reserve);
 
-        doNothing().when(reserveValidation).validateConcertDetails(any(), any(), any());
-        doNothing().when(reserveValidation).validatePayTicketDetails(any(), any(), any());
+        doNothing().when(reserveValidation).validateConcertDetails(any(), any(), any(), any());
+        doNothing().when(reserveValidation).validatePayTicketDetails(any(), any(), any(), any());
 
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // when / then
         BaseException baseException = assertThrows(BaseException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
-        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
+        assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
     }
 
     @Test

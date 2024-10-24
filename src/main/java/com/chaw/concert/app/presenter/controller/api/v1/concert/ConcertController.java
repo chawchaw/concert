@@ -72,10 +72,11 @@ public class ConcertController {
     public GetConcertSchedulesNotSoldOut.Output getSchedules(
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
             @RequestHeader("uuid") String uuid,
+            @RequestAttribute("userId") Long userId,
             @PathVariable Long concertId
     ) {
         return getConcertSchedulesNotSoldOut.execute(
-                new GetConcertSchedulesNotSoldOut.Input(concertId)
+                new GetConcertSchedulesNotSoldOut.Input(userId, concertId)
         );
     }
 

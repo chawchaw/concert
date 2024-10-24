@@ -71,7 +71,7 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
         when(concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)).thenReturn(concertSchedules);
 
         // When
-        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
+        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(0L, concertId);
         GetConcertSchedulesNotSoldOut.Output output = getConcertSchedulesNotSoldOut.execute(input);
 
         // Then

@@ -21,6 +21,9 @@ import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class PayTicket {
 
     @Value("${concert.reserve.expired.minutes}")
@@ -61,8 +65,8 @@ public class PayTicket {
         ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
 
-        reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
-        reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+        reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
+        reserveValidation.validatePayTicketDetails(input.userId(), point, reserve, ticket);
 
         handleExpiredReserve(ticket, reserve);
 
@@ -107,6 +111,7 @@ public class PayTicket {
                 .build();
         paymentRepository.save(payment);
 
+        log.info("[사용자id({})] 결제({}) 완료", input.userId(), payment.getId());
         return new Output(true, payment.getId(), point.getBalance());
     }
 

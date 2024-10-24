@@ -224,7 +224,7 @@ public class PayTicketIT {
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         BaseException baseException = assertThrows(BaseException.class, () -> { payTicket.execute(input); });
-        assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
+        assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
     }
 
     @Test
