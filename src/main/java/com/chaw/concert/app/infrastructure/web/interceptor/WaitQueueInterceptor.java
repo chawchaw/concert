@@ -1,4 +1,4 @@
-package com.chaw.concert.app.infrastructure.web;
+package com.chaw.concert.app.infrastructure.web.interceptor;
 
 import com.chaw.concert.app.domain.common.user.entity.User;
 import com.chaw.concert.app.domain.common.user.repository.UserRepository;

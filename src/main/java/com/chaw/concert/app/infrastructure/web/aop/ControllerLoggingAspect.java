@@ -1,4 +1,4 @@
-package com.chaw.concert.app.infrastructure.web;
+package com.chaw.concert.app.infrastructure.web.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
