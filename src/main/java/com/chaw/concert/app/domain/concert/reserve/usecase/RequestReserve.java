@@ -11,12 +11,14 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class RequestReserve {
 
     private final ConcertRepository concertRepository;
@@ -55,6 +57,8 @@ public class RequestReserve {
                 .updatedAt(LocalDateTime.now())
                 .build();
         reserveRepository.save(reserve);
+
+        log.info("예약({}) 완료", reserve.getId());
         return new Output(ticket);
     }
 

@@ -44,18 +44,18 @@ public class ReserveValidation {
             throw new BaseException(ErrorType.CONFLICT, "잔액이 부족합니다.");
         }
 
-        // 티켓 예약 상태 체크
-        if (ticket.getStatus() != TicketStatus.RESERVE) {
-            log.warn("예약되지 않은 티켓({})을 결제시도", ticket.getId());
-            throw new BaseException(ErrorType.CONFLICT, "예약된 티켓이 아닙니다.");
-        }
-
         // 예약 상태 체크
         if (reserve.getReserveStatus() == ReserveStatus.PAID) {
             throw new BaseException(ErrorType.CONFLICT, "결제 완료된 예약입니다.");
         }
         else if (reserve.getReserveStatus() == ReserveStatus.CANCEL) {
             throw new BaseException(ErrorType.CONFLICT, "취소된 예약입니다.");
+        }
+
+        // 티켓 예약 상태 체크
+        if (ticket.getStatus() != TicketStatus.RESERVE) {
+            log.warn("예약되지 않은 티켓({})을 결제시도", ticket.getId());
+            throw new BaseException(ErrorType.CONFLICT, "예약된 티켓이 아닙니다.");
         }
     }
 }

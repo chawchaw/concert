@@ -18,12 +18,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SpringSecurityConfig {
+public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
-    public SpringSecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
     }
@@ -46,8 +46,8 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(
-                                        "/swagger-ui/**", "/v3/api-docs/**",
-                                        "api/v1/user/auth/login"
+                                        "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
+                                        "api/v1/user/auth/join", "api/v1/user/auth/login"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
