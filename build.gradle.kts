@@ -28,8 +28,12 @@ dependencies {
     implementation("mysql:mysql-connector-java:8.0.33") // MySQL 8.0 의존성 추가
     implementation("org.springframework.boot:spring-boot-starter-data-jpa") // Spring Data JPA 추가
     implementation("org.springframework.boot:spring-boot-starter-security") // Spring Security 의존성 추가
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5") // JWT API 의존성 추가
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
+
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5") // JWT 구현체
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5") // JSON 처리
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
