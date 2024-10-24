@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class ConcertE2E {
+public class ConcertE2EWithRestAssured {
 
     @Autowired
     private PasswordEncoder passwordEncoder;

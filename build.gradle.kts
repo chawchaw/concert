@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa") // Spring Data JPA 추가
     implementation("org.springframework.boot:spring-boot-starter-security") // Spring Security 의존성 추가
     implementation("io.jsonwebtoken:jjwt-api:0.11.5") // JWT API 의존성 추가
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign") // OpenFeign 의존성 추가
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 
@@ -38,6 +39,12 @@ dependencies {
     testImplementation("io.rest-assured:json-path:5.3.0") // JSONPath 의존성 추가
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.3")
+    }
 }
 
 tasks.withType<Test> {
