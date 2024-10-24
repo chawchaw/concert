@@ -111,7 +111,7 @@ public class PayTicket {
                 .build();
         paymentRepository.save(payment);
 
-        log.info("[사용자id({})] 결제({}) 완료", input.userId(), payment.getId());
+        log.info("결제({}) 완료", payment.getId());
         return new Output(true, payment.getId(), point.getBalance());
     }
 

@@ -58,7 +58,8 @@ public class ConcertController {
     @ResponseStatus(HttpStatus.OK)
     public GetConcerts.Output getConcerts(
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
-            @RequestHeader("uuid") String uuid
+            @RequestHeader("uuid") String uuid,
+            @RequestAttribute("userId") Long userId
     ) {
         return getConcerts.execute();
     }
@@ -89,6 +90,7 @@ public class ConcertController {
     public GetTicketsInEmptyStatus.Output getTickets(
             @Parameter(description = "UUID", example = "123e4567-e89b-12d3-a456-426614174000", required = true, in = ParameterIn.HEADER)
             @RequestHeader("uuid") String uuid,
+            @RequestAttribute("userId") Long userId,
             @PathVariable Long concertId,
             @PathVariable Long concertScheduleId
     ) {

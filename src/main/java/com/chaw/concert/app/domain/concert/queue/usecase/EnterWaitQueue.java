@@ -36,7 +36,7 @@ public class EnterWaitQueue {
                     .createdAt(LocalDateTime.now())
                     .build();
             waitQueueRepository.save(waitQueue);
-            log.info("[사용자id({})] 대기열 입장", input.userId());
+            log.info("대기열 입장");
         }
 
         Long order = -1L;

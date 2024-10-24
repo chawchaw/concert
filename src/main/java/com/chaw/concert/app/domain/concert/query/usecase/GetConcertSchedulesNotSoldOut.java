@@ -27,7 +27,7 @@ public class GetConcertSchedulesNotSoldOut {
 
         List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSoldOut(input.concertId(), false);
 
-        log.info("[사용자id({})] 일정({}) 조회", input.userId(), input.concertId());
+        log.info("일정({}) 조회", input.concertId());
         return new Output(
                 concert.getId(),
                 concert.getName(),

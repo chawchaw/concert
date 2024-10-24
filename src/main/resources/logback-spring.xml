@@ -4,7 +4,7 @@
     <!-- 콘솔에 로그를 출력하는 설정 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger [eventId=%X{eventId}] [userId=%X{userId}] - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -13,7 +13,7 @@
         <file>logs/app.log</file> <!-- 로그 파일 경로 설정 -->
         <append>true</append> <!-- 기존 로그에 추가 -->
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger [eventId=%X{eventId}] [userId=%X{userId}] - %msg%n</pattern>
         </encoder>
     </appender>
 

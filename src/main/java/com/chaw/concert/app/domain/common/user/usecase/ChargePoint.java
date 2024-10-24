@@ -37,7 +37,7 @@ public class ChargePoint {
                 .build();
         pointHistoryRepository.save(pointHistory);
 
-        log.info("[사용자id({})] {} 포인트 충전", input.userId(), input.point());
+        log.info("{} 포인트 충전", input.point());
         return new Output(point.getBalance());
     }
 
