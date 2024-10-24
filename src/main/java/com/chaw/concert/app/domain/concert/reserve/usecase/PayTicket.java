@@ -22,12 +22,11 @@ import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 
 @Service
@@ -74,7 +73,7 @@ public class PayTicket {
         // (예약가능 좌석수, 재고없음) 업데이트
         boolean result = concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId());
         if (!result) {
-            throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "남은 좌석이 없습니다. 일정 ID: " + concertSchedule.getId() + ", 티켓 ID: " + ticket.getId());
+            throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, MessageFormat.format("남은 좌석이 없습니다. 일정({0}), 티켓({1}) ", concertSchedule.getId(), ticket.getId()));
         }
 
         // 티켓 상태 업데이트
