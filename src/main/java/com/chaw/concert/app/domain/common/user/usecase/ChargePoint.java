@@ -5,12 +5,14 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class ChargePoint {
 
     private final PointRepository pointRepository;
@@ -24,14 +26,7 @@ public class ChargePoint {
     @Transactional
     public Output execute(Input input) {
         Point point = pointRepository.findByUserIdWithLock(input.userId());
-        if (point == null) {
-            point = Point.builder()
-                    .userId(input.userId())
-                    .balance(0)
-                    .build();
-        }
-
-        point.setBalance(point.getBalance() + input.point());
+        point.increaseBalance(input.point());
         pointRepository.save(point);
 
         PointHistory pointHistory = PointHistory.builder()
@@ -42,6 +37,7 @@ public class ChargePoint {
                 .build();
         pointHistoryRepository.save(pointHistory);
 
+        log.info("{} 포인트 충전", input.point());
         return new Output(point.getBalance());
     }
 

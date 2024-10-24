@@ -14,12 +14,12 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.AvailableSeatNotExistException;
-import com.chaw.concert.app.domain.concert.reserve.exception.ExpiredReserveException;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -114,11 +114,11 @@ class PayTicketUnitTest {
         when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
         when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
-        doNothing().when(reserveValidation).validateConcertDetails(concert, concertSchedule, ticket);
-        doNothing().when(reserveValidation).validatePayTicketDetails(point, reserve, ticket);
+        doNothing().when(reserveValidation).validateConcertDetails(userId, concert, concertSchedule, ticket);
+        doNothing().when(reserveValidation).validatePayTicketDetails(userId, point, reserve, ticket);
         when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
-        PayTicket.Input input = new PayTicket.Input(userId, 1L, 1L, ticketId);
+        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         // when
         PayTicket.Output output = payTicket.execute(input);
@@ -126,8 +126,8 @@ class PayTicketUnitTest {
         // then
         assertEquals(500, output.balance()); // 남은 포인트 확인
 
-        verify(reserveValidation, times(1)).validateConcertDetails(concert, concertSchedule, ticket);
-        verify(reserveValidation, times(1)).validatePayTicketDetails(point, reserve, ticket);
+        verify(reserveValidation, times(1)).validateConcertDetails(userId, concert, concertSchedule, ticket);
+        verify(reserveValidation, times(1)).validatePayTicketDetails(userId, point, reserve, ticket);
 
         verify(concertScheduleRepository).decreaseAvailableSeat(anyLong());
         verify(ticketRepository).save(any(Ticket.class));
@@ -158,13 +158,14 @@ class PayTicketUnitTest {
         when(concertScheduleRepository.findByIdWithLock(anyLong())).thenReturn(ConcertSchedule.builder().id(concertScheduleId).build());
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(anyLong(), anyLong(), anyInt())).thenReturn(reserve);
 
-        doNothing().when(reserveValidation).validateConcertDetails(any(), any(), any());
-        doNothing().when(reserveValidation).validatePayTicketDetails(any(), any(), any());
+        doNothing().when(reserveValidation).validateConcertDetails(any(), any(), any(), any());
+        doNothing().when(reserveValidation).validatePayTicketDetails(any(), any(), any(), any());
 
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // when / then
-        assertThrows(AvailableSeatNotExistException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
+        BaseException baseException = assertThrows(BaseException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
+        assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
     }
 
     @Test
@@ -178,11 +179,12 @@ class PayTicketUnitTest {
         when(reserveRepository.save(reserve)).thenReturn(reserve);
 
         // When / Then
-        assertThrows(ExpiredReserveException.class, () -> {
+        BaseException exception = assertThrows(BaseException.class, () -> {
             payTicket.handleExpiredReserve(ticket, reserve);
         });
 
         // Verify
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
     }
@@ -223,9 +225,10 @@ class PayTicketUnitTest {
 
         // When / Then
         PayTicket.Input input = new PayTicket.Input(userId, concertId, 1L, ticketId);
-        assertThrows(ExpiredReserveException.class, () -> payTicket.execute(input));
+        BaseException exception = assertThrows(BaseException.class, () -> payTicket.execute(input));
 
         // Verify
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
     }

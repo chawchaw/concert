@@ -5,7 +5,6 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +17,7 @@ public class Concert {
     @Column(length = 127)
     private String name; // 공연이름
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1023)
     private String info; // 공연정보
 
     @Column(length = 127)

@@ -1,14 +1,16 @@
 package com.chaw.concert.app.domain.common.user.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 public class Point {
 
     @Id
@@ -20,4 +22,12 @@ public class Point {
 
     @Column(name = "balance")
     private Integer balance;
+
+    public void increaseBalance(Integer amount) {
+        this.balance += amount;
+    }
+
+    public void decreaseBalance(Integer amount) {
+        this.balance -= amount;
+    }
 }

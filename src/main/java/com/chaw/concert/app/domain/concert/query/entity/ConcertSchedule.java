@@ -1,13 +1,15 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,4 +33,12 @@ public class ConcertSchedule {
 
     @Column(name = "date_concert")
     private LocalDateTime dateConcert; // 공연일
+
+    public void limitAvailableSeatsToOne() {
+        this.availableSeat = 1;
+    }
+
+    public void limitAvailableSeatsToZero() {
+        this.availableSeat = 0;
+    }
 }

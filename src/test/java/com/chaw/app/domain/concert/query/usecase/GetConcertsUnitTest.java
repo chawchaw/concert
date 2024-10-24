@@ -30,8 +30,8 @@ public class GetConcertsUnitTest {
     @Test
     void testExecute() {
         // Given
-        Concert concert1 = new Concert();
-        Concert concert2 = new Concert();
+        Concert concert1 = Concert.builder().id(1L).build();
+        Concert concert2 = Concert.builder().id(2L).build();
         List<Concert> mockConcerts = Arrays.asList(concert1, concert2);
 
         when(concertRepository.findAll()).thenReturn(mockConcerts);
@@ -40,6 +40,8 @@ public class GetConcertsUnitTest {
         GetConcerts.Output output = getConcerts.execute();
 
         // Then
-        assertEquals(mockConcerts, output.concerts());
+        assertEquals(2, output.concerts().size());
+        assertEquals(1L, output.concerts().get(0).id());
+        assertEquals(2L, output.concerts().get(1).id());
     }
 }
