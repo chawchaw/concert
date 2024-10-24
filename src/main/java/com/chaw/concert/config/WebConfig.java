@@ -19,8 +19,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(waitQueueInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
-                        "/api/**/user/auth/**",
-                        "/api/**/concert/queue"
+                        "/api/**/auth/**",
+                        "/api/**/queue/**"
                 );
     }
 }
