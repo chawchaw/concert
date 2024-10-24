@@ -24,10 +24,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -54,31 +52,38 @@ public class RequestReserveConcurrencyTest {
     @Autowired
     private RequestReserve requestReserve;
 
-    private Concert concert;
-    private ConcertSchedule concertSchedule;
-    private Ticket ticket;
+    private Concert concert1;
+    private ConcertSchedule concertSchedule1;
+    private Ticket ticket1;
+    private Ticket ticket2;
 
     @BeforeEach
     void setUp() {
-        concert = Concert.builder()
-                .name("concert")
+        concert1 = Concert.builder()
+                .name("concert1")
                 .build();
-        concertRepository.save(concert);
+        concertRepository.save(concert1);
 
-        concertSchedule = ConcertSchedule.builder()
-                .concertId(concert.getId())
+        concertSchedule1 = ConcertSchedule.builder()
+                .concertId(concert1.getId())
                 .isSoldOut(false)
                 .totalSeat(10)
                 .availableSeat(10)
                 .dateConcert(LocalDateTime.now().plusDays(1))
                 .build();
-        concertScheduleRepository.save(concertSchedule);
+        concertScheduleRepository.save(concertSchedule1);
 
-        ticket = Ticket.builder()
-                .concertScheduleId(concertSchedule.getId())
+        ticket1 = Ticket.builder()
+                .concertScheduleId(concertSchedule1.getId())
                 .status(TicketStatus.EMPTY)
                 .build();
-        ticketRepository.save(ticket);
+        ticketRepository.save(ticket1);
+
+        ticket2 = Ticket.builder()
+                .concertScheduleId(concertSchedule1.getId())
+                .status(TicketStatus.EMPTY)
+                .build();
+        ticketRepository.save(ticket2);
     }
 
     @Test
@@ -92,7 +97,7 @@ public class RequestReserveConcurrencyTest {
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
             futures.add(executorService.submit(() -> {
-                RequestReserve.Input input = new RequestReserve.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+                RequestReserve.Input input = new RequestReserve.Input(userId, concert1.getId(), concertSchedule1.getId(), ticket1.getId());
                 return requestReserve.execute(input);
             }));
         }
@@ -119,7 +124,7 @@ public class RequestReserveConcurrencyTest {
         assertEquals(4, failureCount);
 
         // 티켓의 상태가 최종적으로 RESERVE로 변경되었는지 확인
-        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
+        Ticket updatedTicket = ticketRepository.findById(ticket1.getId());
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
 
         for (Throwable exception : exceptions) {
@@ -128,5 +133,88 @@ public class RequestReserveConcurrencyTest {
         }
 
         executorService.shutdown();
+    }
+
+    @Test
+    void 티켓2장에_대해_티켓1은_7명_티켓2는_3명이_동시_요청() throws InterruptedException {
+        // given
+        int ticket1Users = 7; // ticket1을 예약하려는 사용자 수
+        int ticket2Users = 3; // ticket2를 예약하려는 사용자 수
+        int totalUsers = ticket1Users + ticket2Users; // 총 사용자 수
+
+        CountDownLatch readyLatch = new CountDownLatch(totalUsers);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(totalUsers);
+
+        AtomicInteger successTicket1 = new AtomicInteger(0);
+        AtomicInteger successTicket2 = new AtomicInteger(0);
+        AtomicInteger failTicket1 = new AtomicInteger(0);
+        AtomicInteger failTicket2 = new AtomicInteger(0);
+        ExecutorService executorService = Executors.newFixedThreadPool(totalUsers);
+
+        // when
+        // ticket1을 예약하려는 7명의 사용자
+        for (int i = 0; i < ticket1Users; i++) {
+            final long userId = i + 1;
+            executorService.execute(() -> {
+                try {
+                    readyLatch.countDown();
+                    startLatch.await();
+
+                    // ticket1 예약
+                    RequestReserve.Input input = new RequestReserve.Input(userId, 1L, 1L, 1L);
+                    requestReserve.execute(input);
+                    successTicket1.incrementAndGet();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (RuntimeException e) {
+                    failTicket1.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        // ticket2을 예약하려는 3명의 사용자
+        for (int i = 0; i < ticket2Users; i++) {
+            final long userId = i + 1 + ticket1Users; // 사용자 ID는 ticket1 예약자 이후로 시작
+            executorService.execute(() -> {
+                try {
+                    readyLatch.countDown();
+                    startLatch.await();
+
+                    // ticket2 예약
+                    RequestReserve.Input input = new RequestReserve.Input(userId, 1L, 1L, 2L);
+                    requestReserve.execute(input);
+                    successTicket2.incrementAndGet();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (RuntimeException e) {
+                    failTicket2.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        readyLatch.await();
+        startLatch.countDown();
+        doneLatch.await();
+
+        // then
+        // 티켓1이 예약된 수와 티켓2가 예약된 수가 각각 정확한지 확인
+        Ticket reservedTicket1 = ticketRepository.findById(1L);
+        Ticket reservedTicket2 = ticketRepository.findById(2L);
+
+        assertEquals(TicketStatus.RESERVE, reservedTicket1.getStatus()); // 티켓1 예약 확인
+        assertEquals(TicketStatus.RESERVE, reservedTicket2.getStatus()); // 티켓2 예약 확인
+
+        assertEquals(1, successTicket1.get()); // 티켓1 한명만 성공
+        assertEquals(1, successTicket2.get()); // 티켓2 한명만 성공
+        assertEquals(ticket1Users - 1, failTicket1.get()); // 티켓1 한명을 제외한 모두 실패
+        assertEquals(ticket2Users - 1, failTicket2.get()); // 티켓2 한명을 제외한 모두 실패
+
+        executorService.shutdown(); // 스레드풀 종료
+        executorService.awaitTermination(1, TimeUnit.MINUTES); // 스레드풀 종료를 기다림
     }
 }

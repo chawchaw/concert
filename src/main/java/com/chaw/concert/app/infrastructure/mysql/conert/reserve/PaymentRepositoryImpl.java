@@ -27,4 +27,9 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public Payment findById(Long id) {
         return repository.findById(id).orElse(null);
     }
+
+    @Override
+    public Integer countByReserveId(Long reserveId) {
+        return repository.countByReserveId(reserveId);
+    }
 }
