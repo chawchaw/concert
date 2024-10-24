@@ -1,7 +1,7 @@
 package com.chaw.concert.app.infrastructure.web.interceptor;
 
-import com.chaw.concert.app.domain.common.user.entity.User;
-import com.chaw.concert.app.domain.common.user.repository.UserRepository;
+import com.chaw.concert.app.domain.common.auth.entity.User;
+import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
