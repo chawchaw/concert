@@ -59,7 +59,7 @@ public class RequestReserve {
         reserveRepository.save(reserve);
 
         log.info("예약({}) 완료", reserve.getId());
-        return new Output(ticket);
+        return new Output(true);
     }
 
     public record Input (
@@ -70,6 +70,6 @@ public class RequestReserve {
     ) {}
 
     public record Output (
-        Ticket ticket
+        Boolean success
     ) {}
 }

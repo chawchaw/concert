@@ -78,7 +78,7 @@ public class RequestReserveUnitTest {
 
         // Then
         assertNotNull(output);
-        assertEquals(TicketStatus.RESERVE, output.ticket().getStatus());
+        assertEquals(true, output.success());
 
         verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
         verify(ticketRepository, times(1)).save(ticket);

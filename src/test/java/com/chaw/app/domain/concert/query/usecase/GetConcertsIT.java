@@ -49,9 +49,9 @@ public class GetConcertsIT {
         GetConcerts.Output output = getConcerts.execute();
 
         // Then
-        List<Concert> concerts = output.concerts();
+        List<GetConcerts.Output.ConcertOutput> concerts = output.concerts();
         assertEquals(2, concerts.size());
-        assertTrue(concerts.stream().anyMatch(c -> c.getName().equals("Concert 1")));
-        assertTrue(concerts.stream().anyMatch(c -> c.getName().equals("Concert 2")));
+        assertTrue(concerts.stream().anyMatch(c -> c.name().equals("Concert 1")));
+        assertTrue(concerts.stream().anyMatch(c -> c.name().equals("Concert 2")));
     }
 }

@@ -2,9 +2,9 @@ package com.chaw.app.domain.concert.e2e;
 
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.auth.entity.User;
+import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
 import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
 import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
@@ -167,11 +167,11 @@ public class ConcertE2E {
                 GetConcerts.Output.class
         );
         assertEquals(1, getConcertsResult.getBody().concerts().size());
-        Concert concert = getConcertsResult.getBody().concerts().get(0);
+        GetConcerts.Output.ConcertOutput concert = getConcertsResult.getBody().concerts().get(0);
 
         // 일정조회
         ResponseEntity<GetConcertSchedulesNotSoldOut.Output> getSchedulesResult = restTemplate.exchange(
-                MessageFormat.format("{0}/concert/{1}/schedule", host, concert.getId()),
+                MessageFormat.format("{0}/concert/{1}/schedule", host, concert.id()),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 GetConcertSchedulesNotSoldOut.Output.class
@@ -181,7 +181,7 @@ public class ConcertE2E {
 
         // 티켓조회
         ResponseEntity<GetTicketsInEmptyStatus.Output> getTicketsResult = restTemplate.exchange(
-                MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets", host, concert.getId(), concertSchedule.id()),
+                MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets", host, concert.id(), concertSchedule.id()),
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 GetTicketsInEmptyStatus.Output.class
@@ -191,17 +191,17 @@ public class ConcertE2E {
 
         // 예약
         ResponseEntity<RequestReserve.Output> reserveResult = restTemplate.exchange(
-                MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets/{3}/reserve", host, concert.getId(), concertSchedule.id(), ticket.id()),
+                MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets/{3}/reserve", host, concert.id(), concertSchedule.id(), ticket.id()),
                 HttpMethod.POST,
                 new HttpEntity<>(headers),
                 RequestReserve.Output.class
         );
-        assertEquals(ticket.id(), reserveResult.getBody().ticket().getId());
+        assertEquals(true, reserveResult.getBody().success());
 
         // 결제(잔액실패)
         try {
             restTemplate.exchange(
-                    MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets/{3}/pay", host, concert.getId(), concertSchedule.id(), ticket.id()),
+                    MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets/{3}/pay", host, concert.id(), concertSchedule.id(), ticket.id()),
                     HttpMethod.POST,
                     new HttpEntity<>(headers),
                     PayTicket.Output.class
@@ -222,7 +222,7 @@ public class ConcertE2E {
 
         // 결제(성공)
         ResponseEntity<PayTicket.Output> payResult = restTemplate.exchange(
-                MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets/{3}/pay", host, concert.getId(), concertSchedule.id(), ticket.id()),
+                MessageFormat.format("{0}/concert/{1}/schedule/{2}/tickets/{3}/pay", host, concert.id(), concertSchedule.id(), ticket.id()),
                 HttpMethod.POST,
                 new HttpEntity<>(headers),
                 PayTicket.Output.class
