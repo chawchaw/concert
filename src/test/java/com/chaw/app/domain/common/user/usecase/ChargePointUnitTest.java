@@ -1,4 +1,4 @@
-package com.chaw.app.domain.user.usecase;
+package com.chaw.app.domain.common.user.usecase;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;

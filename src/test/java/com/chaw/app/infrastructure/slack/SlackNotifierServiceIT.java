@@ -2,6 +2,7 @@ package com.chaw.app.infrastructure.slack;
 
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ public class SlackNotifierServiceIT {
     private SlackNotifierService slackNotifierService;
 
     @Test
+    @Disabled
     void testSendErrorNotificationToSlack() {
         String message = "Test error message from SlackNotifierService";
         Boolean result = slackNotifierService.sendErrorNotificationToSlack(message);

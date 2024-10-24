@@ -1,10 +1,10 @@
 package com.chaw.app.domain.concert.e2e;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.domain.common.user.entity.User;
+import com.chaw.concert.app.domain.common.auth.entity.User;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.repository.UserRepository;
+import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
 import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
 import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
