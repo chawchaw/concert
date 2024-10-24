@@ -3,26 +3,32 @@ package com.chaw.app.domain.concert.e2e;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.auth.entity.User;
 import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
-import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
-import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.scheduler.PassWaitQueue;
-import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointInput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginInput;
 import com.chaw.helper.DatabaseCleanupListener;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -33,47 +39,32 @@ import java.time.LocalDateTime;
 public class ConcertE2E {
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private PointRepository pointRepository;
-    @Autowired
-    private PointHistoryRepository pointHistoryRepository;
-    @Autowired
-    private WaitQueueRepository waitQueueRepository;
+
     @Autowired
     private ConcertRepository concertRepository;
+
     @Autowired
     private ConcertScheduleRepository concertScheduleRepository;
+
     @Autowired
     private TicketRepository ticketRepository;
-    @Autowired
-    private ReserveRepository reserveRepository;
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     @Autowired
     private PassWaitQueue passWaitQueue;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
     private final String host = "http://localhost:8080/api/v1";
-    private final String uuid = "123e4567-e89b-12d3-a456-426614174000";
+    private final String username = "user1";
+    private final String password = "password";
 
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
-        pointRepository.deleteAll();
-        pointHistoryRepository.deleteAll();
-        waitQueueRepository.deleteAll();
-        concertRepository.deleteAll();
-        concertScheduleRepository.deleteAll();
-        ticketRepository.deleteAll();
-        reserveRepository.deleteAll();
-        paymentRepository.deleteAll();
-
         User user = User.builder()
-                .name("User1")
-                .uuid("123e4567-e89b-12d3-a456-426614174000")
+                .username(username)
+                .password(passwordEncoder.encode(password))
                 .build();
         userRepository.save(user);
 
@@ -104,5 +95,102 @@ public class ConcertE2E {
         ticketRepository.save(ticket);
     }
 
+    /**
+     * 로그인
+     * -> 대기열 입장 -> 대기열 스케줄러 동작 -> 통과
+     * -> 콘서트조회 -> 일정조회 -> 티켓조회
+     * -> 예약 -> 결제(잔액실패) -> 포인트 충전 -> 결제(성공)
+     */
+    @Test
+    @Disabled
+    // 로컬 서버 실행 필요
+    void success_pay() {
+        // 로그인
+        Response loginResponse = given()
+                .header("Content-Type", "application/json")
+                .body(new LoginInput(username, password))
+                .post(host + "/auth/login")
+                .then()
+                .statusCode(200)
+                .extract().response();
+        String token = loginResponse.jsonPath().getString("token");
+        assertNotNull(token);
 
+        RequestSpecification requestSpec = given()
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "application/json");
+
+        // 대기열 입장
+        requestSpec
+                .post(host + "/queue/enter")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo(WaitQueueStatus.WAIT.name()))
+                .extract().response();
+
+        // 스케줄러 동작
+        passWaitQueue.execute();
+
+        // 대기열 통과
+        requestSpec
+                .post(host + "/queue/enter")
+                .then()
+                .statusCode(200)
+                .body("status", equalTo(WaitQueueStatus.PASS.name()));
+
+        // 콘서트 조회
+        Response getConcertsResponse = requestSpec
+                .get(host + "/concert")
+                .then()
+                .statusCode(200)
+                .body("concerts.size()", equalTo(1))
+                .extract().response();
+        Long concertId = getConcertsResponse.jsonPath().getLong("concerts[0].id");
+
+        // 일정 조회
+        Response getSchedulesResponse = requestSpec
+                .get(host + "/concert/" + concertId + "/schedule")
+                .then()
+                .statusCode(200)
+                .body("schedules.size()", equalTo(1))
+                .extract().response();
+        Long scheduleId = getSchedulesResponse.jsonPath().getLong("schedules[0].id");
+
+        // 티켓 조회
+        Response getTicketsResponse = requestSpec
+                .get(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets")
+                .then()
+                .statusCode(200)
+                .body("tickets.size()", equalTo(1))
+                .extract().response();
+        Long ticketId = getTicketsResponse.jsonPath().getLong("tickets[0].id");
+
+        // 예약
+        requestSpec
+                .post(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets/" + ticketId + "/reserve")
+                .then()
+                .statusCode(200)
+                .body("success", equalTo(true));
+
+        // 결제 실패(잔액 부족)
+        requestSpec
+                .post(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets/" + ticketId + "/pay")
+                .then()
+                .statusCode(409);
+
+        // 포인트 충전
+        requestSpec
+                .body(new ChargePointInput(100000))
+                .post(host + "/user/point/charge")
+                .then()
+                .statusCode(200)
+                .body("balance", equalTo(100000));
+
+        // 결제 성공
+        requestSpec
+                .post(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets/" + ticketId + "/pay")
+                .then()
+                .statusCode(200)
+                .body("success", equalTo(true));
+    }
 }

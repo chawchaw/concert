@@ -1,5 +1,3 @@
-import org.asciidoctor.gradle.jvm.AsciidoctorTask
-
 plugins {
     java
     id("org.springframework.boot") version "3.3.4"
@@ -36,6 +34,9 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5") // JSON 처리
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.rest-assured:rest-assured:5.3.0") // RestAssured 의존성 추가
+    testImplementation("io.rest-assured:json-path:5.3.0") // JSONPath 의존성 추가
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
