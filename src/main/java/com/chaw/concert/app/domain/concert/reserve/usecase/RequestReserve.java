@@ -44,8 +44,7 @@ public class RequestReserve {
         reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
         reserveValidation.validateReserveDetails(ticket);
 
-        ticket.setStatus(TicketStatus.RESERVE);
-        ticket.setReserveUserId(input.userId());
+        ticket.reserveWithUserId(input.userId());
         ticketRepository.save(ticket);
 
         Reserve reserve = Reserve.builder()

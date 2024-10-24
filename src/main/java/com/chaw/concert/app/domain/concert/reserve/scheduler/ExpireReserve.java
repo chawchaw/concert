@@ -49,12 +49,10 @@ public class ExpireReserve {
     public void cancelReserve(Reserve reserve) {
         Long userId = reserve.getUserId();
         Ticket ticket = ticketRepository.findById(reserve.getTicketId());
-        ticket.setStatus(TicketStatus.EMPTY);
-        ticket.setReserveUserId(null);
+        ticket.resetToEmpty();
         ticketRepository.save(ticket);
 
-        reserve.setReserveStatus(ReserveStatus.CANCEL);
-        reserve.setUpdatedAt(LocalDateTime.now());
+        reserve.cancel();
         reserveRepository.save(reserve);
 
         WaitQueue waitQueue = waitQueueRepository.findByUserId(userId);

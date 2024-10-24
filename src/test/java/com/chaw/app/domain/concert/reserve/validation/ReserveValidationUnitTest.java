@@ -4,7 +4,6 @@ import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
@@ -54,7 +53,7 @@ class ReserveValidationUnitTest {
     @Test
     void validateReserveDetails_TicketAlreadyReservedException() {
         Ticket ticket = new Ticket();
-        ticket.setStatus(TicketStatus.PAID);  // TicketStatus가 EMPTY가 아님
+        ticket.pay();  // TicketStatus가 EMPTY가 아님
 
         BaseException exception = assertThrows(BaseException.class, () -> {
             reserveValidation.validateReserveDetails(ticket);
@@ -64,10 +63,8 @@ class ReserveValidationUnitTest {
 
     @Test
     void validatePayTicketDetails_NotEnoughBalanceException() {
-        Point point = new Point();
-        point.setBalance(50);  // 잔액 부족
-        Reserve reserve = new Reserve();
-        reserve.setAmount(100);  // 필요한 금액
+        Point point = Point.builder().balance(50).build();
+        Reserve reserve = Reserve.builder().amount(100).build();
         Ticket ticket = new Ticket();
 
         BaseException baseException = assertThrows(BaseException.class, () -> {
@@ -78,12 +75,10 @@ class ReserveValidationUnitTest {
 
     @Test
     void validatePayTicketDetails_TicketNotInStatusReserveException() {
-        Point point = new Point();
-        point.setBalance(100);
-        Reserve reserve = new Reserve();
-        reserve.setAmount(50);
+        Point point = Point.builder().balance(100).build();
+        Reserve reserve = Reserve.builder().amount(50).build();
         Ticket ticket = Ticket.builder().id(1L).build();
-        ticket.setStatus(TicketStatus.PAID);  // 티켓이 RESERVE 상태가 아님
+        ticket.pay();  // 티켓이 RESERVE 상태가 아님
 
         BaseException baseException = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);
@@ -93,13 +88,10 @@ class ReserveValidationUnitTest {
 
     @Test
     void validatePayTicketDetails_AlreadyPaidReserveException() {
-        Point point = new Point();
-        point.setBalance(100);
-        Reserve reserve = new Reserve();
-        reserve.setAmount(50);
-        reserve.setReserveStatus(ReserveStatus.PAID);  // 예약이 이미 결제 완료됨
+        Point point = Point.builder().balance(100).build();
+        Reserve reserve = Reserve.builder().amount(50).reserveStatus(ReserveStatus.PAID).build();  // 이미 결제 완료됨
         Ticket ticket = new Ticket();
-        ticket.setStatus(TicketStatus.RESERVE);
+        ticket.reserveWithUserId(0L);
 
         BaseException exception = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);
@@ -109,13 +101,10 @@ class ReserveValidationUnitTest {
 
     @Test
     void validatePayTicketDetails_CanceledReserveException() {
-        Point point = new Point();
-        point.setBalance(100);
-        Reserve reserve = new Reserve();
-        reserve.setAmount(50);
-        reserve.setReserveStatus(ReserveStatus.CANCEL);  // 예약이 취소됨
+        Point point = Point.builder().balance(100).build();
+        Reserve reserve = Reserve.builder().amount(50).reserveStatus(ReserveStatus.CANCEL).build();  // 예약이 취소됨
         Ticket ticket = new Ticket();
-        ticket.setStatus(TicketStatus.RESERVE);
+        ticket.reserveWithUserId(0L);
 
         BaseException exception = assertThrows(BaseException.class, () -> {
             reserveValidation.validatePayTicketDetails(0L, point, reserve, ticket);

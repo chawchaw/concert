@@ -162,7 +162,7 @@ public class PayTicketIT {
 
     @Test
     void payTicketSuccessSoldOut() {
-        concertSchedule.setAvailableSeat(1);
+        concertSchedule.limitAvailableSeatsToOne();
         concertScheduleRepository.save(concertSchedule);
 
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
@@ -178,7 +178,11 @@ public class PayTicketIT {
 
     @Test
     void validate_NotEnoughBalance() {
-        point.setBalance(50);
+        point = Point.builder()
+                .id(point.getId())
+                .userId(userId)
+                .balance(50)
+                .build();
         pointRepository.save(point);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
@@ -188,7 +192,7 @@ public class PayTicketIT {
 
     @Test
     void validate_TicketNotInStatusReserve() {
-        ticket.setStatus(TicketStatus.PAID);
+        ticket.pay();
         ticketRepository.save(ticket);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
@@ -198,7 +202,7 @@ public class PayTicketIT {
 
     @Test
     void validate_AlreadyPaidReserve() {
-        reserve.setReserveStatus(ReserveStatus.PAID);
+        reserve.pay();
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
@@ -208,7 +212,7 @@ public class PayTicketIT {
 
     @Test
     void validate_CanceledReserve() {
-        reserve.setReserveStatus(ReserveStatus.CANCEL);
+        reserve.cancel();
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
@@ -218,7 +222,7 @@ public class PayTicketIT {
 
     @Test
     void validate_AvailableSeatNotExist() {
-        concertSchedule.setAvailableSeat(0);
+        concertSchedule.limitAvailableSeatsToZero();
         concertScheduleRepository.save(concertSchedule);
 
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
@@ -229,7 +233,7 @@ public class PayTicketIT {
 
     @Test
     void validate_ExpiredReserve() {
-        reserve.setCreatedAt(LocalDateTime.now().minusMinutes(31));
+        reserve.setCreationTimeToPast(31);
         reserveRepository.save(reserve);
         PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 

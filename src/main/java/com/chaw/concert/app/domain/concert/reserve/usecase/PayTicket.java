@@ -15,7 +15,6 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
@@ -77,16 +76,15 @@ public class PayTicket {
         }
 
         // 티켓 상태 업데이트
-        ticket.setStatus(TicketStatus.PAID);
+        ticket.pay();
         ticketRepository.save(ticket);
 
         // 예약 상태 업데이트
-        reserve.setReserveStatus(ReserveStatus.PAID);
-        reserve.setUpdatedAt(now);
+        reserve.pay();
         reserveRepository.save(reserve);
 
         // 포인트 차감
-        point.setBalance(point.getBalance() - reserve.getAmount());
+        point.decreaseBalance(reserve.getAmount());
         pointRepository.save(point);
 
         // 포인트 히스토리 추가
@@ -118,11 +116,10 @@ public class PayTicket {
     public void handleExpiredReserve(Ticket ticket, Reserve reserve) {
         LocalDateTime now = LocalDateTime.now();
         if (now.isAfter(reserve.getCreatedAt().plusMinutes(EXPIRED_MINUTES))) {
-            ticket.setStatus(TicketStatus.EMPTY);
-            ticket.setReserveUserId(null);
+            ticket.resetToEmpty();
             ticketRepository.save(ticket);
 
-            reserve.setReserveStatus(ReserveStatus.CANCEL);
+            reserve.cancel();
             reserveRepository.save(reserve);
 
             throw new BaseException(ErrorType.CONFLICT, "결제 유효기간이 만료되었습니다.");
