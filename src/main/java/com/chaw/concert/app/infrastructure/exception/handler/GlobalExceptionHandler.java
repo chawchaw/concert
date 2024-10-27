@@ -20,23 +20,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<String> handleBaseException(BaseException ex) {
+    public ResponseEntity<ExceptionResponse> handleBaseException(BaseException ex) {
         HttpStatus status = ex.getErrorType().getHttpStatus();
         if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
             logInternalServerErrors(ex);
         }
 
-        return new ResponseEntity<>(ex.getMessage(), status);
+        return new ResponseEntity<>(new ExceptionResponse(ex.getMessage(), status), status);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<ExceptionResponse> handleRuntimeException(RuntimeException ex) {
         logInternalServerErrors(ex);
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        return new ResponseEntity<>(new ExceptionResponse(ex.getMessage(), status), status);
     }
 
     public void logInternalServerErrors(RuntimeException ex) {
-        log.error("INTERNAL_SERVER_ERROR", ex);
+        log.error(HttpStatus.INTERNAL_SERVER_ERROR.name(), ex);
         slackNotifierService.sendErrorNotificationToSlack(ex.getMessage());
+    }
+
+    public record ExceptionResponse(String message, String status, int code) {
+        public ExceptionResponse(String message, HttpStatus status) {
+            this(message, status.getReasonPhrase(), status.value());
+        }
     }
 }

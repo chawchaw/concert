@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security") // Spring Security 의존성 추가
     implementation("io.jsonwebtoken:jjwt-api:0.11.5") // JWT API 의존성 추가
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign") // OpenFeign 의존성 추가
+    implementation("jakarta.servlet:jakarta.servlet-api:6.0.0") // Jakarta Servlet API 의존성 추가
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 

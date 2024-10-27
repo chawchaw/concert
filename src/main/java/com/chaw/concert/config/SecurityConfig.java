@@ -1,8 +1,7 @@
 package com.chaw.concert.config;
 
-import com.chaw.concert.app.domain.common.auth.usecase.CustomUserDetailsService;
-import com.chaw.concert.app.domain.common.auth.util.JwtUtil;
 import com.chaw.concert.app.infrastructure.web.filter.JwtRequestFilter;
+import com.chaw.concert.app.infrastructure.web.filter.ReqResLoggingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,14 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
-
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
-        this.userDetailsService = userDetailsService;
-        this.jwtUtil = jwtUtil;
-    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -39,7 +30,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter, ReqResLoggingFilter reqResLoggingFilter) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(formLogin -> formLogin.disable())
@@ -51,10 +42,7 @@ public class SecurityConfig {
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(
-                        new JwtRequestFilter(userDetailsService, jwtUtil),
-                        UsernamePasswordAuthenticationFilter.class
-                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
