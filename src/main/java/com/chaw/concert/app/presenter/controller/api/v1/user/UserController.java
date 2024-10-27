@@ -1,7 +1,7 @@
 package com.chaw.concert.app.presenter.controller.api.v1.user;
 
-import com.chaw.concert.app.domain.common.auth.usecase.Join;
-import com.chaw.concert.app.domain.common.auth.usecase.Login;
+import com.chaw.concert.app.domain.common.auth.usecase.JoinUseCase;
+import com.chaw.concert.app.domain.common.auth.usecase.LoginUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.JoinInput;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.JoinOutput;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginInput;
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Auth", description = "인증")
 public class UserController {
 
-    private final Join join;
-    private final Login login;
+    private final JoinUseCase joinUseCase;
+    private final LoginUseCase loginUseCase;
 
-    public UserController(Join join, Login login) {
-        this.join = join;
-        this.login = login;
+    public UserController(JoinUseCase joinUseCase, LoginUseCase loginUseCase) {
+        this.joinUseCase = joinUseCase;
+        this.loginUseCase = loginUseCase;
     }
 
     @Operation(
@@ -33,7 +33,7 @@ public class UserController {
     public JoinOutput join(
             @RequestBody JoinInput loginInput
     ) {
-        Join.Output result = join.execute(new Join.Input(loginInput.username(), loginInput.password()));
+        JoinUseCase.Output result = joinUseCase.execute(new JoinUseCase.Input(loginInput.username(), loginInput.password()));
         return JoinOutput.builder()
                 .result(result.result())
                 .username(result.username())
@@ -49,7 +49,7 @@ public class UserController {
     public LoginOutput login(
             @RequestBody LoginInput loginInput
     ) {
-        Login.Output result = login.execute(new Login.Input(loginInput.username(), loginInput.password()));
+        LoginUseCase.Output result = loginUseCase.execute(new LoginUseCase.Input(loginInput.username(), loginInput.password()));
         return LoginOutput.builder()
                 .token(result.token())
                 .build();

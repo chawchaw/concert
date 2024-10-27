@@ -3,7 +3,6 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
@@ -19,7 +18,7 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
-public class RequestReserve {
+public class RequestReserveUseCase {
 
     private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;
@@ -27,7 +26,7 @@ public class RequestReserve {
     private final ReserveRepository reserveRepository;
     private final ReserveValidation reserveValidation;
 
-    public RequestReserve(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, ReserveValidation reserveValidation) {
+    public RequestReserveUseCase(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, ReserveValidation reserveValidation) {
         this.concertRepository = concertRepository;
         this.concertScheduleRepository = concertScheduleRepository;
         this.ticketRepository = ticketRepository;

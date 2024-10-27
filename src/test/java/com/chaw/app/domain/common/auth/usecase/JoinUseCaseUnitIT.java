@@ -3,7 +3,7 @@ package com.chaw.app.domain.common.auth.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.auth.entity.User;
 import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
-import com.chaw.concert.app.domain.common.auth.usecase.Join;
+import com.chaw.concert.app.domain.common.auth.usecase.JoinUseCase;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class JoinUnitIT {
+public class JoinUseCaseUnitIT {
 
     @Autowired
     private UserRepository userRepository;
@@ -32,15 +32,15 @@ public class JoinUnitIT {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private Join joinService;
+    private JoinUseCase joinUseCaseService;
 
     @Test
     void testJoinNewUser() {
         // given
-        Join.Input input = new Join.Input("username1", "password1");
+        JoinUseCase.Input input = new JoinUseCase.Input("username1", "password1");
 
         // when
-        Join.Output output = joinService.execute(input);
+        JoinUseCase.Output output = joinUseCaseService.execute(input);
 
         // then
         User savedUser = userRepository.findByUsername("username1");
@@ -62,10 +62,10 @@ public class JoinUnitIT {
                 .build();
         userRepository.save(existingUser);
 
-        Join.Input input = new Join.Input("existinguser", "password456");
+        JoinUseCase.Input input = new JoinUseCase.Input("existinguser", "password456");
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> joinService.execute(input));
+        BaseException exception = assertThrows(BaseException.class, () -> joinUseCaseService.execute(input));
         assertEquals(ErrorType.BAD_REQUEST, exception.getErrorType());
         assertEquals(1, userRepository.count());
     }

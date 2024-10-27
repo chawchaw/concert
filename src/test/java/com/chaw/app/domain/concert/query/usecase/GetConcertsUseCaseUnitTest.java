@@ -2,7 +2,7 @@ package com.chaw.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcerts;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,12 +15,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class GetConcertsUnitTest {
+public class GetConcertsUseCaseUnitTest {
     @Mock
     private ConcertRepository concertRepository;
 
     @InjectMocks
-    private GetConcerts getConcerts;
+    private GetConcertsUseCase getConcertsUseCase;
 
     @BeforeEach
     void setUp() {
@@ -37,7 +37,7 @@ public class GetConcertsUnitTest {
         when(concertRepository.findAll()).thenReturn(mockConcerts);
 
         // When
-        GetConcerts.Output output = getConcerts.execute();
+        GetConcertsUseCase.Output output = getConcertsUseCase.execute();
 
         // Then
         assertEquals(2, output.concerts().size());

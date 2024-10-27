@@ -18,7 +18,7 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class PayTicketConcurrencyTest {
+public class PayTicketUseCaseConcurrencyTest {
 
     @Autowired
     private WaitQueueRepository waitQueueRepository;
@@ -69,7 +69,7 @@ public class PayTicketConcurrencyTest {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private PayTicket payTicket;
+    private PayTicketUseCase payTicketUseCase;
 
     private Long userId = 1L;
     private Integer balance = 1000;
@@ -131,7 +131,7 @@ public class PayTicketConcurrencyTest {
     @Test
     void 결제요청이_동시에_3번_발생() throws InterruptedException {
         // given, when
-        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         int numberOfThreads = 3;
         CountDownLatch readyLatch = new CountDownLatch(numberOfThreads);
@@ -148,7 +148,7 @@ public class PayTicketConcurrencyTest {
                 try {
                     readyLatch.countDown();
                     startLatch.await();
-                    payTicket.execute(input);
+                    payTicketUseCase.execute(input);
                     success.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

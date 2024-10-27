@@ -1,10 +1,8 @@
 package com.chaw.concert.app.presenter.controller.api.v1.user;
 
-import com.chaw.concert.app.domain.common.auth.usecase.Join;
-import com.chaw.concert.app.domain.common.auth.usecase.Login;
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
-import com.chaw.concert.app.domain.common.user.usecase.GetPoint;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
+import com.chaw.concert.app.domain.common.user.usecase.GetPointUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 public class PointController {
 
     private final SecurityUtil securityUtils;
-    private final GetPoint getPoint;
-    private final ChargePoint chargePoint;
+    private final GetPointUseCase getPointUseCase;
+    private final ChargePointUseCase chargePointUseCase;
 
-    public PointController(SecurityUtil securityUtils, GetPoint getPoint, ChargePoint chargePoint) {
+    public PointController(SecurityUtil securityUtils, GetPointUseCase getPointUseCase, ChargePointUseCase chargePointUseCase) {
         this.securityUtils = securityUtils;
-        this.getPoint = getPoint;
-        this.chargePoint = chargePoint;
+        this.getPointUseCase = getPointUseCase;
+        this.chargePointUseCase = chargePointUseCase;
     }
 
     @Operation(
@@ -34,7 +32,7 @@ public class PointController {
     @ResponseStatus(HttpStatus.OK)
     public GetPointOutput getPoint() {
         Long userId = securityUtils.getCurrentUserId();
-        GetPoint.Output result = getPoint.execute(new GetPoint.Input(userId));
+        GetPointUseCase.Output result = getPointUseCase.execute(new GetPointUseCase.Input(userId));
         return GetPointOutput.builder()
                 .point(result.point())
                 .build();
@@ -50,7 +48,7 @@ public class PointController {
             @RequestBody ChargePointInput chargePointInput
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        ChargePoint.Output result = chargePoint.execute(new ChargePoint.Input(userId, chargePointInput.point()));
+        ChargePointUseCase.Output result = chargePointUseCase.execute(new ChargePointUseCase.Input(userId, chargePointInput.point()));
         return ChargePointOutput.builder()
                 .balance(result.balance())
                 .build();

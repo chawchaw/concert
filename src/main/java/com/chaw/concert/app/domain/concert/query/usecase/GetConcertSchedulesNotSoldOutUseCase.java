@@ -12,12 +12,12 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class GetConcertSchedulesNotSoldOut {
+public class GetConcertSchedulesNotSoldOutUseCase {
 
     private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;
 
-    public GetConcertSchedulesNotSoldOut(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository) {
+    public GetConcertSchedulesNotSoldOutUseCase(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository) {
         this.concertRepository = concertRepository;
         this.concertScheduleRepository = concertScheduleRepository;
     }

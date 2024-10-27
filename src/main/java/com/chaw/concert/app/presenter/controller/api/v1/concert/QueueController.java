@@ -1,7 +1,7 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueueUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.EnterWaitQueueOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class QueueController {
 
     private final SecurityUtil securityUtils;
-    private final EnterWaitQueue enterWaitQueue;
+    private final EnterWaitQueueUseCase enterWaitQueueUseCase;
 
-    public QueueController(SecurityUtil securityUtils, EnterWaitQueue enterWaitQueue) {
+    public QueueController(SecurityUtil securityUtils, EnterWaitQueueUseCase enterWaitQueueUseCase) {
         this.securityUtils = securityUtils;
-        this.enterWaitQueue = enterWaitQueue;
+        this.enterWaitQueueUseCase = enterWaitQueueUseCase;
     }
 
     @Operation(
@@ -32,7 +32,7 @@ public class QueueController {
     @ResponseStatus(HttpStatus.OK)
     public EnterWaitQueueOutput enterWaitQueue() {
         Long userId = securityUtils.getCurrentUserId();
-        EnterWaitQueue.Output result = enterWaitQueue.execute(new EnterWaitQueue.Input(userId));
+        EnterWaitQueueUseCase.Output result = enterWaitQueueUseCase.execute(new EnterWaitQueueUseCase.Input(userId));
         return EnterWaitQueueOutput.builder()
                 .status(result.status())
                 .createdAt(result.createdAt())

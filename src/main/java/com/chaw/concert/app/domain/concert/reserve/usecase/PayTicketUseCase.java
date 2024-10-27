@@ -8,7 +8,6 @@ import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
@@ -30,7 +29,7 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
-public class PayTicket {
+public class PayTicketUseCase {
 
     @Value("${concert.reserve.expired.minutes}")
     private Integer EXPIRED_MINUTES;
@@ -44,7 +43,7 @@ public class PayTicket {
     private final PaymentRepository paymentRepository;
     private final ReserveValidation reserveValidation;
 
-    public PayTicket(ConcertRepository concertRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
+    public PayTicketUseCase(ConcertRepository concertRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
         this.concertRepository = concertRepository;
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;

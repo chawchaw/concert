@@ -4,7 +4,7 @@ import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class ChargePointUnitTest {
+public class ChargePointUseCaseUnitTest {
 
     @Mock
     private PointRepository pointRepository;
@@ -24,7 +24,7 @@ public class ChargePointUnitTest {
     private PointHistoryRepository pointHistoryRepository;
 
     @InjectMocks
-    private ChargePoint chargePoint;
+    private ChargePointUseCase chargePointUseCase;
 
     @BeforeEach
     void setUp() {
@@ -42,8 +42,8 @@ public class ChargePointUnitTest {
         when(pointRepository.findByUserIdWithLock(1L)).thenReturn(existingPoint);
 
         // When: 포인트 충전 요청
-        ChargePoint.Input input = new ChargePoint.Input(1L, 50);
-        ChargePoint.Output output = chargePoint.execute(input);
+        ChargePointUseCase.Input input = new ChargePointUseCase.Input(1L, 50);
+        ChargePointUseCase.Output output = chargePointUseCase.execute(input);
 
         // Then: 포인트가 정상적으로 충전되었는지 확인
         assertEquals(150, output.balance());

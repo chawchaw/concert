@@ -9,7 +9,7 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepos
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
-public class RequestReserveUnitTest {
+public class RequestReserveUseCaseUnitTest {
 
     @Mock
     private ConcertRepository concertRepository;
@@ -39,7 +39,7 @@ public class RequestReserveUnitTest {
     private ReserveValidation reserveValidation;
 
     @InjectMocks
-    private RequestReserve requestReserve;
+    private RequestReserveUseCase requestReserveUseCase;
 
     @BeforeEach
     void setUp() {
@@ -73,8 +73,8 @@ public class RequestReserveUnitTest {
         when(ticketRepository.findByIdWithLock(ticketId)).thenReturn(ticket);
 
         // When
-        RequestReserve.Input input = new RequestReserve.Input(userId, 1L, 1L, ticketId);
-        RequestReserve.Output output = requestReserve.execute(input);
+        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L, 1L, ticketId);
+        RequestReserveUseCase.Output output = requestReserveUseCase.execute(input);
 
         // Then
         assertNotNull(output);

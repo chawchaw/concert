@@ -13,12 +13,12 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
-public class ChargePoint {
+public class ChargePointUseCase {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
-    public ChargePoint(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository) {
+    public ChargePointUseCase(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository) {
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;
     }

@@ -3,7 +3,7 @@ package com.chaw.app.domain.common.user.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.GetPoint;
+import com.chaw.concert.app.domain.common.user.usecase.GetPointUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class GetPointIT {
+public class GetPointUseCaseIT {
 
     @Autowired
     private PointRepository pointRepository;
 
     @Autowired
-    private GetPoint getPoint;
+    private GetPointUseCase getPointUseCase;
 
     @Test
     void testExistingPoint() {
@@ -37,10 +37,10 @@ public class GetPointIT {
                 .build();
         pointRepository.save(point);
 
-        GetPoint.Input input = new GetPoint.Input(1L);
+        GetPointUseCase.Input input = new GetPointUseCase.Input(1L);
 
         // When: 요청 실행
-        GetPoint.Output output = getPoint.execute(input);
+        GetPointUseCase.Output output = getPointUseCase.execute(input);
 
         // Then: 포인트가 정상적으로 반환되어야 함
         assertEquals(100, output.point());
@@ -49,10 +49,10 @@ public class GetPointIT {
     @Test
     void testNewUserWithoutPoint() {
         // Given: 포인트가 없는 새로운 사용자
-        GetPoint.Input input = new GetPoint.Input(2L);
+        GetPointUseCase.Input input = new GetPointUseCase.Input(2L);
 
         // When: 요청 실행
-        GetPoint.Output output = getPoint.execute(input);
+        GetPointUseCase.Output output = getPointUseCase.execute(input);
 
         // Then: 새로운 사용자에게 포인트가 생성되고, 잔액이 0이어야 함
         assertEquals(0, output.point());

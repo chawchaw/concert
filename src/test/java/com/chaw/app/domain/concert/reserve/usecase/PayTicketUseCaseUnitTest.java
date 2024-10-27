@@ -16,7 +16,7 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class PayTicketUnitTest {
+class PayTicketUseCaseUnitTest {
 
     @Mock
     private PointRepository pointRepository;
@@ -61,15 +61,15 @@ class PayTicketUnitTest {
     private ReserveValidation reserveValidation;
 
     @InjectMocks
-    private PayTicket payTicket;
+    private PayTicketUseCase payTicketUseCase;
 
     @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.initMocks(this);
 
-        Field field = PayTicket.class.getDeclaredField("EXPIRED_MINUTES");
+        Field field = PayTicketUseCase.class.getDeclaredField("EXPIRED_MINUTES");
         field.setAccessible(true);
-        field.set(payTicket, 10);
+        field.set(payTicketUseCase, 10);
     }
 
     @Test
@@ -118,10 +118,10 @@ class PayTicketUnitTest {
         doNothing().when(reserveValidation).validatePayTicketDetails(userId, point, reserve, ticket);
         when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
-        PayTicket.Input input = new PayTicket.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
 
         // when
-        PayTicket.Output output = payTicket.execute(input);
+        PayTicketUseCase.Output output = payTicketUseCase.execute(input);
 
         // then
         assertEquals(500, output.balance()); // 남은 포인트 확인
@@ -164,7 +164,7 @@ class PayTicketUnitTest {
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // when / then
-        BaseException baseException = assertThrows(BaseException.class, () -> payTicket.execute(new PayTicket.Input(1L, 1L, 1L, 1L)));
+        BaseException baseException = assertThrows(BaseException.class, () -> payTicketUseCase.execute(new PayTicketUseCase.Input(1L, 1L, 1L, 1L)));
         assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
     }
 
@@ -180,7 +180,7 @@ class PayTicketUnitTest {
 
         // When / Then
         BaseException exception = assertThrows(BaseException.class, () -> {
-            payTicket.handleExpiredReserve(ticket, reserve);
+            payTicketUseCase.handleExpiredReserve(ticket, reserve);
         });
 
         // Verify
@@ -196,7 +196,7 @@ class PayTicketUnitTest {
         Reserve reserve = Reserve.builder().amount(500).createdAt(LocalDateTime.now()).reserveStatus(ReserveStatus.RESERVE).build(); // 만료되지 않은 상태
 
         // When
-        payTicket.handleExpiredReserve(ticket, reserve);
+        payTicketUseCase.handleExpiredReserve(ticket, reserve);
 
         // Verify (아무 작업도 발생하지 않음)
         verify(ticketRepository, never()).save(any());
@@ -224,8 +224,8 @@ class PayTicketUnitTest {
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
 
         // When / Then
-        PayTicket.Input input = new PayTicket.Input(userId, concertId, 1L, ticketId);
-        BaseException exception = assertThrows(BaseException.class, () -> payTicket.execute(input));
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concertId, 1L, ticketId);
+        BaseException exception = assertThrows(BaseException.class, () -> payTicketUseCase.execute(input));
 
         // Verify
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());

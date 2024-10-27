@@ -4,7 +4,7 @@ import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatus;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
     private TicketRepository ticketRepository;
 
     @InjectMocks
-    private GetTicketsInEmptyStatus getTicketsInEmptyStatus;
+    private GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
 
     @BeforeEach
     void setUp() {
@@ -44,7 +44,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Concert concert = Concert.builder().id(concertId).name("concert").build();
         ConcertSchedule concertSchedule = ConcertSchedule.builder().id(concertScheduleId).concertId(concertId).build();
 
-        GetTicketsInEmptyStatus.Input input = new GetTicketsInEmptyStatus.Input(concertId, concertScheduleId);
+        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertId, concertScheduleId);
 
         Ticket ticket1 = Ticket.builder().id(1L).type(TicketType.VIP).seatNo("A1").price(100).status(TicketStatus.EMPTY).build();
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).status(TicketStatus.EMPTY).build();
@@ -55,7 +55,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         when(ticketRepository.findByConcertScheduleIdAndStatus(concertScheduleId, TicketStatus.EMPTY)).thenReturn(emptyTickets);
 
         // When
-        GetTicketsInEmptyStatus.Output output = getTicketsInEmptyStatus.execute(input);
+        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
 
         // Then
         assertEquals(2, output.tickets().size());

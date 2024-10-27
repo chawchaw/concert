@@ -6,7 +6,7 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class ChargePointIT {
+public class ChargePointUseCaseIT {
 
     @Autowired
     private PointRepository pointRepository;
@@ -32,7 +32,7 @@ public class ChargePointIT {
     private PointHistoryRepository pointHistoryRepository;
 
     @Autowired
-    private ChargePoint chargePoint;
+    private ChargePointUseCase chargePointUseCase;
 
     @Test
     void testChargeExistingUser() {
@@ -44,8 +44,8 @@ public class ChargePointIT {
         pointRepository.save(point);
 
         // when
-        ChargePoint.Input input = new ChargePoint.Input(1L, 50);
-        ChargePoint.Output output = chargePoint.execute(input);
+        ChargePointUseCase.Input input = new ChargePointUseCase.Input(1L, 50);
+        ChargePointUseCase.Output output = chargePointUseCase.execute(input);
 
         // then
         assertEquals(150, output.balance());
@@ -61,8 +61,8 @@ public class ChargePointIT {
         // given
 
         // when
-        ChargePoint.Input input = new ChargePoint.Input(2L, 100);
-        ChargePoint.Output output = chargePoint.execute(input);
+        ChargePointUseCase.Input input = new ChargePointUseCase.Input(2L, 100);
+        ChargePointUseCase.Output output = chargePointUseCase.execute(input);
 
         // then
         Point newPoint = pointRepository.findByUserId(2L);

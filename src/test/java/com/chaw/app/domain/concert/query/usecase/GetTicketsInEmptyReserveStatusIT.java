@@ -5,7 +5,7 @@ import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatus;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class GetTicketsInEmptyReserveStatusIT {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private GetTicketsInEmptyStatus getTicketsInEmptyStatus;
+    private GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
 
     private Concert concert;
     private ConcertSchedule concertSchedule;
@@ -81,17 +81,17 @@ public class GetTicketsInEmptyReserveStatusIT {
     @Test
     void testGetTicketsInEmptyStatus() {
         // Given
-        GetTicketsInEmptyStatus.Input input = new GetTicketsInEmptyStatus.Input(concert.getId(), concertSchedule.getId());
+        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concert.getId(), concertSchedule.getId());
 
         // When
-        GetTicketsInEmptyStatus.Output output = getTicketsInEmptyStatus.execute(input);
+        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
 
         // Then
         assertNotNull(output);
         assertEquals(2, output.tickets().size());
 
-        GetTicketsInEmptyStatus.Output.Item firstTicket = output.tickets().get(0);
-        GetTicketsInEmptyStatus.Output.Item secondTicket = output.tickets().get(1);
+        GetTicketsInEmptyStatusUseCase.Output.Item firstTicket = output.tickets().get(0);
+        GetTicketsInEmptyStatusUseCase.Output.Item secondTicket = output.tickets().get(1);
 
         assertEquals("A1", firstTicket.seatNo());
         assertEquals(100, firstTicket.price());

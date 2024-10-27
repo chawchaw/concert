@@ -11,7 +11,7 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class RequestReserveIT {
+public class RequestReserveUseCaseIT {
 
     @Autowired
     private ConcertRepository concertRepository;
@@ -47,7 +47,7 @@ public class RequestReserveIT {
     private ReserveRepository reserveRepository;
 
     @Autowired
-    private RequestReserve requestReserve;
+    private RequestReserveUseCase requestReserveUseCase;
 
     private Concert concert;
     private ConcertSchedule concertSchedule;
@@ -83,10 +83,10 @@ public class RequestReserveIT {
         Long ticketId = ticket.getId();
         Long userId = 1L;
 
-        RequestReserve.Input input = new RequestReserve.Input(userId, concert.getId(), concertSchedule.getId(), ticketId);
+        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticketId);
 
         // When
-        RequestReserve.Output output = requestReserve.execute(input);
+        RequestReserveUseCase.Output output = requestReserveUseCase.execute(input);
 
         // Then
         assertNotNull(output);

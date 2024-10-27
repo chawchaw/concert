@@ -3,7 +3,7 @@ package com.chaw.app.domain.concert.query.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcerts;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class GetConcertsIT {
+public class GetConcertsUseCaseIT {
 
     @Autowired
     private ConcertRepository concertRepository;
 
     @Autowired
-    private GetConcerts getConcerts;
+    private GetConcertsUseCase getConcertsUseCase;
 
     @BeforeEach
     void setUp() {
@@ -44,10 +44,10 @@ public class GetConcertsIT {
     @Test
     void testGetConcerts() {
         // When
-        GetConcerts.Output output = getConcerts.execute();
+        GetConcertsUseCase.Output output = getConcertsUseCase.execute();
 
         // Then
-        List<GetConcerts.Output.ConcertOutput> concerts = output.concerts();
+        List<GetConcertsUseCase.Output.ConcertOutput> concerts = output.concerts();
         assertEquals(2, concerts.size());
         assertTrue(concerts.stream().anyMatch(c -> c.name().equals("Concert 1")));
         assertTrue(concerts.stream().anyMatch(c -> c.name().equals("Concert 2")));

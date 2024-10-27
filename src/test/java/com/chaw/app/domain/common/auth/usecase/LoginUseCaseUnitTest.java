@@ -1,7 +1,7 @@
 package com.chaw.app.domain.common.auth.usecase;
 
 import com.chaw.concert.app.domain.common.auth.usecase.CustomUserDetailsService;
-import com.chaw.concert.app.domain.common.auth.usecase.Login;
+import com.chaw.concert.app.domain.common.auth.usecase.LoginUseCase;
 import com.chaw.concert.app.domain.common.auth.util.JwtUtil;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
@@ -18,7 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class LoginUnitTest {
+class LoginUseCaseUnitTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
@@ -30,7 +30,7 @@ class LoginUnitTest {
     private JwtUtil jwtUtil;
 
     @InjectMocks
-    private Login login;
+    private LoginUseCase loginUseCase;
 
     @BeforeEach
     void setUp() {
@@ -43,7 +43,7 @@ class LoginUnitTest {
         String username = "testuser";
         String password = "password123";
         String token = "test-jwt-token";
-        Login.Input input = new Login.Input(username, password);
+        LoginUseCase.Input input = new LoginUseCase.Input(username, password);
 
         UserDetails userDetails = mock(UserDetails.class);
 
@@ -51,7 +51,7 @@ class LoginUnitTest {
         when(jwtUtil.generateToken(userDetails)).thenReturn(token);
 
         // when
-        Login.Output output = login.execute(input);
+        LoginUseCase.Output output = loginUseCase.execute(input);
 
         // then
         assertNotNull(output);
@@ -65,12 +65,12 @@ class LoginUnitTest {
         // given
         String username = "testuser";
         String password = "wrongpassword";
-        Login.Input input = new Login.Input(username, password);
+        LoginUseCase.Input input = new LoginUseCase.Input(username, password);
 
         doThrow(new BadCredentialsException("Bad credentials")).when(authenticationManager).authenticate(any());
 
         // when, then
-        BaseException exception = assertThrows(BaseException.class, () -> login.execute(input));
+        BaseException exception = assertThrows(BaseException.class, () -> loginUseCase.execute(input));
         assertEquals(ErrorType.BAD_REQUEST, exception.getErrorType());
 
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));

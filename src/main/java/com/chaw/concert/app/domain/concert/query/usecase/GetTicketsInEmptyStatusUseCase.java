@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class GetTicketsInEmptyStatus {
+public class GetTicketsInEmptyStatusUseCase {
 
     private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
 
-    public GetTicketsInEmptyStatus(ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository) {
+    public GetTicketsInEmptyStatusUseCase(ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository) {
         this.concertScheduleRepository = concertScheduleRepository;
         this.ticketRepository = ticketRepository;
     }

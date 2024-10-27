@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class GetConcerts {
+public class GetConcertsUseCase {
     private final ConcertRepository concertRepository;
 
-    public GetConcerts(ConcertRepository concertRepository) {
+    public GetConcertsUseCase(ConcertRepository concertRepository) {
         this.concertRepository = concertRepository;
     }
 

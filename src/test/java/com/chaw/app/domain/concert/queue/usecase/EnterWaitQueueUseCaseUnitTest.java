@@ -3,7 +3,7 @@ package com.chaw.app.domain.concert.queue.usecase;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueueUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,13 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class EnterWaitQueueUnitTest {
+public class EnterWaitQueueUseCaseUnitTest {
 
     @Mock
     private WaitQueueRepository waitQueueRepository;
 
     @InjectMocks
-    private EnterWaitQueue enterWaitQueue;
+    private EnterWaitQueueUseCase enterWaitQueueUseCase;
 
     @BeforeEach
     void setUp() {
@@ -35,8 +35,8 @@ public class EnterWaitQueueUnitTest {
         when(waitQueueRepository.findByUserId(anyLong())).thenReturn(null);
 
         // When
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L);
-        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
+        EnterWaitQueueUseCase.Input input = new EnterWaitQueueUseCase.Input(1L);
+        EnterWaitQueueUseCase.Output output = enterWaitQueueUseCase.execute(input);
 
         // Then
         verify(waitQueueRepository, times(1)).save(any(WaitQueue.class));
@@ -58,8 +58,8 @@ public class EnterWaitQueueUnitTest {
         when(waitQueueRepository.countByStatusAndIdLessThan(any(WaitQueueStatus.class), anyLong())).thenReturn(5L);
 
         // When
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L);
-        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
+        EnterWaitQueueUseCase.Input input = new EnterWaitQueueUseCase.Input(1L);
+        EnterWaitQueueUseCase.Output output = enterWaitQueueUseCase.execute(input);
 
         // Then
         assertEquals("WAIT", output.status());

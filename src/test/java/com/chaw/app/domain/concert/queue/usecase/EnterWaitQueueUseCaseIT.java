@@ -4,7 +4,7 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueueUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,19 +24,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class EnterWaitQueueIT {
+public class EnterWaitQueueUseCaseIT {
 
     @Autowired
     private WaitQueueRepository waitQueueRepository;
 
     @Autowired
-    private EnterWaitQueue enterWaitQueue;
+    private EnterWaitQueueUseCase enterWaitQueueUseCase;
 
     @Test
     void testNewUserEntersQueue() {
         // When
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L);
-        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
+        EnterWaitQueueUseCase.Input input = new EnterWaitQueueUseCase.Input(1L);
+        EnterWaitQueueUseCase.Output output = enterWaitQueueUseCase.execute(input);
 
         // Then
         assertEquals("WAIT", output.status());
@@ -60,8 +60,8 @@ public class EnterWaitQueueIT {
         waitQueueRepository.save(existingQueue);
 
         // When: 대기열 상태 확인
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(1L);
-        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
+        EnterWaitQueueUseCase.Input input = new EnterWaitQueueUseCase.Input(1L);
+        EnterWaitQueueUseCase.Output output = enterWaitQueueUseCase.execute(input);
 
         // Then: 대기열 상태가 WAIT이고, 대기순번이 0이어야 함 (첫 번째 사용자이므로 순번 0)
         assertEquals("WAIT", output.status());
@@ -85,8 +85,8 @@ public class EnterWaitQueueIT {
         waitQueueRepository.save(secondUser);
 
         // When: 두 번째 사용자의 대기 상태 확인
-        EnterWaitQueue.Input input = new EnterWaitQueue.Input(2L);
-        EnterWaitQueue.Output output = enterWaitQueue.execute(input);
+        EnterWaitQueueUseCase.Input input = new EnterWaitQueueUseCase.Input(2L);
+        EnterWaitQueueUseCase.Output output = enterWaitQueueUseCase.execute(input);
 
         // Then: 대기 순번이 1이어야 함 (두 번째 사용자이므로)
         assertEquals("WAIT", output.status());

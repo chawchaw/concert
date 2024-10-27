@@ -13,11 +13,11 @@ import java.time.LocalDateTime;
  */
 @Service
 @Slf4j
-public class EnterWaitQueue {
+public class EnterWaitQueueUseCase {
 
     private final WaitQueueRepository waitQueueRepository;
 
-    public EnterWaitQueue(WaitQueueRepository waitQueueRepository) {
+    public EnterWaitQueueUseCase(WaitQueueRepository waitQueueRepository) {
         this.waitQueueRepository = waitQueueRepository;
     }
 

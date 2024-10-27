@@ -3,7 +3,7 @@ package com.chaw.app.domain.common.auth.usecase;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.auth.entity.User;
 import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
-import com.chaw.concert.app.domain.common.auth.usecase.Login;
+import com.chaw.concert.app.domain.common.auth.usecase.LoginUseCase;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class LoginIT {
+public class LoginUseCaseIT {
 
     @Autowired
     private UserRepository userRepository;
@@ -32,7 +32,7 @@ public class LoginIT {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private Login loginService;
+    private LoginUseCase loginUseCaseService;
 
     @Test
     void testLogin_Success() {
@@ -44,8 +44,8 @@ public class LoginIT {
         userRepository.save(user);
 
         // when
-        Login.Input input = new Login.Input("testuser", "password123");
-        Login.Output output = loginService.execute(input);
+        LoginUseCase.Input input = new LoginUseCase.Input("testuser", "password123");
+        LoginUseCase.Output output = loginUseCaseService.execute(input);
 
         // then
         assertNotNull(output.token());
@@ -61,8 +61,8 @@ public class LoginIT {
         userRepository.save(user);
 
         // when
-        Login.Input input = new Login.Input("testuser", "wrongpassword");
-        BaseException exception = assertThrows(BaseException.class, () -> loginService.execute(input));
+        LoginUseCase.Input input = new LoginUseCase.Input("testuser", "wrongpassword");
+        BaseException exception = assertThrows(BaseException.class, () -> loginUseCaseService.execute(input));
 
         // then
         assertEquals(ErrorType.BAD_REQUEST, exception.getErrorType());

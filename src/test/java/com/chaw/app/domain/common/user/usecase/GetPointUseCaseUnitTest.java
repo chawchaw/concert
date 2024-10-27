@@ -2,7 +2,7 @@ package com.chaw.app.domain.common.user.usecase;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.GetPoint;
+import com.chaw.concert.app.domain.common.user.usecase.GetPointUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-public class GetPointUnitTest {
+public class GetPointUseCaseUnitTest {
 
     @Mock
     private PointRepository pointRepository;
 
     @InjectMocks
-    private GetPoint getPoint;
+    private GetPointUseCase getPointUseCase;
 
     @BeforeEach
     void setUp() {
@@ -36,8 +36,8 @@ public class GetPointUnitTest {
         when(pointRepository.findByUserId(anyLong())).thenReturn(existingPoint);
 
         // When: 요청 실행
-        GetPoint.Input input = new GetPoint.Input(1L);
-        GetPoint.Output output = getPoint.execute(input);
+        GetPointUseCase.Input input = new GetPointUseCase.Input(1L);
+        GetPointUseCase.Output output = getPointUseCase.execute(input);
 
         // Then: 올바른 포인트 값이 반환되어야 함
         assertEquals(100, output.point());
@@ -49,8 +49,8 @@ public class GetPointUnitTest {
         when(pointRepository.findById(anyLong())).thenReturn(null);
 
         // When: 요청 실행
-        GetPoint.Input input = new GetPoint.Input(1L);
-        GetPoint.Output output = getPoint.execute(input);
+        GetPointUseCase.Input input = new GetPointUseCase.Input(1L);
+        GetPointUseCase.Output output = getPointUseCase.execute(input);
 
         // Then: 새로운 포인트 객체가 생성되고, 잔액이 0이어야 함
         assertEquals(0, output.point());

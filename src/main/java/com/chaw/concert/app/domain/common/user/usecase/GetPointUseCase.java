@@ -5,11 +5,11 @@ import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GetPoint {
+public class GetPointUseCase {
 
     private final PointRepository pointRepository;
 
-    public GetPoint(PointRepository pointRepository) {
+    public GetPointUseCase(PointRepository pointRepository) {
         this.pointRepository = pointRepository;
     }
 

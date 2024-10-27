@@ -1,11 +1,11 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcerts;
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatus;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicket;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,19 +18,19 @@ import org.springframework.web.bind.annotation.*;
 public class ConcertController {
 
     private final SecurityUtil securityUtils;
-    private final GetConcerts getConcerts;
-    private final GetConcertSchedulesNotSoldOut getConcertSchedulesNotSoldOut;
-    private final GetTicketsInEmptyStatus getTicketsInEmptyStatus;
-    private final RequestReserve requestReserve;
-    private final PayTicket payTicket;
+    private final GetConcertsUseCase getConcertsUseCase;
+    private final GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
+    private final GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
+    private final RequestReserveUseCase requestReserveUseCase;
+    private final PayTicketUseCase payTicketUseCase;
 
-    public ConcertController(SecurityUtil securityUtils, GetConcerts getConcerts, GetConcertSchedulesNotSoldOut getConcertSchedulesNotSoldOut, GetTicketsInEmptyStatus getTicketsInEmptyStatus, RequestReserve requestReserve, PayTicket payTicket) {
+    public ConcertController(SecurityUtil securityUtils, GetConcertsUseCase getConcertsUseCase, GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase, GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase, RequestReserveUseCase requestReserveUseCase, PayTicketUseCase payTicketUseCase) {
         this.securityUtils = securityUtils;
-        this.getConcerts = getConcerts;
-        this.getConcertSchedulesNotSoldOut = getConcertSchedulesNotSoldOut;
-        this.getTicketsInEmptyStatus = getTicketsInEmptyStatus;
-        this.requestReserve = requestReserve;
-        this.payTicket = payTicket;
+        this.getConcertsUseCase = getConcertsUseCase;
+        this.getConcertSchedulesNotSoldOutUseCase = getConcertSchedulesNotSoldOutUseCase;
+        this.getTicketsInEmptyStatusUseCase = getTicketsInEmptyStatusUseCase;
+        this.requestReserveUseCase = requestReserveUseCase;
+        this.payTicketUseCase = payTicketUseCase;
     }
 
     @Operation(
@@ -40,7 +40,7 @@ public class ConcertController {
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     public GetConcertsOutput getConcerts() {
-        GetConcerts.Output result = getConcerts.execute();
+        GetConcertsUseCase.Output result = getConcertsUseCase.execute();
         return GetConcertsOutput.builder()
                 .concerts(result.concerts().stream().map(concert -> GetConcertsOutput.Concert.builder()
                         .id(concert.id())
@@ -62,8 +62,8 @@ public class ConcertController {
             @PathVariable Long concertId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        GetConcertSchedulesNotSoldOut.Output result = getConcertSchedulesNotSoldOut.execute(
-                new GetConcertSchedulesNotSoldOut.Input(userId, concertId)
+        GetConcertSchedulesNotSoldOutUseCase.Output result = getConcertSchedulesNotSoldOutUseCase.execute(
+                new GetConcertSchedulesNotSoldOutUseCase.Input(userId, concertId)
         );
         return GetConcertSchedulesNotSoldOutOutput.builder()
                 .id(result.id())
@@ -91,8 +91,8 @@ public class ConcertController {
             @PathVariable Long concertId,
             @PathVariable Long concertScheduleId
     ) {
-        GetTicketsInEmptyStatus.Output result = getTicketsInEmptyStatus.execute(
-                new GetTicketsInEmptyStatus.Input(concertId, concertScheduleId)
+        GetTicketsInEmptyStatusUseCase.Output result = getTicketsInEmptyStatusUseCase.execute(
+                new GetTicketsInEmptyStatusUseCase.Input(concertId, concertScheduleId)
         );
         return GetTicketsInEmptyStatusOutput.builder()
                 .concertScheduleId(result.concertScheduleId())
@@ -117,8 +117,8 @@ public class ConcertController {
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        RequestReserve.Output result = requestReserve.execute(
-                new RequestReserve.Input(userId, concertId, concertScheduleId, ticketId)
+        RequestReserveUseCase.Output result = requestReserveUseCase.execute(
+                new RequestReserveUseCase.Input(userId, concertId, concertScheduleId, ticketId)
         );
         return RequestReserveOutput.builder()
                 .success(result.success())
@@ -137,8 +137,8 @@ public class ConcertController {
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        PayTicket.Output result = payTicket.execute(
-                new PayTicket.Input(userId, concertId, concertScheduleId, ticketId)
+        PayTicketUseCase.Output result = payTicketUseCase.execute(
+                new PayTicketUseCase.Input(userId, concertId, concertScheduleId, ticketId)
         );
         return PayTicketOutput.builder()
                 .success(result.success())

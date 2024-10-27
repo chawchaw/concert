@@ -9,7 +9,7 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class RequestReserveConcurrencyTest {
+public class RequestReserveUseCaseConcurrencyTest {
 
     @Autowired
     private ConcertRepository concertRepository;
@@ -50,7 +50,7 @@ public class RequestReserveConcurrencyTest {
     private ReserveRepository reserveRepository;
 
     @Autowired
-    private RequestReserve requestReserve;
+    private RequestReserveUseCase requestReserveUseCase;
 
     private Concert concert1;
     private ConcertSchedule concertSchedule1;
@@ -91,14 +91,14 @@ public class RequestReserveConcurrencyTest {
         // 스레드 수를 5로 설정
         int threadCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        List<Future<RequestReserve.Output>> futures = new ArrayList<>();
+        List<Future<RequestReserveUseCase.Output>> futures = new ArrayList<>();
 
         // 5명의 사용자에게 같은 티켓을 동시에 예약하도록 요청
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
             futures.add(executorService.submit(() -> {
-                RequestReserve.Input input = new RequestReserve.Input(userId, concert1.getId(), concertSchedule1.getId(), ticket1.getId());
-                return requestReserve.execute(input);
+                RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, concert1.getId(), concertSchedule1.getId(), ticket1.getId());
+                return requestReserveUseCase.execute(input);
             }));
         }
 
@@ -107,7 +107,7 @@ public class RequestReserveConcurrencyTest {
         int failureCount = 0;
         List<Throwable> exceptions = new ArrayList<>();
 
-        for (Future<RequestReserve.Output> future : futures) {
+        for (Future<RequestReserveUseCase.Output> future : futures) {
             try {
                 future.get();  // 스레드가 실패하면 ExecutionException이 발생
                 successCount++;
@@ -162,8 +162,8 @@ public class RequestReserveConcurrencyTest {
                     startLatch.await();
 
                     // ticket1 예약
-                    RequestReserve.Input input = new RequestReserve.Input(userId, 1L, 1L, 1L);
-                    requestReserve.execute(input);
+                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L, 1L, 1L);
+                    requestReserveUseCase.execute(input);
                     successTicket1.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -184,8 +184,8 @@ public class RequestReserveConcurrencyTest {
                     startLatch.await();
 
                     // ticket2 예약
-                    RequestReserve.Input input = new RequestReserve.Input(userId, 1L, 1L, 2L);
-                    requestReserve.execute(input);
+                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L, 1L, 2L);
+                    requestReserveUseCase.execute(input);
                     successTicket2.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

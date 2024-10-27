@@ -5,7 +5,7 @@ import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePoint;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class ChargePointConcurrencyTest {
+public class ChargePointUseCaseConcurrencyTest {
 
     @Autowired
     private PointRepository pointRepository;
@@ -37,7 +37,7 @@ public class ChargePointConcurrencyTest {
     private PointHistoryRepository pointHistoryRepository;
 
     @Autowired
-    private ChargePoint chargePoint;
+    private ChargePointUseCase chargePointUseCase;
 
     @Test
     void testChargeExistingUser() throws InterruptedException {
@@ -50,7 +50,7 @@ public class ChargePointConcurrencyTest {
         pointRepository.save(point);
 
         // when
-        ChargePoint.Input input = new ChargePoint.Input(1L, 50);
+        ChargePointUseCase.Input input = new ChargePointUseCase.Input(1L, 50);
 
         int numberOfThreads = 10;
         CountDownLatch readyLatch = new CountDownLatch(numberOfThreads);
@@ -64,7 +64,7 @@ public class ChargePointConcurrencyTest {
                 try {
                     readyLatch.countDown();
                     startLatch.await();
-                    chargePoint.execute(input);
+                    chargePointUseCase.execute(input);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {
