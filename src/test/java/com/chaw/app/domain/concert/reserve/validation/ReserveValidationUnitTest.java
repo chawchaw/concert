@@ -24,17 +24,6 @@ class ReserveValidationUnitTest {
     }
 
     @Test
-    void validateReserveDetails_TicketAlreadyReservedException() {
-        Ticket ticket = new Ticket();
-        ticket.pay();  // TicketStatus가 EMPTY가 아님
-
-        BaseException exception = assertThrows(BaseException.class, () -> {
-            reserveValidation.validateReserveDetails(ticket);
-        });
-        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
-    }
-
-    @Test
     void validatePayTicketDetails_NotEnoughBalanceException() {
         Point point = Point.builder().balance(50).build();
         Reserve reserve = Reserve.builder().amount(100).build();

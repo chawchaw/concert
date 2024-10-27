@@ -29,8 +29,7 @@ public class RequestReserveUseCase {
     @Transactional
     public Output execute(Input input) {
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
-
-        reserveValidation.validateReserveDetails(ticket);
+        ticket.isReservableOrThrow();
 
         ticket.reserveWithUserId(input.userId());
         ticketRepository.save(ticket);

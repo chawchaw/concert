@@ -1,5 +1,7 @@
 package com.chaw.concert.app.domain.concert.query.entity;
 
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,5 +49,11 @@ public class Ticket {
     public void reserveWithUserId(Long userId) {
         this.status = TicketStatus.RESERVE;
         this.reserveUserId = userId;
+    }
+
+    public void isReservableOrThrow() {
+        if (!this.status.equals(TicketStatus.EMPTY)) {
+            throw new BaseException(ErrorType.CONFLICT, "이미 예약이 완료된 티켓입니다.");
+        }
     }
 }

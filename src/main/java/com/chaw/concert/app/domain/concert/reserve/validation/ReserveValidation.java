@@ -1,8 +1,6 @@
 package com.chaw.concert.app.domain.concert.reserve.validation;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
-import com.chaw.concert.app.domain.concert.query.entity.Concert;
-import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
@@ -15,12 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class ReserveValidation {
-
-    public void validateReserveDetails(Ticket ticket) {
-        if (!ticket.getStatus().equals(TicketStatus.EMPTY)) {
-            throw new BaseException(ErrorType.CONFLICT, "이미 예약이 완료된 티켓입니다.");
-        }
-    }
 
     /**
      * point 잔액

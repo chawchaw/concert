@@ -10,7 +10,6 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
-import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -34,9 +33,6 @@ public class RequestReserveUseCaseUnitTest {
 
     @Mock
     private ReserveRepository reserveRepository;
-
-    @Mock
-    private ReserveValidation reserveValidation;
 
     @InjectMocks
     private RequestReserveUseCase requestReserveUseCase;
@@ -62,11 +58,13 @@ public class RequestReserveUseCaseUnitTest {
                 .availableSeat(10)
                 .build();
 
-        Ticket ticket = Ticket.builder()
-                .id(ticketId)
-                .status(TicketStatus.EMPTY)
-                .price(100)
-                .build();
+        Ticket ticket = spy(
+                Ticket.builder()
+                        .id(ticketId)
+                        .status(TicketStatus.EMPTY)
+                        .price(100)
+                        .build()
+        );
 
         when(concertRepository.findById(1L)).thenReturn(concert);
         when(concertScheduleRepository.findById(1L)).thenReturn(concertSchedule);
@@ -80,9 +78,9 @@ public class RequestReserveUseCaseUnitTest {
         assertNotNull(output);
         assertEquals(true, output.success());
 
+        verify(ticket, times(1)).isReservableOrThrow();
         verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
         verify(ticketRepository, times(1)).save(ticket);
-        verify(reserveValidation, times(1)).validateReserveDetails(ticket);
         verify(reserveRepository, times(1)).save(any(Reserve.class));
     }
 }

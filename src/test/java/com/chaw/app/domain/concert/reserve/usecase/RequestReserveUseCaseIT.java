@@ -12,6 +12,8 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
@@ -100,5 +101,22 @@ public class RequestReserveUseCaseIT {
         assertEquals(ReserveStatus.RESERVE, reserve.getReserveStatus());
         assertEquals(ticketId, reserve.getTicketId());
         assertEquals(userId, reserve.getUserId());
+    }
+
+    @Test
+    void testExecute_Fail_Already_Reserved() {
+        // given
+        Long userId = 1L;
+        Long ticketId = ticket.getId();
+        ticket.reserveWithUserId(userId);
+        ticketRepository.save(ticket);
+
+        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticketId);
+
+        // when
+        BaseException exception = assertThrows(BaseException.class, () -> requestReserveUseCase.execute(input));
+
+        // then
+        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
     }
 }
