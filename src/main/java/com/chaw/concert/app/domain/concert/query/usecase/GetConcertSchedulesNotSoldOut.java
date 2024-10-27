@@ -2,15 +2,16 @@ package com.chaw.concert.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class GetConcertSchedulesNotSoldOut {
 
     private final ConcertRepository concertRepository;
@@ -23,12 +24,10 @@ public class GetConcertSchedulesNotSoldOut {
 
     public Output execute(Input input) {
         Concert concert = concertRepository.findById(input.concertId());
-        if (concert == null) {
-            throw new ConcertNotFoundException();
-        }
 
         List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSoldOut(input.concertId(), false);
 
+        log.info("일정({}) 조회", input.concertId());
         return new Output(
                 concert.getId(),
                 concert.getName(),
@@ -46,6 +45,7 @@ public class GetConcertSchedulesNotSoldOut {
     }
 
     public record Input (
+        Long userId,
         Long concertId
     ) {}
 

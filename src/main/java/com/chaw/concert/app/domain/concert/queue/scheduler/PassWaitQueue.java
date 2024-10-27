@@ -33,8 +33,7 @@ public class PassWaitQueue {
     public Output execute() {
         List<WaitQueue> waitQueues = waitQueueRepository.findByStatusByLimit(WaitQueueStatus.WAIT, PASS_SIZE);
         waitQueues.forEach(waitQueue -> {
-            waitQueue.setStatus(WaitQueueStatus.PASS);
-            waitQueue.setUpdatedAt(LocalDateTime.now());
+            waitQueue.pass();
             waitQueueRepository.save(waitQueue);
         });
         return new Output(waitQueues.size());

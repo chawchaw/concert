@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
 @ToString
 public class WaitQueue {
 
@@ -30,4 +29,9 @@ public class WaitQueue {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void pass() {
+        this.status = WaitQueueStatus.PASS;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

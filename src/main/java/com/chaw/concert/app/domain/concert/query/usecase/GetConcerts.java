@@ -1,7 +1,7 @@
 package com.chaw.concert.app.domain.concert.query.usecase;
 
-import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
+import lombok.Builder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,10 +15,31 @@ public class GetConcerts {
     }
 
     public Output execute() {
-        return new Output(concertRepository.findAll());
+        return Output.builder()
+                .concerts(concertRepository.findAll().stream()
+                        .map(concert -> Output.ConcertOutput.builder()
+                                .id(concert.getId())
+                                .name(concert.getName())
+                                .info(concert.getInfo())
+                                .artist(concert.getArtist())
+                                .host(concert.getHost())
+                                .build())
+                        .toList())
+                .build();
     }
 
+    @Builder
     public record Output(
-            List<Concert> concerts
-    ) {}
+            List<ConcertOutput> concerts
+    ) {
+        @Builder
+        public record ConcertOutput(
+                Long id,
+                String name,
+                String info,
+                String artist,
+                String host
+        ) {
+        }
+    }
 }

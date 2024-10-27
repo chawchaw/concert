@@ -86,7 +86,7 @@ public class RequestReserveIT {
 
         // Then
         assertNotNull(output);
-        assertEquals(TicketStatus.RESERVE, output.ticket().getStatus());
+        assertEquals(true, output.success());
 
         Ticket updatedTicket = ticketRepository.findById(ticketId);
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());

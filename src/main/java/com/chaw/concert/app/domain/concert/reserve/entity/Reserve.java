@@ -1,13 +1,15 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,4 +37,17 @@ public class Reserve {
     @Column(name = "updated_at")
     LocalDateTime updatedAt; // "마지막 업데이트 시간"
 
+    public void cancel() {
+        this.reserveStatus = ReserveStatus.CANCEL;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void pay() {
+        this.reserveStatus = ReserveStatus.PAID;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setCreationTimeToPast(int minutes) {
+        this.createdAt = LocalDateTime.now().minusMinutes(minutes);
+    }
 }

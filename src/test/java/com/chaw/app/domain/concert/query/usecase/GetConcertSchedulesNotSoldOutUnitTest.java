@@ -2,7 +2,6 @@ package com.chaw.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOut;
@@ -16,7 +15,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class GetConcertSchedulesNotSoldOutUnitTest {
@@ -33,20 +33,6 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    void testExecute_ConcertNotFound() {
-        // Given
-        Long concertId = 1L;
-        when(concertRepository.findById(concertId)).thenReturn(null);
-
-        // When / Then
-        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
-        assertThrows(ConcertNotFoundException.class, () -> getConcertSchedulesNotSoldOut.execute(input));
-
-        verify(concertRepository, times(1)).findById(concertId);
-        verify(concertScheduleRepository, never()).findByConcertIdAndIsSoldOut(anyLong(), anyBoolean());
     }
 
     @Test
@@ -85,7 +71,7 @@ public class GetConcertSchedulesNotSoldOutUnitTest {
         when(concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)).thenReturn(concertSchedules);
 
         // When
-        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(concertId);
+        GetConcertSchedulesNotSoldOut.Input input = new GetConcertSchedulesNotSoldOut.Input(0L, concertId);
         GetConcertSchedulesNotSoldOut.Output output = getConcertSchedulesNotSoldOut.execute(input);
 
         // Then

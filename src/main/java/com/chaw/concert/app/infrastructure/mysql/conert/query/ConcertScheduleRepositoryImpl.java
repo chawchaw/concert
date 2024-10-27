@@ -2,6 +2,8 @@ package com.chaw.concert.app.infrastructure.mysql.conert.query;
 
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,16 +33,26 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
 
     @Override
     public ConcertSchedule findById(Long id) {
-        return repository.findById(id).orElse(null);
+        ConcertSchedule concertSchedule = repository.findById(id).orElse(null);
+        throwNotFoundException(concertSchedule);
+        return concertSchedule;
     }
 
     @Override
     public ConcertSchedule findByIdWithLock(Long id) {
-        return repository.findByIdWithLock(id);
+        ConcertSchedule concertSchedule = repository.findByIdWithLock(id);
+        throwNotFoundException(concertSchedule);
+        return concertSchedule;
     }
 
     @Override
     public void deleteAll() {
         repository.deleteAll();
+    }
+
+    private void throwNotFoundException(ConcertSchedule concertSchedule) {
+        if (concertSchedule == null) {
+            throw new BaseException(ErrorType.NOT_FOUND, "없는 일정입니다.");
+        }
     }
 }

@@ -4,25 +4,21 @@ import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertNotFoundException;
-import com.chaw.concert.app.domain.concert.query.exception.ConcertScheduleNotFoundException;
-import com.chaw.concert.app.domain.concert.query.exception.TicketAlreadyReservedException;
-import com.chaw.concert.app.domain.concert.query.exception.TicketNotFoundException;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
-import com.chaw.concert.app.domain.concert.reserve.exception.IllegalConcertAndScheduleException;
-import com.chaw.concert.app.domain.concert.reserve.exception.IllegalScheduleAndTicketException;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class RequestReserve {
 
     private final ConcertRepository concertRepository;
@@ -45,11 +41,10 @@ public class RequestReserve {
         ConcertSchedule concertSchedule = concertScheduleRepository.findById(input.concertScheduleId());
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
 
-        reserveValidation.validateConcertDetails(concert, concertSchedule, ticket);
+        reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
         reserveValidation.validateReserveDetails(ticket);
 
-        ticket.setStatus(TicketStatus.RESERVE);
-        ticket.setReserveUserId(input.userId());
+        ticket.reserveWithUserId(input.userId());
         ticketRepository.save(ticket);
 
         Reserve reserve = Reserve.builder()
@@ -61,7 +56,9 @@ public class RequestReserve {
                 .updatedAt(LocalDateTime.now())
                 .build();
         reserveRepository.save(reserve);
-        return new Output(ticket);
+
+        log.info("예약({}) 완료", reserve.getId());
+        return new Output(true);
     }
 
     public record Input (
@@ -72,6 +69,6 @@ public class RequestReserve {
     ) {}
 
     public record Output (
-        Ticket ticket
+        Boolean success
     ) {}
 }
