@@ -2,16 +2,14 @@ package com.chaw.concert.app.domain.common.user.usecase;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@AllArgsConstructor
 @Service
 public class GetPointUseCase {
 
     private final PointRepository pointRepository;
-
-    public GetPointUseCase(PointRepository pointRepository) {
-        this.pointRepository = pointRepository;
-    }
 
     public Output execute(Input input) {
         Point point = pointRepository.findByUserId(input.userId());

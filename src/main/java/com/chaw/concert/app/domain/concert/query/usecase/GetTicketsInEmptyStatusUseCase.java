@@ -3,18 +3,16 @@ package com.chaw.concert.app.domain.concert.query.usecase;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class GetTicketsInEmptyStatusUseCase {
 
     private final TicketRepository ticketRepository;
-
-    public GetTicketsInEmptyStatusUseCase(TicketRepository ticketRepository) {
-        this.ticketRepository = ticketRepository;
-    }
 
     public Output execute(Input input) {
         List<Ticket> tickets = ticketRepository.findByConcertScheduleIdAndStatus(input.concertScheduleId(), TicketStatus.EMPTY);

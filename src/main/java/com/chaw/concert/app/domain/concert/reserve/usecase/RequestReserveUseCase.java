@@ -4,21 +4,18 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @Slf4j
+@AllArgsConstructor
+@Service
 public class RequestReserveUseCase {
 
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
-
-    public RequestReserveUseCase(TicketRepository ticketRepository, ReserveRepository reserveRepository) {
-        this.ticketRepository = ticketRepository;
-        this.reserveRepository = reserveRepository;
-    }
 
     @Transactional
     public Output execute(Input input) {

@@ -3,6 +3,7 @@ package com.chaw.concert.app.domain.concert.queue.usecase;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -11,14 +12,11 @@ import java.util.List;
 /**
  * 만료 스케줄러
  */
+@AllArgsConstructor
 @Service
 public class ExpireWaitQueueUseCase {
 
     private final WaitQueueRepository waitQueueRepository;
-
-    public ExpireWaitQueueUseCase(WaitQueueRepository waitQueueRepository) {
-        this.waitQueueRepository = waitQueueRepository;
-    }
 
     /**
      * 스케줄러 주기: 1분

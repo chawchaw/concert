@@ -7,24 +7,20 @@ import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Component
 public class ExpireReserveUseCase {
 
     private final WaitQueueRepository waitQueueRepository;
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
-
-    public ExpireReserveUseCase(WaitQueueRepository waitQueueRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository) {
-        this.waitQueueRepository = waitQueueRepository;
-        this.ticketRepository = ticketRepository;
-        this.reserveRepository = reserveRepository;
-    }
 
     /**
      * if (예약상태 && 마감기간이 지남 in 예약)

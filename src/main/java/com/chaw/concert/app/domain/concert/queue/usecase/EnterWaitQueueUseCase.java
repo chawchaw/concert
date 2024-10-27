@@ -3,6 +3,7 @@ package com.chaw.concert.app.domain.concert.queue.usecase;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,15 +12,12 @@ import java.time.LocalDateTime;
 /**
  * 대기열에 입장 및 대기순서, 상태 조회
  */
-@Service
 @Slf4j
+@AllArgsConstructor
+@Service
 public class EnterWaitQueueUseCase {
 
     private final WaitQueueRepository waitQueueRepository;
-
-    public EnterWaitQueueUseCase(WaitQueueRepository waitQueueRepository) {
-        this.waitQueueRepository = waitQueueRepository;
-    }
 
     /**
      * 대기열 순번이 있는지 확인한다

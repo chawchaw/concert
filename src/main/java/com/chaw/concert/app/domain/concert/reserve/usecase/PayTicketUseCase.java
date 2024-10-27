@@ -15,14 +15,16 @@ import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.MessageFormat;
 
-@Service
 @Slf4j
+@AllArgsConstructor
+@Service
 public class PayTicketUseCase {
 
     private final PointRepository pointRepository;
@@ -31,15 +33,6 @@ public class PayTicketUseCase {
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
-
-    public PayTicketUseCase(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository) {
-        this.pointRepository = pointRepository;
-        this.pointHistoryRepository = pointHistoryRepository;
-        this.concertScheduleRepository = concertScheduleRepository;
-        this.ticketRepository = ticketRepository;
-        this.reserveRepository = reserveRepository;
-        this.paymentRepository = paymentRepository;
-    }
 
     @Transactional
     public Output execute(Input input) {

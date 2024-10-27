@@ -5,23 +5,20 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-@Service
 @Slf4j
+@AllArgsConstructor
+@Service
 public class ChargePointUseCase {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
-
-    public ChargePointUseCase(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository) {
-        this.pointRepository = pointRepository;
-        this.pointHistoryRepository = pointHistoryRepository;
-    }
 
     @Transactional
     public Output execute(Input input) {

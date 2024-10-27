@@ -4,23 +4,20 @@ import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
 @Slf4j
+@AllArgsConstructor
+@Service
 public class GetConcertSchedulesNotSoldOutUseCase {
 
     private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;
-
-    public GetConcertSchedulesNotSoldOutUseCase(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository) {
-        this.concertRepository = concertRepository;
-        this.concertScheduleRepository = concertScheduleRepository;
-    }
 
     public Output execute(Input input) {
         Concert concert = concertRepository.findByIdOrThrow(input.concertId());
