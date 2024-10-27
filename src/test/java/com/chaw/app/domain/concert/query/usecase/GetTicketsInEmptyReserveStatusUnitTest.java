@@ -21,12 +21,6 @@ import static org.mockito.Mockito.when;
 class GetTicketsInEmptyReserveStatusUnitTest {
 
     @Mock
-    private ConcertRepository concertRepository;
-
-    @Mock
-    private ConcertScheduleRepository concertScheduleRepository;
-
-    @Mock
     private TicketRepository ticketRepository;
 
     @InjectMocks
@@ -35,10 +29,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
     @Test
     void testExecute() {
         // Given
-        Long concertId = 1L;
         Long concertScheduleId = 1L;
-        Concert concert = Concert.builder().id(concertId).name("concert").build();
-        ConcertSchedule concertSchedule = ConcertSchedule.builder().id(concertScheduleId).concertId(concertId).build();
 
         GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
 
@@ -46,8 +37,6 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).status(TicketStatus.EMPTY).build();
         List<Ticket> emptyTickets = Arrays.asList(ticket1, ticket2);
 
-        when(concertRepository.findByIdOrThrow(concertId)).thenReturn(concert);
-        when(concertScheduleRepository.findByIdOrThrow(concertScheduleId)).thenReturn(concertSchedule);
         when(ticketRepository.findByConcertScheduleIdAndStatus(concertScheduleId, TicketStatus.EMPTY)).thenReturn(emptyTickets);
 
         // When

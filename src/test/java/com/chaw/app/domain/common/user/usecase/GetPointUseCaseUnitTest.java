@@ -42,7 +42,7 @@ public class GetPointUseCaseUnitTest {
     @Test
     void testNewUserWithoutPoint() {
         // Given: 포인트가 없는 새로운 사용자
-        when(pointRepository.findByIdOrThrow(anyLong())).thenReturn(null);
+        when(pointRepository.findByUserId(anyLong())).thenReturn(null);
 
         // When: 요청 실행
         GetPointUseCase.Input input = new GetPointUseCase.Input(1L);

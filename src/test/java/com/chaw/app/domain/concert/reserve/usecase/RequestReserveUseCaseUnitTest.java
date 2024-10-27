@@ -26,12 +26,6 @@ import static org.mockito.Mockito.*;
 public class RequestReserveUseCaseUnitTest {
 
     @Mock
-    private ConcertRepository concertRepository;
-
-    @Mock
-    private ConcertScheduleRepository concertScheduleRepository;
-
-    @Mock
     private TicketRepository ticketRepository;
 
     @Mock
@@ -64,8 +58,6 @@ public class RequestReserveUseCaseUnitTest {
                         .build()
         );
 
-        when(concertRepository.findByIdOrThrow(1L)).thenReturn(concert);
-        when(concertScheduleRepository.findByIdOrThrow(1L)).thenReturn(concertSchedule);
         when(ticketRepository.findByIdWithLockOrThrow(ticketId)).thenReturn(ticket);
 
         // When
