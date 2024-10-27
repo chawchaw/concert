@@ -21,27 +21,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<String> handleBaseException(BaseException ex) {
-        HttpStatus status;
-        switch (ex.getErrorType()) {
-            case BAD_REQUEST:
-                status = HttpStatus.BAD_REQUEST;
-                break;
-            case UNAUTHORIZED:
-                status = HttpStatus.UNAUTHORIZED;
-                break;
-            case FORBIDDEN:
-                status = HttpStatus.FORBIDDEN;
-                break;
-            case NOT_FOUND:
-                status = HttpStatus.NOT_FOUND;
-                break;
-            case CONFLICT:
-                status = HttpStatus.CONFLICT;
-                break;
-            default:
-                logInternalServerErrors(ex);
-                status = HttpStatus.INTERNAL_SERVER_ERROR;
-                break;
+        HttpStatus status = ex.getErrorType().getHttpStatus();
+        if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+            logInternalServerErrors(ex);
         }
 
         return new ResponseEntity<>(ex.getMessage(), status);
