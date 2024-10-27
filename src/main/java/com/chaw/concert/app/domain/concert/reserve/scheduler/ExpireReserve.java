@@ -18,9 +18,6 @@ import java.util.List;
 @Component
 public class ExpireReserve {
 
-    @Value("${concert.reserve.expired.minutes}")
-    private Integer EXPIRED_MINUTES;
-
     private final WaitQueueRepository waitQueueRepository;
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
@@ -38,7 +35,7 @@ public class ExpireReserve {
      * 대기열 -> 삭제
      */
     public void execute() {
-        LocalDateTime expiredAt = LocalDateTime.now().minusMinutes(EXPIRED_MINUTES);
+        LocalDateTime expiredAt = Reserve.getExpiredTimeFromNow();
         List<Reserve> reserves = reserveRepository.findByReserveStatusAndCreatedAtBefore(
                 ReserveStatus.RESERVE,
                 expiredAt);

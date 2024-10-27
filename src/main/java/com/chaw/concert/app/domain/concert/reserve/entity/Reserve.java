@@ -1,5 +1,7 @@
 package com.chaw.concert.app.domain.concert.reserve.entity;
 
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Reserve {
+
+    public final static Integer EXPIRED_MINUTES = 5;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,6 +53,26 @@ public class Reserve {
 
     public void setCreationTimeToPast(int minutes) {
         this.createdAt = LocalDateTime.now().minusMinutes(minutes);
+    }
+
+    public static LocalDateTime getExpiredTimeFromNow() {
+        return LocalDateTime.now().minusMinutes(EXPIRED_MINUTES);
+    }
+
+    public void isReservableStatusOrThrow() {
+        if (this.reserveStatus == ReserveStatus.PAID) {
+            throw new BaseException(ErrorType.CONFLICT, "결제 완료된 예약입니다.");
+        }
+        else if (this.reserveStatus == ReserveStatus.CANCEL) {
+            throw new BaseException(ErrorType.CONFLICT, "취소된 예약입니다.");
+        }
+    }
+
+    public void isExpiredThenDoAndThrow(Runnable runnable) {
+        if (LocalDateTime.now().isAfter(this.createdAt.plusMinutes(EXPIRED_MINUTES))) {
+            runnable.run();
+            throw new BaseException(ErrorType.CONFLICT, "결제 유효기간이 만료되었습니다.");
+        }
     }
 
     public static Reserve create(Long userId, Long ticketId, Integer amount) {

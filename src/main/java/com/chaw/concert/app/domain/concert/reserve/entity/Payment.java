@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -34,7 +35,17 @@ public class Payment {
     @Column(name = "amount")
     Integer amount; // "결제 금액"
 
+    @CreatedDate
     @Column(name = "created_at")
     LocalDateTime createdAt; // "생성일"
 
+    public static Payment create(Long userId, Long reserveId, Long pointHistoryId, PaymentMethod paymentMethod, Integer amount) {
+        return Payment.builder()
+                .userId(userId)
+                .reserveId(reserveId)
+                .pointHistoryId(pointHistoryId)
+                .paymentMethod(paymentMethod)
+                .amount(amount)
+                .build();
+    }
 }

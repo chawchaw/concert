@@ -15,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -38,12 +37,8 @@ public class ExpireReserveUnitTest {
     private ExpireReserve expireReserve;
 
     @BeforeEach
-    void setUp() throws NoSuchFieldException, IllegalAccessException {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        Field field = ExpireReserve.class.getDeclaredField("EXPIRED_MINUTES");
-        field.setAccessible(true);
-        field.set(expireReserve, 10);
     }
 
     @Test

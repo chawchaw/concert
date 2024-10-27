@@ -2,7 +2,6 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
-import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
@@ -14,23 +13,17 @@ import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 
 @Service
 @Slf4j
 public class PayTicketUseCase {
-
-    @Value("${concert.reserve.expired.minutes}")
-    private Integer EXPIRED_MINUTES;
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
@@ -38,16 +31,14 @@ public class PayTicketUseCase {
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
-    private final ReserveValidation reserveValidation;
 
-    public PayTicketUseCase(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
+    public PayTicketUseCase(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository) {
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;
         this.concertScheduleRepository = concertScheduleRepository;
         this.ticketRepository = ticketRepository;
         this.reserveRepository = reserveRepository;
         this.paymentRepository = paymentRepository;
-        this.reserveValidation = reserveValidation;
     }
 
     @Transactional
@@ -57,11 +48,17 @@ public class PayTicketUseCase {
         ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
 
-        reserveValidation.validatePayTicketDetails(point, reserve, ticket);
+        point.validateHasEnoughBalanceOrThrow(reserve.getAmount());
+        ticket.isPayableOrThrow();
+        reserve.isReservableStatusOrThrow();
+        reserve.isExpiredThenDoAndThrow(() -> {
+            ticket.resetToEmpty();
+            ticketRepository.save(ticket);
 
-        handleExpiredReserve(ticket, reserve);
+            reserve.cancel();
+            reserveRepository.save(reserve);
+        });
 
-        LocalDateTime now = LocalDateTime.now();
         // (예약가능 좌석수, 재고없음) 업데이트
         boolean result = concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId());
         if (!result) {
@@ -81,42 +78,15 @@ public class PayTicketUseCase {
         pointRepository.save(point);
 
         // 포인트 히스토리 추가
-        PointHistory pointHistory = PointHistory.builder()
-                .pointId(point.getId())
-                .ticketId(ticket.getId())
-                .type(PointHistoryType.PAY)
-                .amount(reserve.getAmount())
-                .dateTransaction(now)
-                .build();
+        PointHistory pointHistory = PointHistory.create(point.getId(), ticket.getId(), reserve.getAmount());
         pointHistoryRepository.save(pointHistory);
 
         // 결제 추가
-        Payment payment = Payment.builder()
-                .userId(input.userId())
-                .reserveId(reserve.getId())
-                .pointHistoryId(pointHistory.getId())
-                .paymentMethod(PaymentMethod.POINT)
-                .amount(reserve.getAmount())
-                .createdAt(now)
-                .build();
+        Payment payment = Payment.create(input.userId(), reserve.getId(), pointHistory.getId(), PaymentMethod.POINT, reserve.getAmount());
         paymentRepository.save(payment);
 
         log.info("결제({}) 완료", payment.getId());
         return new Output(true, payment.getId(), point.getBalance());
-    }
-
-    // 예약제한시간 체크
-    public void handleExpiredReserve(Ticket ticket, Reserve reserve) {
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(reserve.getCreatedAt().plusMinutes(EXPIRED_MINUTES))) {
-            ticket.resetToEmpty();
-            ticketRepository.save(ticket);
-
-            reserve.cancel();
-            reserveRepository.save(reserve);
-
-            throw new BaseException(ErrorType.CONFLICT, "결제 유효기간이 만료되었습니다.");
-        }
     }
 
     public record Input (

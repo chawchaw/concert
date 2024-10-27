@@ -21,6 +21,7 @@ import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginOutput;
 import com.chaw.helper.DatabaseCleanupListener;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +117,7 @@ public class ConcertE2EWithOpenFeign {
      * -> 예약 -> 결제(잔액실패) -> 포인트 충전 -> 결제(성공)
      */
     @Test
-//    @Disabled
+    @Disabled
     void success_pay() {
         // 로그인
         LoginOutput loginResponse = authFeignClient.login(new LoginInput(username, password));

@@ -1,5 +1,7 @@
 package com.chaw.concert.app.domain.common.user.entity;
 
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,5 +31,15 @@ public class Point {
 
     public void decreaseBalance(Integer amount) {
         this.balance -= amount;
+    }
+
+    public boolean hasEnoughBalance(Integer amount) {
+        return this.balance >= amount;
+    }
+
+    public void validateHasEnoughBalanceOrThrow(Integer amount) {
+        if (!hasEnoughBalance(amount)) {
+            throw new BaseException(ErrorType.CONFLICT, "잔액이 부족합니다.");
+        }
     }
 }

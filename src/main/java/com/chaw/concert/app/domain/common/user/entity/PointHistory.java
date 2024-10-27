@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -32,7 +33,16 @@ public class PointHistory {
     @Column
     private Integer amount; // 변경 금액
 
+    @CreatedDate
     @Column(name = "date_transaction")
     private LocalDateTime dateTransaction; // 변경일
 
+    public static PointHistory create(Long pointId, Long ticketId, Integer amount) {
+        return PointHistory.builder()
+                .pointId(pointId)
+                .ticketId(ticketId)
+                .type(PointHistoryType.PAY)
+                .amount(amount)
+                .build();
+    }
 }

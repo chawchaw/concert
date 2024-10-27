@@ -4,7 +4,6 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

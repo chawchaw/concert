@@ -17,7 +17,6 @@ import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
-import com.chaw.concert.app.domain.concert.reserve.validation.ReserveValidation;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,19 +55,12 @@ class PayTicketUseCaseUnitTest {
     @Mock
     private PaymentRepository paymentRepository;
 
-    @Mock
-    private ReserveValidation reserveValidation;
-
     @InjectMocks
     private PayTicketUseCase payTicketUseCase;
 
     @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.initMocks(this);
-
-        Field field = PayTicketUseCase.class.getDeclaredField("EXPIRED_MINUTES");
-        field.setAccessible(true);
-        field.set(payTicketUseCase, 10);
     }
 
     @Test
@@ -114,7 +105,6 @@ class PayTicketUseCaseUnitTest {
         when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
         when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
-        doNothing().when(reserveValidation).validatePayTicketDetails(point, reserve, ticket);
         when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
         PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
@@ -124,8 +114,6 @@ class PayTicketUseCaseUnitTest {
 
         // then
         assertEquals(500, output.balance()); // 남은 포인트 확인
-
-        verify(reserveValidation, times(1)).validatePayTicketDetails(point, reserve, ticket);
 
         verify(concertScheduleRepository).decreaseAvailableSeat(anyLong());
         verify(ticketRepository).save(any(Ticket.class));
@@ -150,54 +138,17 @@ class PayTicketUseCaseUnitTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        when(pointRepository.findByUserIdWithLock(anyLong())).thenReturn(Point.builder().build());
-        when(ticketRepository.findById(anyLong())).thenReturn(Ticket.builder().concertScheduleId(concertScheduleId).build());
+        when(pointRepository.findByUserIdWithLock(anyLong())).thenReturn(Point.builder().balance(1000).build());
+        when(ticketRepository.findById(anyLong())).thenReturn(Ticket.builder().status(TicketStatus.RESERVE).concertScheduleId(concertScheduleId).build());
         when(concertRepository.findById(anyLong())).thenReturn(Concert.builder().build());
         when(concertScheduleRepository.findByIdWithLock(anyLong())).thenReturn(ConcertSchedule.builder().id(concertScheduleId).build());
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(anyLong(), anyLong(), anyInt())).thenReturn(reserve);
-
-        doNothing().when(reserveValidation).validatePayTicketDetails(any(), any(), any());
 
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // when / then
         BaseException baseException = assertThrows(BaseException.class, () -> payTicketUseCase.execute(new PayTicketUseCase.Input(1L, 1L)));
         assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
-    }
-
-    @Test
-    void testHandleExpiredReserve_Expired() {
-        // Given
-        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
-        Reserve reserve = Reserve.builder().amount(500).createdAt(LocalDateTime.now().minusMinutes(60)).reserveStatus(ReserveStatus.RESERVE).build(); // 만료된 상태
-
-        // Mocking
-        when(ticketRepository.save(ticket)).thenReturn(ticket);
-        when(reserveRepository.save(reserve)).thenReturn(reserve);
-
-        // When / Then
-        BaseException exception = assertThrows(BaseException.class, () -> {
-            payTicketUseCase.handleExpiredReserve(ticket, reserve);
-        });
-
-        // Verify
-        assertEquals(ErrorType.CONFLICT, exception.getErrorType());
-        verify(ticketRepository, times(1)).save(ticket);
-        verify(reserveRepository, times(1)).save(reserve);
-    }
-
-    @Test
-    void testHandleExpiredReserve_NotExpired() {
-        // Given
-        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
-        Reserve reserve = Reserve.builder().amount(500).createdAt(LocalDateTime.now()).reserveStatus(ReserveStatus.RESERVE).build(); // 만료되지 않은 상태
-
-        // When
-        payTicketUseCase.handleExpiredReserve(ticket, reserve);
-
-        // Verify (아무 작업도 발생하지 않음)
-        verify(ticketRepository, never()).save(any());
-        verify(reserveRepository, never()).save(any());
     }
 
     @Test

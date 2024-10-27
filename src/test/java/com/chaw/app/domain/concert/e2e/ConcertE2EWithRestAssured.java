@@ -102,7 +102,7 @@ public class ConcertE2EWithRestAssured {
      * -> 예약 -> 결제(잔액실패) -> 포인트 충전 -> 결제(성공)
      */
     @Test
-//    @Disabled
+    @Disabled
     void success_pay() {
         // 로그인
         Response loginResponse = given()

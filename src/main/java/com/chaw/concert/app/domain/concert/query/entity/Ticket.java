@@ -56,4 +56,10 @@ public class Ticket {
             throw new BaseException(ErrorType.CONFLICT, "이미 예약이 완료된 티켓입니다.");
         }
     }
+
+    public void isPayableOrThrow() {
+        if (!this.status.equals(TicketStatus.RESERVE)) {
+            throw new BaseException(ErrorType.CONFLICT, "예약된 티켓이 아닙니다.");
+        }
+    }
 }
