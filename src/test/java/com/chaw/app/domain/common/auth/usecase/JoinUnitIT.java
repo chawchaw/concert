@@ -6,20 +6,23 @@ import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
 import com.chaw.concert.app.domain.common.auth.usecase.Join;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
-import org.junit.jupiter.api.AfterEach;
+import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
-@Transactional
+@TestExecutionListeners(
+        listeners = DatabaseCleanupListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class JoinUnitIT {
 
     @Autowired
@@ -30,11 +33,6 @@ public class JoinUnitIT {
 
     @Autowired
     private Join joinService;
-
-    @AfterEach
-    void tearDown() {
-        userRepository.deleteAll();
-    }
 
     @Test
     void testJoinNewUser() {

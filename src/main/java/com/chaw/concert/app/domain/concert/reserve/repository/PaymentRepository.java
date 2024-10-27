@@ -8,4 +8,6 @@ public interface PaymentRepository {
     void deleteAll();
 
     Payment findById(Long id);
+
+    Integer countByReserveId(Long reserveId);
 }

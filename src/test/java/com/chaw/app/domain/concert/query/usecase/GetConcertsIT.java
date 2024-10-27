@@ -4,14 +4,14 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcerts;
-import org.junit.jupiter.api.AfterEach;
+import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,7 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
-@Transactional
+@TestExecutionListeners(
+        listeners = DatabaseCleanupListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class GetConcertsIT {
 
     @Autowired
@@ -36,11 +39,6 @@ public class GetConcertsIT {
 
         concertRepository.save(concert1);
         concertRepository.save(concert2);
-    }
-
-    @AfterEach
-    void tearDown() {
-        concertRepository.deleteAll();
     }
 
     @Test

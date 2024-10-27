@@ -6,14 +6,14 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatus;
-import org.junit.jupiter.api.AfterEach;
+import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
-@Transactional
+@TestExecutionListeners(
+        listeners = DatabaseCleanupListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class GetTicketsInEmptyReserveStatusIT {
 
     @Autowired
@@ -73,13 +76,6 @@ public class GetTicketsInEmptyReserveStatusIT {
 
         ticketRepository.save(ticket1);
         ticketRepository.save(ticket2);
-    }
-
-    @AfterEach
-    void tearDown() {
-        concertRepository.deleteAll();
-        concertScheduleRepository.deleteAll();
-        ticketRepository.deleteAll();
     }
 
     @Test

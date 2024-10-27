@@ -11,12 +11,13 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.scheduler.ExpireReserve;
-import org.junit.jupiter.api.AfterEach;
+import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
+@TestExecutionListeners(
+        listeners = DatabaseCleanupListener.class,
+        mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class ExpireReserveIT {
 
     @Autowired
@@ -67,13 +72,6 @@ public class ExpireReserveIT {
                 .status(WaitQueueStatus.PASS)
                 .build();
         waitQueueRepository.save(waitQueue);
-    }
-
-    @AfterEach
-    void tearDown() {
-        ticketRepository.deleteAll();
-        reserveRepository.deleteAll();
-        waitQueueRepository.deleteAll();
     }
 
     @Test

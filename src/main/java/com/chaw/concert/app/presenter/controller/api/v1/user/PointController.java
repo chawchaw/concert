@@ -45,7 +45,7 @@ public class PointController {
             description = "입력하는 숫자만큼 돈 복사됩니당"
     )
     @PostMapping("/charge")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     public ChargePointOutput chargePoint(
             @RequestBody ChargePointInput chargePointInput
     ) {
