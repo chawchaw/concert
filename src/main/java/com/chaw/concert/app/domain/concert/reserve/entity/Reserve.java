@@ -50,4 +50,15 @@ public class Reserve {
     public void setCreationTimeToPast(int minutes) {
         this.createdAt = LocalDateTime.now().minusMinutes(minutes);
     }
+
+    public static Reserve create(Long userId, Long ticketId, Integer amount) {
+        return Reserve.builder()
+                .userId(userId)
+                .ticketId(ticketId)
+                .reserveStatus(ReserveStatus.RESERVE)
+                .amount(amount)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
 }
