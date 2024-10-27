@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,7 +17,6 @@ public class DatabaseCleanupListener implements TestExecutionListener {
         truncateAllTables(entityManager);
     }
 
-    @Transactional
     public void truncateAllTables(EntityManager entityManager) {
         EntityManager em = entityManager.getEntityManagerFactory().createEntityManager();
 
