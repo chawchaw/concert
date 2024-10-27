@@ -1,32 +1,32 @@
 package com.chaw.concert.app.presenter.scheduler.concert;
 
-import com.chaw.concert.app.domain.concert.queue.scheduler.ExpireWaitQueue;
-import com.chaw.concert.app.domain.concert.queue.scheduler.PassWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.usecase.ExpireWaitQueueUseCase;
+import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitQueueUseCase;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class QueueScheduler {
 
-    private final PassWaitQueue passWaitQueue;
-    private final ExpireWaitQueue expireWaitQueue;
+    private final PassWaitQueueUseCase passWaitQueueUseCase;
+    private final ExpireWaitQueueUseCase expireWaitQueueUseCase;
 
-    public QueueScheduler(PassWaitQueue passWaitQueue, ExpireWaitQueue expireWaitQueue) {
-        this.passWaitQueue = passWaitQueue;
-        this.expireWaitQueue = expireWaitQueue;
+    public QueueScheduler(PassWaitQueueUseCase passWaitQueueUseCase, ExpireWaitQueueUseCase expireWaitQueueUseCase) {
+        this.passWaitQueueUseCase = passWaitQueueUseCase;
+        this.expireWaitQueueUseCase = expireWaitQueueUseCase;
     }
 
 //    @Scheduled(cron = "*/10 * * * * *")
     @Scheduled(cron = "0 * * * * *") // 매 분 0초에 실행
     public void passQueue() {
         System.out.println("QueueScheduler passQueue");
-        passWaitQueue.execute();
+        passWaitQueueUseCase.execute();
     }
 
 //    @Scheduled(cron = "*/10 * * * * *")
     @Scheduled(cron = "0 * * * * *") // 매 분 0초에 실행
     public void expireQueue() {
         System.out.println("QueueScheduler expireQueue");
-        expireWaitQueue.execute();
+        expireWaitQueueUseCase.execute();
     }
 }

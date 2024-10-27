@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 @ToString
 public class WaitQueue {
 
+    public static final int PASS_SIZE = 30;
+    private static final int EXPIRED_MINUTES = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,5 +36,9 @@ public class WaitQueue {
     public void pass() {
         this.status = WaitQueueStatus.PASS;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public static LocalDateTime getExpiredTimeFromNow() {
+        return LocalDateTime.now().minusMinutes(EXPIRED_MINUTES);
     }
 }

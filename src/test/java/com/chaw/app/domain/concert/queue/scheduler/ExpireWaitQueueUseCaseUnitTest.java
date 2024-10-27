@@ -3,27 +3,27 @@ package com.chaw.app.domain.concert.queue.scheduler;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import com.chaw.concert.app.domain.concert.queue.scheduler.PassWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.usecase.ExpireWaitQueueUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class PassWaitQueueUnitTest {
+class ExpireWaitQueueUseCaseUnitTest {
 
     @Mock
     private WaitQueueRepository waitQueueRepository;
 
     @InjectMocks
-    private PassWaitQueue passWaitQueue;
+    private ExpireWaitQueueUseCase expireWaitQueueUseCase;
 
     @BeforeEach
     void setUp() {
@@ -31,21 +31,21 @@ class PassWaitQueueUnitTest {
     }
 
     @Test
-    void execute_shouldUpdateWaitQueueStatusToPass() {
+    void execute_shouldDeleteExpiredWaitQueues() {
         // Given
+        LocalDateTime expiredAt = LocalDateTime.now().minusMinutes(10);
         List<WaitQueue> mockWaitQueues = Arrays.asList(
-                WaitQueue.builder().userId(1L).status(WaitQueueStatus.WAIT).build(),
-                WaitQueue.builder().userId(2L).status(WaitQueueStatus.WAIT).build()
+                WaitQueue.builder().userId(1L).status(WaitQueueStatus.PASS).updatedAt(expiredAt).build(),
+                WaitQueue.builder().userId(1L).status(WaitQueueStatus.PASS).updatedAt(expiredAt).build()
         );
-        when(waitQueueRepository.findByStatusByLimit(any(), any())).thenReturn(mockWaitQueues);
+
+        when(waitQueueRepository.findByStatusAndUpdatedAtBefore(any(), any())).thenReturn(mockWaitQueues);
 
         // When
-        PassWaitQueue.Output result = passWaitQueue.execute();
+        ExpireWaitQueueUseCase.Output result = expireWaitQueueUseCase.execute();
 
         // Then
-        assertEquals(2, result.countPass());
-
-        mockWaitQueues.forEach(waitQueue -> assertEquals(WaitQueueStatus.PASS, waitQueue.getStatus()));
-        verify(waitQueueRepository, times(2)).save(any(WaitQueue.class));
+        assertEquals(2, result.countExpired());
+        verify(waitQueueRepository, times(2)).delete(any(WaitQueue.class));
     }
 }

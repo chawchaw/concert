@@ -10,7 +10,7 @@ import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.scheduler.ExpireReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ExpireReserveUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class ExpireReserveIT {
+public class ExpireReserveUseCaseIT {
 
     @Autowired
     private WaitQueueRepository waitQueueRepository;
@@ -43,7 +43,7 @@ public class ExpireReserveIT {
     private ReserveRepository reserveRepository;
 
     @Autowired
-    private ExpireReserve expireReserve;
+    private ExpireReserveUseCase expireReserveUseCase;
 
     private Ticket ticket;
     private Reserve reserve;
@@ -77,7 +77,7 @@ public class ExpireReserveIT {
     @Test
     void testExecute() {
         // When
-        expireReserve.execute();
+        expireReserveUseCase.execute();
 
         // Then
         Ticket updatedTicket = ticketRepository.findById(ticket.getId());

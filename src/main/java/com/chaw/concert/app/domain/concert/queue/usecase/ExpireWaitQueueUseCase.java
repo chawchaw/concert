@@ -1,9 +1,8 @@
-package com.chaw.concert.app.domain.concert.queue.scheduler;
+package com.chaw.concert.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,14 +12,11 @@ import java.util.List;
  * 만료 스케줄러
  */
 @Service
-public class ExpireWaitQueue {
-
-    @Value("${concert.queue.expired.minutes}")
-    private Integer EXPIRED_MINUTES;
+public class ExpireWaitQueueUseCase {
 
     private final WaitQueueRepository waitQueueRepository;
 
-    public ExpireWaitQueue(WaitQueueRepository waitQueueRepository) {
+    public ExpireWaitQueueUseCase(WaitQueueRepository waitQueueRepository) {
         this.waitQueueRepository = waitQueueRepository;
     }
 
@@ -30,7 +26,7 @@ public class ExpireWaitQueue {
      * 삭제
      */
     public Output execute() {
-        LocalDateTime expiredAt = LocalDateTime.now().minusMinutes(EXPIRED_MINUTES);
+        LocalDateTime expiredAt = WaitQueue.getExpiredTimeFromNow();
         List<WaitQueue> waitQueues = waitQueueRepository.findByStatusAndUpdatedAtBefore(WaitQueueStatus.PASS, expiredAt);
         waitQueues.forEach(waitQueue -> {
             waitQueueRepository.delete(waitQueue);

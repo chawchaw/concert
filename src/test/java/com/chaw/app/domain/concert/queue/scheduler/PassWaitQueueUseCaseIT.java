@@ -4,7 +4,7 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
 import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
-import com.chaw.concert.app.domain.concert.queue.scheduler.ExpireWaitQueue;
+import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitQueueUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,77 +15,65 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDateTime;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(properties = {
-        "concert.queue.expired.minutes=10"
-})
 @TestExecutionListeners(
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class ExpireWaitQueueIT {
+public class PassWaitQueueUseCaseIT {
 
     @Autowired
-    private ExpireWaitQueue expireWaitQueue;
+    private PassWaitQueueUseCase passWaitQueueUseCase;
 
     @Autowired
     private WaitQueueRepository waitQueueRepository;
 
     @Test
-    @DisplayName("통과자 50명 중에 20명은 만료되었으면 30명만 남아야 한다")
-    void execute_shouldDelete20() {
+    @DisplayName("대기자가 60명일때 30명만 통과한다")
+    void execute_shouldUpdate30WaitQueue() {
         // Given
-        Integer waitQueueCount = 50;
+        Integer waitQueueCount = 60;
         IntStream.range(0, waitQueueCount).forEach(i -> {
-            LocalDateTime updatedAt = LocalDateTime.now();
-            if (i < 20) {
-                updatedAt = updatedAt.minusMinutes(11);
-            }
             WaitQueue waitQueue = WaitQueue.builder()
                     .userId(Integer.toUnsignedLong(i))
-                    .status(WaitQueueStatus.PASS)
-                    .updatedAt(updatedAt)
+                    .status(WaitQueueStatus.WAIT)
                     .build();
             waitQueueRepository.save(waitQueue);
         });
 
         // When
-        ExpireWaitQueue.Output result = expireWaitQueue.execute();
+        PassWaitQueueUseCase.Output result = passWaitQueueUseCase.execute();
 
         // Then
-        assertEquals(20, result.countExpired());
-        int remainingWaitCount = waitQueueRepository.countByStatus(WaitQueueStatus.PASS);
-        assertEquals(50 - 20, remainingWaitCount);
+        assertEquals(30, result.countPass());
+        int remainingWaitCount = waitQueueRepository.countByStatus(WaitQueueStatus.WAIT);
+        assertEquals(60 - 30, remainingWaitCount);
     }
 
     @Test
-    @DisplayName("통과자 10명 모두 만료되었으면 모두 삭제되어야한다")
-    void execute_shouldDeleteAll() {
+    @DisplayName("대기자가 20명일때 20명만 통과한다")
+    void execute_shouldUpdate20WaitQueue() {
         // Given
-        Integer waitQueueCount = 10;
+        Integer waitQueueCount = 20;
         IntStream.range(0, waitQueueCount).forEach(i -> {
-            LocalDateTime updatedAt = LocalDateTime.now();
             WaitQueue waitQueue = WaitQueue.builder()
                     .userId(Integer.toUnsignedLong(i))
-                    .status(WaitQueueStatus.PASS)
-                    .updatedAt(updatedAt.minusMinutes(11))
+                    .status(WaitQueueStatus.WAIT)
                     .build();
             waitQueueRepository.save(waitQueue);
         });
 
         // When
-        ExpireWaitQueue.Output result = expireWaitQueue.execute();
+        PassWaitQueueUseCase.Output result = passWaitQueueUseCase.execute();
 
         // Then
-        assertEquals(10, result.countExpired());
-        int remainingWaitCount = waitQueueRepository.countByStatus(WaitQueueStatus.PASS);
-        assertEquals(10 - 10, remainingWaitCount);
+        assertEquals(20, result.countPass());
+        int remainingWaitCount = waitQueueRepository.countByStatus(WaitQueueStatus.WAIT);
+        assertEquals(0, remainingWaitCount);
     }
-
 }

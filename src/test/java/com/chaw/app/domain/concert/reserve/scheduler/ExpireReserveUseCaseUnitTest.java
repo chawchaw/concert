@@ -8,7 +8,7 @@ import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.scheduler.ExpireReserve;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ExpireReserveUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -22,7 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class ExpireReserveUnitTest {
+public class ExpireReserveUseCaseUnitTest {
 
     @Mock
     private WaitQueueRepository waitQueueRepository;
@@ -34,7 +34,7 @@ public class ExpireReserveUnitTest {
     private ReserveRepository reserveRepository;
 
     @InjectMocks
-    private ExpireReserve expireReserve;
+    private ExpireReserveUseCase expireReserveUseCase;
 
     @BeforeEach
     void setUp() {
@@ -63,7 +63,7 @@ public class ExpireReserveUnitTest {
         when(waitQueueRepository.findByUserId(1L)).thenReturn(waitQueue);
 
         // When
-        expireReserve.execute();
+        expireReserveUseCase.execute();
 
         // Then
         verify(ticketRepository, times(1)).findById(1L);
@@ -85,7 +85,7 @@ public class ExpireReserveUnitTest {
         when(waitQueueRepository.findByUserId(1L)).thenReturn(waitQueue);
 
         // When
-        expireReserve.cancelReserve(reserve);
+        expireReserveUseCase.cancelReserve(reserve);
 
         // Then
         verify(ticketRepository, times(1)).save(ticket);
