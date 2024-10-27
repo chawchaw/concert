@@ -157,7 +157,7 @@ public class ConcertE2EWithRestAssured {
 
         // 티켓 조회
         Response getTicketsResponse = requestSpec
-                .get(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets")
+                .get(host + "/concert/schedule/" + scheduleId + "/tickets")
                 .then()
                 .statusCode(200)
                 .body("tickets.size()", equalTo(1))

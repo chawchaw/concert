@@ -85,14 +85,13 @@ public class ConcertController {
             summary = "예약가능 좌석 조회",
             description = "예약가능한 좌석(티켓)을 조회합니다."
     )
-    @GetMapping("/{concertId}/schedule/{concertScheduleId}/tickets")
+    @GetMapping("/schedule/{concertScheduleId}/tickets")
     @ResponseStatus(HttpStatus.OK)
     public GetTicketsInEmptyStatusOutput getTickets(
-            @PathVariable Long concertId,
             @PathVariable Long concertScheduleId
     ) {
         GetTicketsInEmptyStatusUseCase.Output result = getTicketsInEmptyStatusUseCase.execute(
-                new GetTicketsInEmptyStatusUseCase.Input(concertId, concertScheduleId)
+                new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId)
         );
         return GetTicketsInEmptyStatusOutput.builder()
                 .concertScheduleId(result.concertScheduleId())

@@ -81,7 +81,7 @@ public class GetTicketsInEmptyReserveStatusIT {
     @Test
     void testGetTicketsInEmptyStatus() {
         // Given
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concert.getId(), concertSchedule.getId());
+        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertSchedule.getId());
 
         // When
         GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);

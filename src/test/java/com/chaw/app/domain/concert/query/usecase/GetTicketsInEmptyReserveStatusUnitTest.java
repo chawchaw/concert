@@ -44,7 +44,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Concert concert = Concert.builder().id(concertId).name("concert").build();
         ConcertSchedule concertSchedule = ConcertSchedule.builder().id(concertScheduleId).concertId(concertId).build();
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertId, concertScheduleId);
+        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
 
         Ticket ticket1 = Ticket.builder().id(1L).type(TicketType.VIP).seatNo("A1").price(100).status(TicketStatus.EMPTY).build();
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).status(TicketStatus.EMPTY).build();

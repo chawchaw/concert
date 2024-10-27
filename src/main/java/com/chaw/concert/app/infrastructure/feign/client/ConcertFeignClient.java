@@ -18,8 +18,8 @@ public interface ConcertFeignClient {
             @PathVariable Long concertId
     );
 
-    @GetMapping("/concert/{concertId}/schedule/{scheduleId}/tickets")
-    GetTicketsInEmptyStatusOutput getTickets(@RequestHeader("Authorization") String token, @PathVariable Long concertId, @PathVariable Long scheduleId);
+    @GetMapping("/concert/schedule/{concertScheduleId}/tickets")
+    GetTicketsInEmptyStatusOutput getTickets(@RequestHeader("Authorization") String token, @PathVariable Long concertScheduleId);
 
     @PostMapping("/concert/tickets/{ticketId}/reserve")
     RequestReserveOutput reserveTicket(@RequestHeader("Authorization") String token, @PathVariable Long ticketId);

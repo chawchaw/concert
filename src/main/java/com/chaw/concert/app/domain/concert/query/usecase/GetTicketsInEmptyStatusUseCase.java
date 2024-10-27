@@ -2,7 +2,6 @@ package com.chaw.concert.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
-import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,11 +10,9 @@ import java.util.List;
 @Service
 public class GetTicketsInEmptyStatusUseCase {
 
-    private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
 
-    public GetTicketsInEmptyStatusUseCase(ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository) {
-        this.concertScheduleRepository = concertScheduleRepository;
+    public GetTicketsInEmptyStatusUseCase(TicketRepository ticketRepository) {
         this.ticketRepository = ticketRepository;
     }
 
@@ -33,7 +30,6 @@ public class GetTicketsInEmptyStatusUseCase {
     }
 
     public record Input (
-            Long concertId,
             Long concertScheduleId
     ) {}
 

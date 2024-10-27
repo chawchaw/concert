@@ -21,7 +21,6 @@ import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginOutput;
 import com.chaw.helper.DatabaseCleanupListener;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,7 +148,7 @@ public class ConcertE2EWithOpenFeign {
         Long scheduleId = schedulesResponse.schedules().get(0).id();
 
         // 티켓 조회
-        GetTicketsInEmptyStatusOutput ticketsResponse = concertFeignClient.getTickets(authHeader, concertId, scheduleId);
+        GetTicketsInEmptyStatusOutput ticketsResponse = concertFeignClient.getTickets(authHeader, scheduleId);
         assertEquals(1, ticketsResponse.tickets().size());
         Long ticketId = ticketsResponse.tickets().get(0).id();
 
