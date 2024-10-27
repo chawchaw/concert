@@ -102,8 +102,7 @@ public class ConcertE2EWithRestAssured {
      * -> 예약 -> 결제(잔액실패) -> 포인트 충전 -> 결제(성공)
      */
     @Test
-    @Disabled
-    // 로컬 서버 실행 필요
+//    @Disabled
     void success_pay() {
         // 로그인
         Response loginResponse = given()
@@ -167,14 +166,14 @@ public class ConcertE2EWithRestAssured {
 
         // 예약
         requestSpec
-                .post(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets/" + ticketId + "/reserve")
+                .post(host + "/concert/tickets/" + ticketId + "/reserve")
                 .then()
                 .statusCode(200)
                 .body("success", equalTo(true));
 
         // 결제 실패(잔액 부족)
         requestSpec
-                .post(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets/" + ticketId + "/pay")
+                .post(host + "/concert/tickets/" + ticketId + "/pay")
                 .then()
                 .statusCode(409);
 
@@ -188,7 +187,7 @@ public class ConcertE2EWithRestAssured {
 
         // 결제 성공
         requestSpec
-                .post(host + "/concert/" + concertId + "/schedule/" + scheduleId + "/tickets/" + ticketId + "/pay")
+                .post(host + "/concert/tickets/" + ticketId + "/pay")
                 .then()
                 .statusCode(200)
                 .body("success", equalTo(true));

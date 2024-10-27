@@ -131,7 +131,7 @@ public class PayTicketUseCaseConcurrencyTest {
     @Test
     void 결제요청이_동시에_3번_발생() throws InterruptedException {
         // given, when
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         int numberOfThreads = 3;
         CountDownLatch readyLatch = new CountDownLatch(numberOfThreads);

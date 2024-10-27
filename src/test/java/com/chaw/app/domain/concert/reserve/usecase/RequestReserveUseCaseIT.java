@@ -83,7 +83,7 @@ public class RequestReserveUseCaseIT {
         Long ticketId = ticket.getId();
         Long userId = 1L;
 
-        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticketId);
+        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticketId);
 
         // When
         RequestReserveUseCase.Output output = requestReserveUseCase.execute(input);

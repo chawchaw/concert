@@ -130,7 +130,7 @@ public class PayTicketUseCaseIT {
 
     @Test
     void payTicketSuccess() {
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
         PayTicketUseCase.Output output = payTicketUseCase.execute(input);
 
         ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
@@ -158,7 +158,7 @@ public class PayTicketUseCaseIT {
         concertSchedule.limitAvailableSeatsToOne();
         concertScheduleRepository.save(concertSchedule);
 
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
         PayTicketUseCase.Output output = payTicketUseCase.execute(input);
 
         ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
@@ -177,7 +177,7 @@ public class PayTicketUseCaseIT {
                 .balance(50)
                 .build();
         pointRepository.save(point);
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         BaseException exception = assertThrows(BaseException.class, () -> { payTicketUseCase.execute(input); });
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -187,7 +187,7 @@ public class PayTicketUseCaseIT {
     void validate_TicketNotInStatusReserve() {
         ticket.pay();
         ticketRepository.save(ticket);
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         BaseException exception = assertThrows(BaseException.class, () -> { payTicketUseCase.execute(input); });
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -197,7 +197,7 @@ public class PayTicketUseCaseIT {
     void validate_AlreadyPaidReserve() {
         reserve.pay();
         reserveRepository.save(reserve);
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         BaseException baseException = assertThrows(BaseException.class, () -> { payTicketUseCase.execute(input); });
         assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
@@ -207,7 +207,7 @@ public class PayTicketUseCaseIT {
     void validate_CanceledReserve() {
         reserve.cancel();
         reserveRepository.save(reserve);
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         BaseException baseException = assertThrows(BaseException.class, () -> { payTicketUseCase.execute(input); });
         assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
@@ -218,7 +218,7 @@ public class PayTicketUseCaseIT {
         concertSchedule.limitAvailableSeatsToZero();
         concertScheduleRepository.save(concertSchedule);
 
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         BaseException baseException = assertThrows(BaseException.class, () -> { payTicketUseCase.execute(input); });
         assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
@@ -228,7 +228,7 @@ public class PayTicketUseCaseIT {
     void validate_ExpiredReserve() {
         reserve.setCreationTimeToPast(31);
         reserveRepository.save(reserve);
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, concert.getId(), concertSchedule.getId(), ticket.getId());
+        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
 
         BaseException baseException = assertThrows(BaseException.class, () -> { payTicketUseCase.execute(input); });
         assertEquals(ErrorType.CONFLICT, baseException.getErrorType());

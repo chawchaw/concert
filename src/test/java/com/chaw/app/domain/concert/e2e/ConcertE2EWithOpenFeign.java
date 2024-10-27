@@ -117,8 +117,7 @@ public class ConcertE2EWithOpenFeign {
      * -> 예약 -> 결제(잔액실패) -> 포인트 충전 -> 결제(성공)
      */
     @Test
-    @Disabled
-    // 로컬 서버 실행 필요
+//    @Disabled
     void success_pay() {
         // 로그인
         LoginOutput loginResponse = authFeignClient.login(new LoginInput(username, password));
@@ -155,12 +154,12 @@ public class ConcertE2EWithOpenFeign {
         Long ticketId = ticketsResponse.tickets().get(0).id();
 
         // 예약
-        RequestReserveOutput reserveResponse = concertFeignClient.reserveTicket(authHeader, concertId, scheduleId, ticketId);
+        RequestReserveOutput reserveResponse = concertFeignClient.reserveTicket(authHeader, ticketId);
         assertTrue(reserveResponse.success());
 
         // 결제 실패 (잔액 부족)
         FeignException feignException = assertThrows(FeignException.class, () -> {
-            concertFeignClient.payTicket(authHeader, concertId, scheduleId, ticketId);
+            concertFeignClient.payTicket(authHeader, ticketId);
         });
         assertEquals(409, feignException.status());
 
@@ -170,7 +169,7 @@ public class ConcertE2EWithOpenFeign {
         assertEquals(point, chargePointResponse.balance());; // 포인트 잔액 확인
 
         // 결제 성공
-        PayTicketOutput payResponse = concertFeignClient.payTicket(authHeader, concertId, scheduleId, ticketId);
+        PayTicketOutput payResponse = concertFeignClient.payTicket(authHeader, ticketId);
         assertTrue(payResponse.success()); // 결제 성공 확인
     }
 }

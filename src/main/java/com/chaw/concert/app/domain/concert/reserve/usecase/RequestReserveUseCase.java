@@ -1,10 +1,6 @@
 package com.chaw.concert.app.domain.concert.reserve.usecase;
 
-import com.chaw.concert.app.domain.concert.query.entity.Concert;
-import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
-import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
@@ -20,15 +16,11 @@ import java.time.LocalDateTime;
 @Slf4j
 public class RequestReserveUseCase {
 
-    private final ConcertRepository concertRepository;
-    private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final ReserveValidation reserveValidation;
 
-    public RequestReserveUseCase(ConcertRepository concertRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, ReserveValidation reserveValidation) {
-        this.concertRepository = concertRepository;
-        this.concertScheduleRepository = concertScheduleRepository;
+    public RequestReserveUseCase(TicketRepository ticketRepository, ReserveRepository reserveRepository, ReserveValidation reserveValidation) {
         this.ticketRepository = ticketRepository;
         this.reserveRepository = reserveRepository;
         this.reserveValidation = reserveValidation;
@@ -36,11 +28,8 @@ public class RequestReserveUseCase {
 
     @Transactional
     public Output execute(Input input) {
-        Concert concert = concertRepository.findById(input.concertId());
-        ConcertSchedule concertSchedule = concertScheduleRepository.findById(input.concertScheduleId());
         Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
 
-        reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
         reserveValidation.validateReserveDetails(ticket);
 
         ticket.reserveWithUserId(input.userId());
@@ -62,8 +51,6 @@ public class RequestReserveUseCase {
 
     public record Input (
         Long userId,
-        Long concertId,
-        Long concertScheduleId,
         Long ticketId
     ) {}
 

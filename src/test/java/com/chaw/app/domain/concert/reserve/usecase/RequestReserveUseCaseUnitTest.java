@@ -73,7 +73,7 @@ public class RequestReserveUseCaseUnitTest {
         when(ticketRepository.findByIdWithLock(ticketId)).thenReturn(ticket);
 
         // When
-        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L, 1L, ticketId);
+        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticketId);
         RequestReserveUseCase.Output output = requestReserveUseCase.execute(input);
 
         // Then
@@ -82,7 +82,6 @@ public class RequestReserveUseCaseUnitTest {
 
         verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
         verify(ticketRepository, times(1)).save(ticket);
-        verify(reserveValidation, times(1)).validateConcertDetails(userId, concert, concertSchedule, ticket);
         verify(reserveValidation, times(1)).validateReserveDetails(ticket);
         verify(reserveRepository, times(1)).save(any(Reserve.class));
     }

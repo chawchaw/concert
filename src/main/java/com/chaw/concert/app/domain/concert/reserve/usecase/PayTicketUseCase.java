@@ -5,10 +5,8 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
@@ -36,15 +34,13 @@ public class PayTicketUseCase {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
-    private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
     private final ReserveValidation reserveValidation;
 
-    public PayTicketUseCase(ConcertRepository concertRepository, PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
-        this.concertRepository = concertRepository;
+    public PayTicketUseCase(PointRepository pointRepository, PointHistoryRepository pointHistoryRepository, ConcertScheduleRepository concertScheduleRepository, TicketRepository ticketRepository, ReserveRepository reserveRepository, PaymentRepository paymentRepository, ReserveValidation reserveValidation) {
         this.pointRepository = pointRepository;
         this.pointHistoryRepository = pointHistoryRepository;
         this.concertScheduleRepository = concertScheduleRepository;
@@ -57,13 +53,11 @@ public class PayTicketUseCase {
     @Transactional
     public Output execute(Input input) {
         Point point = pointRepository.findByUserIdWithLock(input.userId()); // 중복 결제 방지를 위해 비관 락 사용
-        Concert concert = concertRepository.findById(input.concertId());
         Ticket ticket = ticketRepository.findById(input.ticketId());
         ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
 
-        reserveValidation.validateConcertDetails(input.userId(), concert, concertSchedule, ticket);
-        reserveValidation.validatePayTicketDetails(input.userId(), point, reserve, ticket);
+        reserveValidation.validatePayTicketDetails(point, reserve, ticket);
 
         handleExpiredReserve(ticket, reserve);
 
@@ -127,8 +121,6 @@ public class PayTicketUseCase {
 
     public record Input (
         Long userId,
-        Long concertId,
-        Long concertScheduleId,
         Long ticketId
     ) {}
 

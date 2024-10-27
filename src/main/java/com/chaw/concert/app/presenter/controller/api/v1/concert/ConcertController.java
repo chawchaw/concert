@@ -109,16 +109,14 @@ public class ConcertController {
             summary = "예약하기",
             description = "좌석(티켓)을 예약합니다."
     )
-    @PostMapping("/{concertId}/schedule/{concertScheduleId}/tickets/{ticketId}/reserve")
+    @PostMapping("/tickets/{ticketId}/reserve")
     @ResponseStatus(HttpStatus.OK)
     public RequestReserveOutput reserve(
-            @PathVariable Long concertId,
-            @PathVariable Long concertScheduleId,
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
         RequestReserveUseCase.Output result = requestReserveUseCase.execute(
-                new RequestReserveUseCase.Input(userId, concertId, concertScheduleId, ticketId)
+                new RequestReserveUseCase.Input(userId, ticketId)
         );
         return RequestReserveOutput.builder()
                 .success(result.success())
@@ -129,16 +127,14 @@ public class ConcertController {
             summary = "결제하기",
             description = "좌석(티켓)을 결제합니다. 잔액 부족시 충전 후 다시 시도해주세요"
     )
-    @PostMapping("/{concertId}/schedule/{concertScheduleId}/tickets/{ticketId}/pay")
+    @PostMapping("/tickets/{ticketId}/pay")
     @ResponseStatus(HttpStatus.OK)
     public PayTicketOutput pay(
-            @PathVariable Long concertId,
-            @PathVariable Long concertScheduleId,
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
         PayTicketUseCase.Output result = payTicketUseCase.execute(
-                new PayTicketUseCase.Input(userId, concertId, concertScheduleId, ticketId)
+                new PayTicketUseCase.Input(userId, ticketId)
         );
         return PayTicketOutput.builder()
                 .success(result.success())

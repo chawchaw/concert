@@ -16,17 +16,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ReserveValidation {
 
-    public void validateConcertDetails(Long userId, Concert concert, ConcertSchedule concertSchedule, Ticket ticket) {
-        if (!concert.getId().equals(concertSchedule.getConcertId())) {
-            log.warn("콘서트id({})와 일정id({})가 일치하지 않음", concert.getId(), concertSchedule.getConcertId());
-            throw new BaseException(ErrorType.BAD_REQUEST, "콘서트와 일정이 일치하지 않습니다.");
-        }
-        if (!concertSchedule.getId().equals(ticket.getConcertScheduleId())) {
-            log.warn("일정id({})와 티켓id({})가 일치하지 않음", concert.getId(), concertSchedule.getConcertId());
-            throw new BaseException(ErrorType.BAD_REQUEST, "일정과 티켓이 일치하지 않습니다.");
-        }
-    }
-
     public void validateReserveDetails(Ticket ticket) {
         if (!ticket.getStatus().equals(TicketStatus.EMPTY)) {
             throw new BaseException(ErrorType.CONFLICT, "이미 예약이 완료된 티켓입니다.");
@@ -38,7 +27,7 @@ public class ReserveValidation {
      * ticket 예약 상태
      * reserve 예약 상태, 예약제한시간
      */
-    public void validatePayTicketDetails(Long userId, Point point, Reserve reserve, Ticket ticket) {
+    public void validatePayTicketDetails(Point point, Reserve reserve, Ticket ticket) {
         // 잔액 체크
         if (point.getBalance() < reserve.getAmount()) {
             throw new BaseException(ErrorType.CONFLICT, "잔액이 부족합니다.");

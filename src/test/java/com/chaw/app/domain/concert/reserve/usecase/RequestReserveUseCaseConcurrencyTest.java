@@ -97,7 +97,7 @@ public class RequestReserveUseCaseConcurrencyTest {
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
             futures.add(executorService.submit(() -> {
-                RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, concert1.getId(), concertSchedule1.getId(), ticket1.getId());
+                RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticket1.getId());
                 return requestReserveUseCase.execute(input);
             }));
         }
@@ -162,7 +162,7 @@ public class RequestReserveUseCaseConcurrencyTest {
                     startLatch.await();
 
                     // ticket1 예약
-                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L, 1L, 1L);
+                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L);
                     requestReserveUseCase.execute(input);
                     successTicket1.incrementAndGet();
                 } catch (InterruptedException e) {
@@ -184,7 +184,7 @@ public class RequestReserveUseCaseConcurrencyTest {
                     startLatch.await();
 
                     // ticket2 예약
-                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L, 1L, 2L);
+                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 2L);
                     requestReserveUseCase.execute(input);
                     successTicket2.incrementAndGet();
                 } catch (InterruptedException e) {
