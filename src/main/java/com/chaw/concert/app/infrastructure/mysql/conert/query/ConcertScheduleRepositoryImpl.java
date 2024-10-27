@@ -32,14 +32,14 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
     }
 
     @Override
-    public ConcertSchedule findById(Long id) {
+    public ConcertSchedule findByIdOrThrow(Long id) {
         ConcertSchedule concertSchedule = repository.findById(id).orElse(null);
         throwNotFoundException(concertSchedule);
         return concertSchedule;
     }
 
     @Override
-    public ConcertSchedule findByIdWithLock(Long id) {
+    public ConcertSchedule findByIdWithLockThrow(Long id) {
         ConcertSchedule concertSchedule = repository.findByIdWithLock(id);
         throwNotFoundException(concertSchedule);
         return concertSchedule;

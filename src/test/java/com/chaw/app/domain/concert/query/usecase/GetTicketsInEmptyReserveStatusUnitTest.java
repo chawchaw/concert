@@ -50,8 +50,8 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).status(TicketStatus.EMPTY).build();
         List<Ticket> emptyTickets = Arrays.asList(ticket1, ticket2);
 
-        when(concertRepository.findById(concertId)).thenReturn(concert);
-        when(concertScheduleRepository.findById(concertScheduleId)).thenReturn(concertSchedule);
+        when(concertRepository.findByIdOrThrow(concertId)).thenReturn(concert);
+        when(concertScheduleRepository.findByIdOrThrow(concertScheduleId)).thenReturn(concertSchedule);
         when(ticketRepository.findByConcertScheduleIdAndStatus(concertScheduleId, TicketStatus.EMPTY)).thenReturn(emptyTickets);
 
         // When

@@ -43,7 +43,7 @@ public class ExpireReserveUseCase {
     @Transactional
     public void cancelReserve(Reserve reserve) {
         Long userId = reserve.getUserId();
-        Ticket ticket = ticketRepository.findById(reserve.getTicketId());
+        Ticket ticket = ticketRepository.findByIdOrThrow(reserve.getTicketId());
         ticket.resetToEmpty();
         ticketRepository.save(ticket);
 

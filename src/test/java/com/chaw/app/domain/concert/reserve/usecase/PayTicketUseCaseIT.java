@@ -133,9 +133,9 @@ public class PayTicketUseCaseIT {
         PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
         PayTicketUseCase.Output output = payTicketUseCase.execute(input);
 
-        ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
-        Ticket ticketAfter = ticketRepository.findById(ticket.getId());
-        Reserve reserveAfter = reserveRepository.findById(reserve.getId());
+        ConcertSchedule concertScheduleAfter = concertScheduleRepository.findByIdOrThrow(concertSchedule.getId());
+        Ticket ticketAfter = ticketRepository.findByIdOrThrow(ticket.getId());
+        Reserve reserveAfter = reserveRepository.findByIdOrThrow(reserve.getId());
         Point pointAfter = pointRepository.findByUserId(userId);
         Payment payment = paymentRepository.findById(output.paymentId());
         PointHistory pointHistory = pointHistoryRepository.findById(payment.getPointHistoryId());
@@ -161,7 +161,7 @@ public class PayTicketUseCaseIT {
         PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
         PayTicketUseCase.Output output = payTicketUseCase.execute(input);
 
-        ConcertSchedule concertScheduleAfter = concertScheduleRepository.findById(concertSchedule.getId());
+        ConcertSchedule concertScheduleAfter = concertScheduleRepository.findByIdOrThrow(concertSchedule.getId());
 
         assertEquals(true, output.success());
 

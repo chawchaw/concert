@@ -44,9 +44,9 @@ public class PayTicketUseCase {
     @Transactional
     public Output execute(Input input) {
         Point point = pointRepository.findByUserIdWithLock(input.userId()); // 중복 결제 방지를 위해 비관 락 사용
-        Ticket ticket = ticketRepository.findById(input.ticketId());
-        ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
-        Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(input.userId(), input.ticketId(), 1);
+        Ticket ticket = ticketRepository.findByIdOrThrow(input.ticketId());
+        ConcertSchedule concertSchedule = concertScheduleRepository.findByIdWithLockThrow(ticket.getConcertScheduleId()); // 예약 가능 좌석 수 업데이트를 위해 비관 락 사용
+        Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(input.userId(), input.ticketId(), 1);
 
         point.validateHasEnoughBalanceOrThrow(reserve.getAmount());
         ticket.isPayableOrThrow();

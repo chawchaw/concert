@@ -47,7 +47,7 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
                 .host("Test Host")
                 .build();
 
-        when(concertRepository.findById(concertId)).thenReturn(concert);
+        when(concertRepository.findByIdOrThrow(concertId)).thenReturn(concert);
 
         List<ConcertSchedule> concertSchedules = Arrays.asList(
                 ConcertSchedule.builder()
@@ -97,7 +97,7 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
         assertEquals(200, secondSchedule.totalSeat());
         assertEquals(100, secondSchedule.availableSeat());
 
-        verify(concertRepository, times(1)).findById(concertId);
+        verify(concertRepository, times(1)).findByIdOrThrow(concertId);
         verify(concertScheduleRepository, times(1)).findByConcertIdAndIsSoldOut(concertId, false);
     }
 

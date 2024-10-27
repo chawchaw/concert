@@ -18,14 +18,14 @@ public class TicketRepositoryImpl implements TicketRepository {
     }
 
     @Override
-    public Ticket findById(Long id) {
+    public Ticket findByIdOrThrow(Long id) {
         Ticket ticket = repository.findById(id).orElse(null);
         throwNotFoundException(ticket);
         return ticket;
     }
 
     @Override
-    public Ticket findByIdWithLock(Long ticketId) {
+    public Ticket findByIdWithLockOrThrow(Long ticketId) {
         Ticket ticket = repository.findByIdWithLock(ticketId);
         throwNotFoundException(ticket);
         return ticket;

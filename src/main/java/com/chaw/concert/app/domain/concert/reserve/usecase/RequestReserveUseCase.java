@@ -22,7 +22,7 @@ public class RequestReserveUseCase {
 
     @Transactional
     public Output execute(Input input) {
-        Ticket ticket = ticketRepository.findByIdWithLock(input.ticketId());
+        Ticket ticket = ticketRepository.findByIdWithLockOrThrow(input.ticketId());
         ticket.isReservableOrThrow();
 
         ticket.reserveWithUserId(input.userId());

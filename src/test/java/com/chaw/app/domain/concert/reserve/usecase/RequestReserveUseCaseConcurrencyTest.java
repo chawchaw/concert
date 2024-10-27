@@ -124,7 +124,7 @@ public class RequestReserveUseCaseConcurrencyTest {
         assertEquals(4, failureCount);
 
         // 티켓의 상태가 최종적으로 RESERVE로 변경되었는지 확인
-        Ticket updatedTicket = ticketRepository.findById(ticket1.getId());
+        Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticket1.getId());
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
 
         for (Throwable exception : exceptions) {
@@ -203,8 +203,8 @@ public class RequestReserveUseCaseConcurrencyTest {
 
         // then
         // 티켓1이 예약된 수와 티켓2가 예약된 수가 각각 정확한지 확인
-        Ticket reservedTicket1 = ticketRepository.findById(1L);
-        Ticket reservedTicket2 = ticketRepository.findById(2L);
+        Ticket reservedTicket1 = ticketRepository.findByIdOrThrow(1L);
+        Ticket reservedTicket2 = ticketRepository.findByIdOrThrow(2L);
 
         assertEquals(TicketStatus.RESERVE, reservedTicket1.getStatus()); // 티켓1 예약 확인
         assertEquals(TicketStatus.RESERVE, reservedTicket2.getStatus()); // 티켓2 예약 확인

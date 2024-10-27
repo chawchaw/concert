@@ -10,7 +10,7 @@ public interface PointRepository {
 
     void save(Point point);
 
-    Point findById(Long id);
+    Point findByIdOrThrow(Long id);
 
     void deleteAll();
 

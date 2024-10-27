@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ReserveRepository {
 
-    Reserve findById(Long id);
+    Reserve findByIdOrThrow(Long id);
 
     List<Reserve> findByReserveStatusAndCreatedAtBefore(ReserveStatus reserveStatus, LocalDateTime expiredAt);
 
@@ -16,7 +16,7 @@ public interface ReserveRepository {
 
     void deleteAll();
 
-    Reserve findByTicketId(Long ticketId);
+    Reserve findByTicketIdOrThrow(Long ticketId);
 
-    Reserve findByUserIdAndTicketIdOrderByIdDescLimit(Long userId, Long ticketId, Integer limit);
+    Reserve findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(Long userId, Long ticketId, Integer limit);
 }

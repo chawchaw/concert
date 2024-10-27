@@ -23,7 +23,7 @@ public class GetConcertSchedulesNotSoldOutUseCase {
     }
 
     public Output execute(Input input) {
-        Concert concert = concertRepository.findById(input.concertId());
+        Concert concert = concertRepository.findByIdOrThrow(input.concertId());
 
         List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSoldOut(input.concertId(), false);
 

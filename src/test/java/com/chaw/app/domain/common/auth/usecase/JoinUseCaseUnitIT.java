@@ -43,7 +43,7 @@ public class JoinUseCaseUnitIT {
         JoinUseCase.Output output = joinUseCaseService.execute(input);
 
         // then
-        User savedUser = userRepository.findByUsername("username1");
+        User savedUser = userRepository.findByUsernameOrThrow("username1");
         assertNotNull(savedUser);
         assertEquals("username1", savedUser.getUsername());
         assertTrue(passwordEncoder.matches("password1", savedUser.getPassword()));

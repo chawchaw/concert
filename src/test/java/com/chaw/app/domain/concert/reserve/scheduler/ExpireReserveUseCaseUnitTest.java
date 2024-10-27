@@ -57,7 +57,7 @@ public class ExpireReserveUseCaseUnitTest {
         when(reserveRepository.findByReserveStatusAndCreatedAtBefore(any(), any())).thenReturn(expiredReserves);
 
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).reserveUserId(1L).build();
-        when(ticketRepository.findById(1L)).thenReturn(ticket);
+        when(ticketRepository.findByIdOrThrow(1L)).thenReturn(ticket);
 
         WaitQueue waitQueue = WaitQueue.builder().userId(1L).build();
         when(waitQueueRepository.findByUserId(1L)).thenReturn(waitQueue);
@@ -66,7 +66,7 @@ public class ExpireReserveUseCaseUnitTest {
         expireReserveUseCase.execute();
 
         // Then
-        verify(ticketRepository, times(1)).findById(1L);
+        verify(ticketRepository, times(1)).findByIdOrThrow(1L);
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(expiredReserve);
         verify(waitQueueRepository, times(1)).delete(waitQueue);
@@ -79,7 +79,7 @@ public class ExpireReserveUseCaseUnitTest {
         // Given
         Reserve reserve = Reserve.builder().id(1L).userId(1L).ticketId(1L).reserveStatus(ReserveStatus.RESERVE).build();
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).reserveUserId(1L).build();
-        when(ticketRepository.findById(1L)).thenReturn(ticket);
+        when(ticketRepository.findByIdOrThrow(1L)).thenReturn(ticket);
 
         WaitQueue waitQueue = WaitQueue.builder().userId(1L).build();
         when(waitQueueRepository.findByUserId(1L)).thenReturn(waitQueue);

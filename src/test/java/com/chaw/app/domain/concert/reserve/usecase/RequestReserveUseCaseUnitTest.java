@@ -66,9 +66,9 @@ public class RequestReserveUseCaseUnitTest {
                         .build()
         );
 
-        when(concertRepository.findById(1L)).thenReturn(concert);
-        when(concertScheduleRepository.findById(1L)).thenReturn(concertSchedule);
-        when(ticketRepository.findByIdWithLock(ticketId)).thenReturn(ticket);
+        when(concertRepository.findByIdOrThrow(1L)).thenReturn(concert);
+        when(concertScheduleRepository.findByIdOrThrow(1L)).thenReturn(concertSchedule);
+        when(ticketRepository.findByIdWithLockOrThrow(ticketId)).thenReturn(ticket);
 
         // When
         RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticketId);
@@ -79,7 +79,7 @@ public class RequestReserveUseCaseUnitTest {
         assertEquals(true, output.success());
 
         verify(ticket, times(1)).isReservableOrThrow();
-        verify(ticketRepository, times(1)).findByIdWithLock(ticketId);
+        verify(ticketRepository, times(1)).findByIdWithLockOrThrow(ticketId);
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(any(Reserve.class));
     }

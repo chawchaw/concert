@@ -20,21 +20,21 @@ public class ReserveRepositoryImpl implements ReserveRepository {
     }
 
     @Override
-    public Reserve findById(Long id) {
+    public Reserve findByIdOrThrow(Long id) {
         Reserve reserve = repository.findById(id).orElse(null);
         throwNotFoundException(reserve);
         return reserve;
     }
 
     @Override
-    public Reserve findByTicketId(Long ticketId) {
+    public Reserve findByTicketIdOrThrow(Long ticketId) {
         Reserve reserve = repository.findByTicketId(ticketId);
         throwNotFoundException(reserve);
         return reserve;
     }
 
     @Override
-    public Reserve findByUserIdAndTicketIdOrderByIdDescLimit(Long userId, Long ticketId, Integer limit) {
+    public Reserve findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(Long userId, Long ticketId, Integer limit) {
         Reserve reserve = repository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, limit);
         throwNotFoundException(reserve);
         return reserve;

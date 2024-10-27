@@ -7,9 +7,9 @@ import java.util.List;
 public interface ConcertScheduleRepository {
     List<ConcertSchedule> findByConcertIdAndIsSoldOut(Long concertId, boolean isSoldOut);
 
-    ConcertSchedule findById(Long id);
+    ConcertSchedule findByIdOrThrow(Long id);
 
-    ConcertSchedule findByIdWithLock(Long id);
+    ConcertSchedule findByIdWithLockThrow(Long id);
 
     ConcertSchedule save(ConcertSchedule concertSchedule);
 

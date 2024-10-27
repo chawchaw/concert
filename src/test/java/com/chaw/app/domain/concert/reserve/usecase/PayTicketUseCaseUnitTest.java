@@ -101,10 +101,10 @@ class PayTicketUseCaseUnitTest {
                 .build();
 
         when(pointRepository.findByUserIdWithLock(userId)).thenReturn(point);
-        when(ticketRepository.findById(ticketId)).thenReturn(ticket);
-        when(concertRepository.findById(ticket.getConcertScheduleId())).thenReturn(concert);
-        when(concertScheduleRepository.findByIdWithLock(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
-        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
+        when(ticketRepository.findByIdOrThrow(ticketId)).thenReturn(ticket);
+        when(concertRepository.findByIdOrThrow(ticket.getConcertScheduleId())).thenReturn(concert);
+        when(concertScheduleRepository.findByIdWithLockThrow(ticket.getConcertScheduleId())).thenReturn(concertSchedule);
+        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(userId, ticketId, 1)).thenReturn(reserve);
         when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
         PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
@@ -139,10 +139,10 @@ class PayTicketUseCaseUnitTest {
                 .build();
 
         when(pointRepository.findByUserIdWithLock(anyLong())).thenReturn(Point.builder().balance(1000).build());
-        when(ticketRepository.findById(anyLong())).thenReturn(Ticket.builder().status(TicketStatus.RESERVE).concertScheduleId(concertScheduleId).build());
-        when(concertRepository.findById(anyLong())).thenReturn(Concert.builder().build());
-        when(concertScheduleRepository.findByIdWithLock(anyLong())).thenReturn(ConcertSchedule.builder().id(concertScheduleId).build());
-        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(anyLong(), anyLong(), anyInt())).thenReturn(reserve);
+        when(ticketRepository.findByIdOrThrow(anyLong())).thenReturn(Ticket.builder().status(TicketStatus.RESERVE).concertScheduleId(concertScheduleId).build());
+        when(concertRepository.findByIdOrThrow(anyLong())).thenReturn(Concert.builder().build());
+        when(concertScheduleRepository.findByIdWithLockThrow(anyLong())).thenReturn(ConcertSchedule.builder().id(concertScheduleId).build());
+        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(anyLong(), anyLong(), anyInt())).thenReturn(reserve);
 
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
@@ -166,10 +166,10 @@ class PayTicketUseCaseUnitTest {
 
         // Mocking
         when(pointRepository.findByUserIdWithLock(userId)).thenReturn(point);
-        when(concertRepository.findById(concertId)).thenReturn(concert);
-        when(ticketRepository.findById(ticketId)).thenReturn(ticket);
-        when(concertScheduleRepository.findByIdWithLock(1L)).thenReturn(concertSchedule);
-        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimit(userId, ticketId, 1)).thenReturn(reserve);
+        when(concertRepository.findByIdOrThrow(concertId)).thenReturn(concert);
+        when(ticketRepository.findByIdOrThrow(ticketId)).thenReturn(ticket);
+        when(concertScheduleRepository.findByIdWithLockThrow(1L)).thenReturn(concertSchedule);
+        when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(userId, ticketId, 1)).thenReturn(reserve);
 
         // When / Then
         PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticketId);

@@ -93,11 +93,11 @@ public class RequestReserveUseCaseIT {
         assertNotNull(output);
         assertEquals(true, output.success());
 
-        Ticket updatedTicket = ticketRepository.findById(ticketId);
+        Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticketId);
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
         assertEquals(userId, updatedTicket.getReserveUserId());
 
-        Reserve reserve = reserveRepository.findByTicketId(ticketId);
+        Reserve reserve = reserveRepository.findByTicketIdOrThrow(ticketId);
         assertEquals(ReserveStatus.RESERVE, reserve.getReserveStatus());
         assertEquals(ticketId, reserve.getTicketId());
         assertEquals(userId, reserve.getUserId());

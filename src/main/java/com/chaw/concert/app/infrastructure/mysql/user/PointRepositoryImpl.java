@@ -25,7 +25,7 @@ public class PointRepositoryImpl implements PointRepository {
     }
 
     @Override
-    public Point findById(Long id) {
+    public Point findByIdOrThrow(Long id) {
         Point point = repository.findById(id).orElse(null);
         throwNotFoundException(point);
         return point;

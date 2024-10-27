@@ -16,7 +16,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User findByUsername(String username) {
+    public User findByUsernameOrThrow(String username) {
         User user = repository.findByUsername(username);
         if (user == null) {
             throw new BaseException(ErrorType.NOT_FOUND, "사용자를 찾을 수 없습니다.");

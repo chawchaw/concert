@@ -9,7 +9,7 @@ public interface UserRepository {
 
     void deleteAll();
 
-    User findByUsername(String username);
+    User findByUsernameOrThrow(String username);
 
     Boolean existsByUsername(String username);
 

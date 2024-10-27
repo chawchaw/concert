@@ -80,11 +80,11 @@ public class ExpireReserveUseCaseIT {
         expireReserveUseCase.execute();
 
         // Then
-        Ticket updatedTicket = ticketRepository.findById(ticket.getId());
+        Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticket.getId());
         assertEquals(TicketStatus.EMPTY, updatedTicket.getStatus());
         assertNull(updatedTicket.getReserveUserId());
 
-        Reserve updatedReserve = reserveRepository.findById(reserve.getId());
+        Reserve updatedReserve = reserveRepository.findByIdOrThrow(reserve.getId());
         assertEquals(ReserveStatus.CANCEL, updatedReserve.getReserveStatus());
 
         assertNull(waitQueueRepository.findByUserId(1L));
