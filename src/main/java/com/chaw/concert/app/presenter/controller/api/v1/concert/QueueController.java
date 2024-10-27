@@ -33,12 +33,7 @@ public class QueueController {
     public EnterWaitQueueOutput enterWaitQueue() {
         Long userId = securityUtils.getCurrentUserId();
         EnterWaitQueueUseCase.Output result = enterWaitQueueUseCase.execute(new EnterWaitQueueUseCase.Input(userId));
-        return EnterWaitQueueOutput.builder()
-                .status(result.status())
-                .createdAt(result.createdAt())
-                .updatedAt(result.updatedAt())
-                .order(result.order())
-                .build();
+        return EnterWaitQueueOutput.of(result);
     }
 
 }

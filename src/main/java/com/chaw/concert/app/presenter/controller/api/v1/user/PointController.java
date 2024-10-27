@@ -33,9 +33,7 @@ public class PointController {
     public GetPointOutput getPoint() {
         Long userId = securityUtils.getCurrentUserId();
         GetPointUseCase.Output result = getPointUseCase.execute(new GetPointUseCase.Input(userId));
-        return GetPointOutput.builder()
-                .point(result.point())
-                .build();
+        return GetPointOutput.of(result);
     }
 
     @Operation(
@@ -49,8 +47,6 @@ public class PointController {
     ) {
         Long userId = securityUtils.getCurrentUserId();
         ChargePointUseCase.Output result = chargePointUseCase.execute(new ChargePointUseCase.Input(userId, chargePointInput.point()));
-        return ChargePointOutput.builder()
-                .balance(result.balance())
-                .build();
+        return ChargePointOutput.of(result);
     }
 }

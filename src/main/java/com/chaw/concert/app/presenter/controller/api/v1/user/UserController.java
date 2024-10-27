@@ -34,10 +34,7 @@ public class UserController {
             @RequestBody JoinInput loginInput
     ) {
         JoinUseCase.Output result = joinUseCase.execute(new JoinUseCase.Input(loginInput.username(), loginInput.password()));
-        return JoinOutput.builder()
-                .result(result.result())
-                .username(result.username())
-                .build();
+        return JoinOutput.of(result);
     }
 
     @Operation(
@@ -50,8 +47,6 @@ public class UserController {
             @RequestBody LoginInput loginInput
     ) {
         LoginUseCase.Output result = loginUseCase.execute(new LoginUseCase.Input(loginInput.username(), loginInput.password()));
-        return LoginOutput.builder()
-                .token(result.token())
-                .build();
+        return LoginOutput.of(result);
     }
 }

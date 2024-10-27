@@ -41,15 +41,7 @@ public class ConcertController {
     @ResponseStatus(HttpStatus.OK)
     public GetConcertsOutput getConcerts() {
         GetConcertsUseCase.Output result = getConcertsUseCase.execute();
-        return GetConcertsOutput.builder()
-                .concerts(result.concerts().stream().map(concert -> GetConcertsOutput.Concert.builder()
-                        .id(concert.id())
-                        .name(concert.name())
-                        .info(concert.info())
-                        .artist(concert.artist())
-                        .host(concert.host())
-                        .build()).toList())
-                .build();
+        return GetConcertsOutput.of(result);
     }
 
     @Operation(
@@ -65,20 +57,7 @@ public class ConcertController {
         GetConcertSchedulesNotSoldOutUseCase.Output result = getConcertSchedulesNotSoldOutUseCase.execute(
                 new GetConcertSchedulesNotSoldOutUseCase.Input(userId, concertId)
         );
-        return GetConcertSchedulesNotSoldOutOutput.builder()
-                .id(result.id())
-                .name(result.name())
-                .info(result.info())
-                .artist(result.artist())
-                .host(result.host())
-                .schedules(result.schedules().stream().map(schedule -> GetConcertSchedulesNotSoldOutOutput.Item.builder()
-                        .id(schedule.id())
-                        .isSoldOut(schedule.isSoldOut())
-                        .totalSeat(schedule.totalSeat())
-                        .availableSeat(schedule.availableSeat())
-                        .dateConcert(schedule.dateConcert())
-                        .build()).toList())
-                .build();
+        return GetConcertSchedulesNotSoldOutOutput.of(result);
     }
 
     @Operation(
@@ -93,15 +72,7 @@ public class ConcertController {
         GetTicketsInEmptyStatusUseCase.Output result = getTicketsInEmptyStatusUseCase.execute(
                 new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId)
         );
-        return GetTicketsInEmptyStatusOutput.builder()
-                .concertScheduleId(result.concertScheduleId())
-                .tickets(result.tickets().stream().map(ticket -> GetTicketsInEmptyStatusOutput.Item.builder()
-                        .id(ticket.id())
-                        .type(ticket.type())
-                        .seatNo(ticket.seatNo())
-                        .price(ticket.price())
-                        .build()).toList())
-                .build();
+        return GetTicketsInEmptyStatusOutput.of(result);
     }
 
     @Operation(
@@ -117,9 +88,7 @@ public class ConcertController {
         RequestReserveUseCase.Output result = requestReserveUseCase.execute(
                 new RequestReserveUseCase.Input(userId, ticketId)
         );
-        return RequestReserveOutput.builder()
-                .success(result.success())
-                .build();
+        return RequestReserveOutput.of(result);
     }
 
     @Operation(
@@ -135,10 +104,6 @@ public class ConcertController {
         PayTicketUseCase.Output result = payTicketUseCase.execute(
                 new PayTicketUseCase.Input(userId, ticketId)
         );
-        return PayTicketOutput.builder()
-                .success(result.success())
-                .paymentId(result.paymentId())
-                .balance(result.balance())
-                .build();
+        return PayTicketOutput.of(result);
     }
 }
