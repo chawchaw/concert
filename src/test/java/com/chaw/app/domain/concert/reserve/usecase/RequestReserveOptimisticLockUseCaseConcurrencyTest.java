@@ -80,7 +80,7 @@ public class RequestReserveOptimisticLockUseCaseConcurrencyTest {
     @Test
     void testConcurrencyRequestReserve() throws InterruptedException {
         // given
-        int threadCount = 1000;
+        int threadCount = 7000;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
         CountDownLatch readyLatch = new CountDownLatch(threadCount);
@@ -109,7 +109,6 @@ public class RequestReserveOptimisticLockUseCaseConcurrencyTest {
                 }
             });
         }
-
 
         readyLatch.await();
         Long startTime = System.currentTimeMillis();

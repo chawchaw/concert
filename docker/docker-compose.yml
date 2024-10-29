@@ -1,4 +1,4 @@
-# docker-compose up -d -p concert
+# docker-compose -p concert up -d
 version: '3.8'
 
 services:
@@ -15,6 +15,16 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  redis:
+    image: redis:7.0    # 최신 안정 버전의 Redis 사용
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: [ "redis-server", "--appendonly", "yes" ]  # 데이터 영속성 활성화
+
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
     driver: local

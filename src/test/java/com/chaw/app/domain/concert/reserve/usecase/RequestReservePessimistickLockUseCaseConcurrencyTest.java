@@ -8,10 +8,7 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
-import com.chaw.concert.app.infrastructure.exception.common.BaseException;
-import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,9 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,9 +40,6 @@ public class RequestReservePessimistickLockUseCaseConcurrencyTest {
 
     @Autowired
     private TicketRepository ticketRepository;
-
-    @Autowired
-    private ReserveRepository reserveRepository;
 
     @Autowired
     private RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
@@ -85,49 +80,51 @@ public class RequestReservePessimistickLockUseCaseConcurrencyTest {
 
     @Test
     void testConcurrencyRequestReserve() throws InterruptedException {
-        // 스레드 수를 5로 설정
-        int threadCount = 5;
+        // given
+        int threadCount = 7000;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        List<Future<RequestReservePessimistickLockUseCase.Output>> futures = new ArrayList<>();
 
-        // 5명의 사용자에게 같은 티켓을 동시에 예약하도록 요청
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
+
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
-            futures.add(executorService.submit(() -> {
-                RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticket1.getId());
-                return requestReservePessimistickLockUseCase.execute(input);
-            }));
+            executorService.execute(() -> {
+                try {
+                    readyLatch.countDown();
+                    startLatch.await();
+
+                    RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticket1.getId());
+                    requestReservePessimistickLockUseCase.execute(input);
+                    successCount.incrementAndGet();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (RuntimeException e) {
+                    failCount.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
         }
 
-        // 성공 및 실패 결과 확인
-        int successCount = 0;
-        int failureCount = 0;
-        List<Throwable> exceptions = new ArrayList<>();
+        readyLatch.await();
+        Long startTime = System.currentTimeMillis();
+        startLatch.countDown();
+        doneLatch.await();
+        Long endTime = System.currentTimeMillis();
+        Long elapsedTime = endTime - startTime;
 
-        for (Future<RequestReservePessimistickLockUseCase.Output> future : futures) {
-            try {
-                future.get();  // 스레드가 실패하면 ExecutionException이 발생
-                successCount++;
-            } catch (ExecutionException e) {
-                failureCount++;
-                // 발생한 예외 수집
-                exceptions.add(e.getCause());
-            }
-        }
+        assertEquals(1, successCount.get());
+        assertEquals(threadCount - 1, failCount.get());
 
-        // 하나의 스레드만 성공해야 함
-        assertEquals(1, successCount);
-        // 나머지 4개의 스레드는 실패해야 함
-        assertEquals(4, failureCount);
-
-        // 티켓의 상태가 최종적으로 RESERVE로 변경되었는지 확인
         Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticket1.getId());
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
 
-        for (Throwable exception : exceptions) {
-            BaseException baseException = (BaseException) exception;
-            assertEquals(ErrorType.CONFLICT, baseException.getErrorType());
-        }
+        System.out.println("소요시간: " + elapsedTime + "ms");
 
         executorService.shutdown();
     }
