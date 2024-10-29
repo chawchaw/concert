@@ -19,6 +19,9 @@ public class Reserve {
 
     public final static Integer EXPIRED_MINUTES = 5;
 
+    @Version
+    private Long version;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

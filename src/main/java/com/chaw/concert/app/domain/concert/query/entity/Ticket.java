@@ -13,6 +13,9 @@ import lombok.*;
 @ToString
 public class Ticket {
 
+    @Version
+    private Long version;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,9 +54,13 @@ public class Ticket {
         this.reserveUserId = userId;
     }
 
+    public BaseException getExceptionForNotReservable() {
+        return new BaseException(ErrorType.CONFLICT, "이미 예약이 완료된 티켓입니다.");
+    }
+
     public void isReservableOrThrow() {
         if (!this.status.equals(TicketStatus.EMPTY)) {
-            throw new BaseException(ErrorType.CONFLICT, "이미 예약이 완료된 티켓입니다.");
+            throw getExceptionForNotReservable();
         }
     }
 
