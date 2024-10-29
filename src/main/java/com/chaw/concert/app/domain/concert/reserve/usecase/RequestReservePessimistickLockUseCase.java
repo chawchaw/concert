@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class RequestReserveUseCase {
+public class RequestReservePessimistickLockUseCase {
 
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;

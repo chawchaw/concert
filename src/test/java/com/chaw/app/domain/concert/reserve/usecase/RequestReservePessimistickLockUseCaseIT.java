@@ -11,7 +11,7 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class RequestReserveUseCaseIT {
+public class RequestReservePessimistickLockUseCaseIT {
 
     @Autowired
     private ConcertRepository concertRepository;
@@ -45,7 +45,7 @@ public class RequestReserveUseCaseIT {
     private ReserveRepository reserveRepository;
 
     @Autowired
-    private RequestReserveUseCase requestReserveUseCase;
+    private RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
 
     private Concert concert;
     private ConcertSchedule concertSchedule;
@@ -81,10 +81,10 @@ public class RequestReserveUseCaseIT {
         Long ticketId = ticket.getId();
         Long userId = 1L;
 
-        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticketId);
+        RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticketId);
 
         // When
-        RequestReserveUseCase.Output output = requestReserveUseCase.execute(input);
+        RequestReservePessimistickLockUseCase.Output output = requestReservePessimistickLockUseCase.execute(input);
 
         // Then
         assertNotNull(output);
@@ -108,10 +108,10 @@ public class RequestReserveUseCaseIT {
         ticket.reserveWithUserId(userId);
         ticketRepository.save(ticket);
 
-        RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticketId);
+        RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticketId);
 
         // when
-        BaseException exception = assertThrows(BaseException.class, () -> requestReserveUseCase.execute(input));
+        BaseException exception = assertThrows(BaseException.class, () -> requestReservePessimistickLockUseCase.execute(input));
 
         // then
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());

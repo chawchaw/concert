@@ -9,7 +9,7 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class RequestReserveUseCaseConcurrencyTest {
+public class RequestReservePessimistickLockUseCaseConcurrencyTest {
 
     @Autowired
     private ConcertRepository concertRepository;
@@ -47,7 +47,7 @@ public class RequestReserveUseCaseConcurrencyTest {
     private ReserveRepository reserveRepository;
 
     @Autowired
-    private RequestReserveUseCase requestReserveUseCase;
+    private RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
 
     private Concert concert1;
     private ConcertSchedule concertSchedule1;
@@ -88,14 +88,14 @@ public class RequestReserveUseCaseConcurrencyTest {
         // 스레드 수를 5로 설정
         int threadCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        List<Future<RequestReserveUseCase.Output>> futures = new ArrayList<>();
+        List<Future<RequestReservePessimistickLockUseCase.Output>> futures = new ArrayList<>();
 
         // 5명의 사용자에게 같은 티켓을 동시에 예약하도록 요청
         for (int i = 0; i < threadCount; i++) {
             final Long userId = (long) i + 1;
             futures.add(executorService.submit(() -> {
-                RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, ticket1.getId());
-                return requestReserveUseCase.execute(input);
+                RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticket1.getId());
+                return requestReservePessimistickLockUseCase.execute(input);
             }));
         }
 
@@ -104,7 +104,7 @@ public class RequestReserveUseCaseConcurrencyTest {
         int failureCount = 0;
         List<Throwable> exceptions = new ArrayList<>();
 
-        for (Future<RequestReserveUseCase.Output> future : futures) {
+        for (Future<RequestReservePessimistickLockUseCase.Output> future : futures) {
             try {
                 future.get();  // 스레드가 실패하면 ExecutionException이 발생
                 successCount++;
@@ -159,8 +159,8 @@ public class RequestReserveUseCaseConcurrencyTest {
                     startLatch.await();
 
                     // ticket1 예약
-                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 1L);
-                    requestReserveUseCase.execute(input);
+                    RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, 1L);
+                    requestReservePessimistickLockUseCase.execute(input);
                     successTicket1.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -181,8 +181,8 @@ public class RequestReserveUseCaseConcurrencyTest {
                     startLatch.await();
 
                     // ticket2 예약
-                    RequestReserveUseCase.Input input = new RequestReserveUseCase.Input(userId, 2L);
-                    requestReserveUseCase.execute(input);
+                    RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, 2L);
+                    requestReservePessimistickLockUseCase.execute(input);
                     successTicket2.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
