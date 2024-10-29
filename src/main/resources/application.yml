@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: concert
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/hhplus
+    username: root
+    password: zjxA8!9d*a
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# JWT 설정
+jwt:
+  secret: g7LGbgzTJUaGzJCiUsgQr/5bOkPJVxyGPJK3a7yYpLA=
+  expiration:
+    millis: 86400000
+
+# Slack Webhook URL
+slack:
+  webhook:
+    url: https://hooks.slack.com/services/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
+
+# OpenFeign 설정
+api:
+  host: http://localhost:8080/api/v1

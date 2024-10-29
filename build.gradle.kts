@@ -29,6 +29,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.11.5") // JWT API 의존성 추가
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign") // OpenFeign 의존성 추가
     implementation("jakarta.servlet:jakarta.servlet-api:6.0.0") // Jakarta Servlet API 의존성 추가
+    implementation("org.redisson:redisson-spring-boot-starter:3.23.4") // Redisson 의존성 추가 (버전 3.23.4)
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 
@@ -50,4 +51,5 @@ dependencyManagement {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+    jvmArgs = listOf("-Xshare:off")
 }
