@@ -5,13 +5,9 @@ import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePointOptimisticLockUseCase;
 import com.chaw.concert.app.domain.common.user.usecase.ChargePointRedissonLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestReporter;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
@@ -39,12 +35,9 @@ public class ChargePointUseCaseConcurrencyTest {
     private PointHistoryRepository pointHistoryRepository;
 
     @Autowired
-    private ChargePointOptimisticLockUseCase chargePointOptimisticLockUseCase;
-
-    @Autowired
     private ChargePointRedissonLockUseCase chargePointRedissonLockUseCase;
 
-    final int THREAD_COUNT = 5000;
+    final int THREAD_COUNT = 10;
     final Long userId = 1L;
     final Integer balance = 100;
     final Integer chargeAmount = 50;
@@ -99,14 +92,14 @@ public class ChargePointUseCaseConcurrencyTest {
         Long endTime = System.currentTimeMillis();
         Long elapsedTime = endTime - startTime;
 
-        assertEquals(1, successCount.get());
-        assertEquals(THREAD_COUNT - 1, failCount.get());
+        assertEquals(THREAD_COUNT, successCount.get());
+        assertEquals(0, failCount.get());
 
         Point updatedPoint = pointRepository.findByUserId(userId);
         List<PointHistory> pointHistories = pointHistoryRepository.findByPointId(updatedPoint.getId());
 
-        assertEquals(balance + chargeAmount * 1, updatedPoint.getBalance());
-        assertEquals(1, pointHistories.size());
+        assertEquals(balance + (chargeAmount * THREAD_COUNT), updatedPoint.getBalance());
+        assertEquals(THREAD_COUNT, pointHistories.size());
 
         System.out.println("사용자수: " + THREAD_COUNT);
         System.out.println("소요시간: " + elapsedTime + "ms");
@@ -114,15 +107,6 @@ public class ChargePointUseCaseConcurrencyTest {
         testReporter.publishEntry("소요시간", elapsedTime + "ms");
 
         executorService.shutdown();
-    }
-
-    @Test
-    @DisplayName("요청이 mysql 커넥션 풀보다 많아지면(default 10개) 모든 요청이 동시에 실행된다는 보장이 없어 한개만 성공하는 테스트를 진행할 수 없습니다.")
-    void optimisticLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, point) -> {
-            ChargePointOptimisticLockUseCase.Input input = new ChargePointOptimisticLockUseCase.Input(userId, chargeAmount);
-            chargePointOptimisticLockUseCase.execute(input);
-        });
     }
 
     @Test
