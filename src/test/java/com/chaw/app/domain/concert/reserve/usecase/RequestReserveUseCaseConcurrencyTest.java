@@ -57,7 +57,7 @@ public class RequestReserveUseCaseConcurrencyTest {
     private ConcertSchedule concertSchedule1;
     private Ticket ticket1;
     private Ticket ticket2;
-    int THREAD_COUNT = 5000;
+    int THREAD_COUNT = 7000;
 
     @BeforeEach
     void setUp() {
