@@ -18,14 +18,17 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketPessimistickUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
 
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -66,8 +69,12 @@ public class PayTicketUseCaseConcurrencyTest {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private PayTicketUseCase payTicketUseCase;
+    private PayTicketPessimistickUseCase payTicketPessimistickUseCase;
 
+    @Autowired
+    private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
+
+    int THREAD_COUNT = 100;
     private Long userId = 1L;
     private Integer balance = 1000;
     private Integer price = 100;
@@ -125,32 +132,33 @@ public class PayTicketUseCaseConcurrencyTest {
         reserveRepository.save(reserve);
     }
 
-    @Test
-    void 결제요청이_동시에_3번_발생() throws InterruptedException {
-        // given, when
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
+    @FunctionalInterface
+    public interface PayTicketRunnable<T> {
+        void run(Long userId, Long ticketId);
+    }
 
-        int numberOfThreads = 3;
-        CountDownLatch readyLatch = new CountDownLatch(numberOfThreads);
+    void testConcurrency(TestReporter testReporter, PayTicketRunnable runnable) throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+
+        CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT);
         CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(numberOfThreads);
+        CountDownLatch doneLatch = new CountDownLatch(THREAD_COUNT);
 
-        AtomicInteger success = new AtomicInteger(0);
-        AtomicInteger fail = new AtomicInteger(0);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-
-        for (int i = 0; i < numberOfThreads; i++) {
+        for (int i = 0; i < THREAD_COUNT; i++) {
             executorService.execute(() -> {
                 try {
                     readyLatch.countDown();
                     startLatch.await();
-                    payTicketUseCase.execute(input);
-                    success.incrementAndGet();
+
+                    runnable.run(userId, ticket.getId());
+                    successCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
-                    fail.incrementAndGet();
+                    failCount.incrementAndGet();
                 } finally {
                     doneLatch.countDown();
                 }
@@ -158,14 +166,46 @@ public class PayTicketUseCaseConcurrencyTest {
         }
 
         readyLatch.await();
+        Long startTime = System.currentTimeMillis();
         startLatch.countDown();
         doneLatch.await();
+        Long endTime = System.currentTimeMillis();
+        Long elapsedTime = endTime - startTime;
 
-        // then
+        assertEquals(1, successCount.get());
+        assertEquals(THREAD_COUNT - 1, failCount.get());
+
+        Point pointNew = pointRepository.findByUserId(userId);
+        assertEquals(1000 - 100, pointNew.getBalance());
+
         Integer countPayment = paymentRepository.countByReserveId(reserve.getId());
         assertEquals(1, countPayment);
-        assertEquals(1, success.get());
-        assertEquals(numberOfThreads - 1, fail.get());
+
+        long countPointHistory = pointHistoryRepository.countAll();
+        assertEquals(1, countPointHistory);
+
+        System.out.println("사용자수: " + THREAD_COUNT);
+        System.out.println("소요시간: " + elapsedTime + "ms");
+        testReporter.publishEntry("사용자수", NumberFormat.getInstance().format(THREAD_COUNT));
+        testReporter.publishEntry("소요시간", elapsedTime + "ms");
+
+        executorService.shutdown();
+    }
+
+    @Test
+    void pessimisticLock(TestReporter testReporter) throws InterruptedException {
+        testConcurrency(testReporter, (userId, ticketId) -> {
+            PayTicketPessimistickUseCase.Input input = new PayTicketPessimistickUseCase.Input(userId, ticketId);
+            payTicketPessimistickUseCase.execute(input);
+        });
+    }
+
+    @Test
+    void redissonRLock(TestReporter testReporter) throws InterruptedException {
+        testConcurrency(testReporter, (userId, ticketId) -> {
+            PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(userId, ticketId);
+            payTicketRedissonRLockUseCase.execute(input);
+        });
     }
 
 }

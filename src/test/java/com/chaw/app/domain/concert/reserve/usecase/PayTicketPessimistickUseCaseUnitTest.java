@@ -16,7 +16,7 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketPessimistickUseCase;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class PayTicketUseCaseUnitTest {
+class PayTicketPessimistickUseCaseUnitTest {
 
     @Mock
     private PointRepository pointRepository;
@@ -56,7 +56,7 @@ class PayTicketUseCaseUnitTest {
     private PaymentRepository paymentRepository;
 
     @InjectMocks
-    private PayTicketUseCase payTicketUseCase;
+    private PayTicketPessimistickUseCase payTicketPessimistickUseCase;
 
     @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
@@ -107,10 +107,10 @@ class PayTicketUseCaseUnitTest {
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(userId, ticketId, 1)).thenReturn(reserve);
         when(concertScheduleRepository.decreaseAvailableSeat(concertSchedule.getId())).thenReturn(true);
 
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticket.getId());
+        PayTicketPessimistickUseCase.Input input = new PayTicketPessimistickUseCase.Input(userId, ticket.getId());
 
         // when
-        PayTicketUseCase.Output output = payTicketUseCase.execute(input);
+        PayTicketPessimistickUseCase.Output output = payTicketPessimistickUseCase.execute(input);
 
         // then
         assertEquals(500, output.balance()); // 남은 포인트 확인
@@ -147,7 +147,7 @@ class PayTicketUseCaseUnitTest {
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // when / then
-        BaseException baseException = assertThrows(BaseException.class, () -> payTicketUseCase.execute(new PayTicketUseCase.Input(1L, 1L)));
+        BaseException baseException = assertThrows(BaseException.class, () -> payTicketPessimistickUseCase.execute(new PayTicketPessimistickUseCase.Input(1L, 1L)));
         assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, baseException.getErrorType());
     }
 
@@ -172,8 +172,8 @@ class PayTicketUseCaseUnitTest {
         when(reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(userId, ticketId, 1)).thenReturn(reserve);
 
         // When / Then
-        PayTicketUseCase.Input input = new PayTicketUseCase.Input(userId, ticketId);
-        BaseException exception = assertThrows(BaseException.class, () -> payTicketUseCase.execute(input));
+        PayTicketPessimistickUseCase.Input input = new PayTicketPessimistickUseCase.Input(userId, ticketId);
+        BaseException exception = assertThrows(BaseException.class, () -> payTicketPessimistickUseCase.execute(input));
 
         // Verify
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());

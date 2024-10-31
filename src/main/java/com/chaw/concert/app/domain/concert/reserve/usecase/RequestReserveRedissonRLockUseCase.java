@@ -37,7 +37,7 @@ public class RequestReserveRedissonRLockUseCase {
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
-            boolean lockAcquired = lock.tryLock(10, 60, TimeUnit.SECONDS);
+            boolean lockAcquired = lock.tryLock(1L, 1L, TimeUnit.SECONDS);
             if (!lockAcquired) {
                 log.warn("티켓 {} Redisson RLock 획득 실패", input.ticketId());
                 throw new BaseException(ErrorType.CONFLICT, "Redisson 락 획득 실패");

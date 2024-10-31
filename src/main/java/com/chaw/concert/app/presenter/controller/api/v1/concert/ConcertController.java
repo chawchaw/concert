@@ -4,7 +4,7 @@ import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
 import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketPessimistickUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,15 +22,15 @@ public class ConcertController {
     private final GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
     private final GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
     private final RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
-    private final PayTicketUseCase payTicketUseCase;
+    private final PayTicketPessimistickUseCase payTicketPessimistickUseCase;
 
-    public ConcertController(SecurityUtil securityUtils, GetConcertsUseCase getConcertsUseCase, GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase, GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase, RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase, PayTicketUseCase payTicketUseCase) {
+    public ConcertController(SecurityUtil securityUtils, GetConcertsUseCase getConcertsUseCase, GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase, GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase, RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase, PayTicketPessimistickUseCase payTicketPessimistickUseCase) {
         this.securityUtils = securityUtils;
         this.getConcertsUseCase = getConcertsUseCase;
         this.getConcertSchedulesNotSoldOutUseCase = getConcertSchedulesNotSoldOutUseCase;
         this.getTicketsInEmptyStatusUseCase = getTicketsInEmptyStatusUseCase;
         this.requestReservePessimistickLockUseCase = requestReservePessimistickLockUseCase;
-        this.payTicketUseCase = payTicketUseCase;
+        this.payTicketPessimistickUseCase = payTicketPessimistickUseCase;
     }
 
     @Operation(
@@ -101,8 +101,8 @@ public class ConcertController {
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        PayTicketUseCase.Output result = payTicketUseCase.execute(
-                new PayTicketUseCase.Input(userId, ticketId)
+        PayTicketPessimistickUseCase.Output result = payTicketPessimistickUseCase.execute(
+                new PayTicketPessimistickUseCase.Input(userId, ticketId)
         );
         return PayTicketOutput.of(result);
     }

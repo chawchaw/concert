@@ -25,7 +25,7 @@ import java.text.MessageFormat;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class PayTicketUseCase {
+public class PayTicketPessimistickUseCase {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
