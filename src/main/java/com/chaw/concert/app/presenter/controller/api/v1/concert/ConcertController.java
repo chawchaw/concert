@@ -4,34 +4,27 @@ import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
 import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketPessimistickUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/concert")
 @Tag(name = "Concert", description = "콘서트")
+@AllArgsConstructor
 public class ConcertController {
 
     private final SecurityUtil securityUtils;
     private final GetConcertsUseCase getConcertsUseCase;
     private final GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
     private final GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
-    private final RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
-    private final PayTicketPessimistickUseCase payTicketPessimistickUseCase;
-
-    public ConcertController(SecurityUtil securityUtils, GetConcertsUseCase getConcertsUseCase, GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase, GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase, RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase, PayTicketPessimistickUseCase payTicketPessimistickUseCase) {
-        this.securityUtils = securityUtils;
-        this.getConcertsUseCase = getConcertsUseCase;
-        this.getConcertSchedulesNotSoldOutUseCase = getConcertSchedulesNotSoldOutUseCase;
-        this.getTicketsInEmptyStatusUseCase = getTicketsInEmptyStatusUseCase;
-        this.requestReservePessimistickLockUseCase = requestReservePessimistickLockUseCase;
-        this.payTicketPessimistickUseCase = payTicketPessimistickUseCase;
-    }
+    private final RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
+    private final PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
 
     @Operation(
             summary = "콘서트 조회",
@@ -85,8 +78,8 @@ public class ConcertController {
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        RequestReservePessimistickLockUseCase.Output result = requestReservePessimistickLockUseCase.execute(
-                new RequestReservePessimistickLockUseCase.Input(userId, ticketId)
+        RequestReserveRedissonRLockUseCase.Output result = requestReserveRedissonRLockUseCase.execute(
+                new RequestReserveRedissonRLockUseCase.Input(userId, ticketId)
         );
         return RequestReserveOutput.of(result);
     }
@@ -101,8 +94,8 @@ public class ConcertController {
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        PayTicketPessimistickUseCase.Output result = payTicketPessimistickUseCase.execute(
-                new PayTicketPessimistickUseCase.Input(userId, ticketId)
+        PayTicketRedissonRLockUseCase.Output result = payTicketRedissonRLockUseCase.execute(
+                new PayTicketRedissonRLockUseCase.Input(userId, ticketId)
         );
         return PayTicketOutput.of(result);
     }

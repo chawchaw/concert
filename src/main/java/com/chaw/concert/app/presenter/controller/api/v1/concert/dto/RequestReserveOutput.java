@@ -1,13 +1,13 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert.dto;
 
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
 import lombok.Builder;
 
 @Builder
 public record RequestReserveOutput(
         Boolean success
 ){
-    public static RequestReserveOutput of(RequestReservePessimistickLockUseCase.Output output) {
+    public static RequestReserveOutput of(RequestReserveRedissonRLockUseCase.Output output) {
         return RequestReserveOutput.builder()
                 .success(output.success())
                 .build();
