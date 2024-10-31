@@ -1,7 +1,7 @@
 package com.chaw.concert.app.presenter.controller.api.v1.user;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointOptimisticLockUseCase;
 import com.chaw.concert.app.domain.common.user.usecase.GetPointUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,12 +16,12 @@ public class PointController {
 
     private final SecurityUtil securityUtils;
     private final GetPointUseCase getPointUseCase;
-    private final ChargePointUseCase chargePointUseCase;
+    private final ChargePointOptimisticLockUseCase chargePointOptimisticLockUseCase;
 
-    public PointController(SecurityUtil securityUtils, GetPointUseCase getPointUseCase, ChargePointUseCase chargePointUseCase) {
+    public PointController(SecurityUtil securityUtils, GetPointUseCase getPointUseCase, ChargePointOptimisticLockUseCase chargePointOptimisticLockUseCase) {
         this.securityUtils = securityUtils;
         this.getPointUseCase = getPointUseCase;
-        this.chargePointUseCase = chargePointUseCase;
+        this.chargePointOptimisticLockUseCase = chargePointOptimisticLockUseCase;
     }
 
     @Operation(
@@ -46,7 +46,7 @@ public class PointController {
             @RequestBody ChargePointInput chargePointInput
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        ChargePointUseCase.Output result = chargePointUseCase.execute(new ChargePointUseCase.Input(userId, chargePointInput.point()));
+        ChargePointOptimisticLockUseCase.Output result = chargePointOptimisticLockUseCase.execute(new ChargePointOptimisticLockUseCase.Input(userId, chargePointInput.point()));
         return ChargePointOutput.of(result);
     }
 }

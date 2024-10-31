@@ -4,7 +4,7 @@ import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointOptimisticLockUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ChargePointUseCaseUnitTest {
+public class ChargePointOptimisticLockUseCaseUnitTest {
 
     @Mock
     private PointRepository pointRepository;
@@ -25,7 +25,7 @@ public class ChargePointUseCaseUnitTest {
     private PointHistoryRepository pointHistoryRepository;
 
     @InjectMocks
-    private ChargePointUseCase chargePointUseCase;
+    private ChargePointOptimisticLockUseCase chargePointOptimisticLockUseCase;
 
     @Test
     void testChargeExistingUser() {
@@ -38,8 +38,8 @@ public class ChargePointUseCaseUnitTest {
         when(pointRepository.findByUserIdWithLock(1L)).thenReturn(existingPoint);
 
         // When: 포인트 충전 요청
-        ChargePointUseCase.Input input = new ChargePointUseCase.Input(1L, 50);
-        ChargePointUseCase.Output output = chargePointUseCase.execute(input);
+        ChargePointOptimisticLockUseCase.Input input = new ChargePointOptimisticLockUseCase.Input(1L, 50);
+        ChargePointOptimisticLockUseCase.Output output = chargePointOptimisticLockUseCase.execute(input);
 
         // Then: 포인트가 정상적으로 충전되었는지 확인
         assertEquals(150, output.balance());

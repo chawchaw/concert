@@ -6,7 +6,7 @@ import com.chaw.concert.app.domain.common.user.entity.PointHistory;
 import com.chaw.concert.app.domain.common.user.entity.PointHistoryType;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointOptimisticLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class ChargePointUseCaseIT {
+public class ChargePointOptimisticLockUseCaseIT {
 
     @Autowired
     private PointRepository pointRepository;
@@ -29,7 +29,7 @@ public class ChargePointUseCaseIT {
     private PointHistoryRepository pointHistoryRepository;
 
     @Autowired
-    private ChargePointUseCase chargePointUseCase;
+    private ChargePointOptimisticLockUseCase chargePointOptimisticLockUseCase;
 
     @Test
     void testChargeExistingUser() {
@@ -41,8 +41,8 @@ public class ChargePointUseCaseIT {
         pointRepository.save(point);
 
         // when
-        ChargePointUseCase.Input input = new ChargePointUseCase.Input(1L, 50);
-        ChargePointUseCase.Output output = chargePointUseCase.execute(input);
+        ChargePointOptimisticLockUseCase.Input input = new ChargePointOptimisticLockUseCase.Input(1L, 50);
+        ChargePointOptimisticLockUseCase.Output output = chargePointOptimisticLockUseCase.execute(input);
 
         // then
         assertEquals(150, output.balance());
@@ -58,8 +58,8 @@ public class ChargePointUseCaseIT {
         // given
 
         // when
-        ChargePointUseCase.Input input = new ChargePointUseCase.Input(2L, 100);
-        ChargePointUseCase.Output output = chargePointUseCase.execute(input);
+        ChargePointOptimisticLockUseCase.Input input = new ChargePointOptimisticLockUseCase.Input(2L, 100);
+        ChargePointOptimisticLockUseCase.Output output = chargePointOptimisticLockUseCase.execute(input);
 
         // then
         Point newPoint = pointRepository.findByUserId(2L);

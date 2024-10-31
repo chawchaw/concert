@@ -37,7 +37,16 @@ public class PointHistory {
     @Column(name = "date_transaction")
     private LocalDateTime dateTransaction; // 변경일
 
-    public static PointHistory create(Long pointId, Long ticketId, Integer amount) {
+    public static PointHistory createCharge(Long pointId, Integer amount) {
+        return PointHistory.builder()
+                .pointId(pointId)
+                .type(PointHistoryType.CHARGE)
+                .amount(amount)
+                .dateTransaction(LocalDateTime.now())
+                .build();
+    }
+
+    public static PointHistory createPay(Long pointId, Long ticketId, Integer amount) {
         return PointHistory.builder()
                 .pointId(pointId)
                 .ticketId(ticketId)

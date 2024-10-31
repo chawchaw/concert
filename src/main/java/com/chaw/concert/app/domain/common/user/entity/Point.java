@@ -17,6 +17,9 @@ public class Point {
 
     public final static String REDIS_LOCK_KEY = "'user-point:'.concat(#input.userId().toString())";
 
+    @Version
+    private Long version;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
