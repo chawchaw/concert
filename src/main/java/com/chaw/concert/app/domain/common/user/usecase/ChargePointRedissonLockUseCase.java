@@ -17,7 +17,7 @@ public class ChargePointRedissonLockUseCase {
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
-    @RedissonRLock(key = Point.REDIS_LOCK_KEY, waitTime = 0)
+    @RedissonRLock(key = Point.REDIS_LOCK_KEY)
     public Output execute(Input input) {
         Point point = pointRepository.findByUserId(input.userId());
         point.increaseBalance(input.point());
