@@ -39,4 +39,9 @@ public class PointHistoryRepositoryImpl implements PointHistoryRepository {
     public PointHistory findById(Long id) {
         return repository.findById(id).orElse(null);
     }
+
+    @Override
+    public long countAll() {
+        return repository.count();
+    }
 }

@@ -14,4 +14,6 @@ public interface PointHistoryRepository {
     void deleteAll();
 
     PointHistory findById(Long id);
+
+    long countAll();
 }

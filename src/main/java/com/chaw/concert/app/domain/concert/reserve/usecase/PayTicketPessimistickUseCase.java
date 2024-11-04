@@ -25,7 +25,7 @@ import java.text.MessageFormat;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class PayTicketUseCase {
+public class PayTicketPessimistickUseCase {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
@@ -71,7 +71,7 @@ public class PayTicketUseCase {
         pointRepository.save(point);
 
         // 포인트 히스토리 추가
-        PointHistory pointHistory = PointHistory.create(point.getId(), ticket.getId(), reserve.getAmount());
+        PointHistory pointHistory = PointHistory.createPay(point.getId(), ticket.getId(), reserve.getAmount());
         pointHistoryRepository.save(pointHistory);
 
         // 결제 추가

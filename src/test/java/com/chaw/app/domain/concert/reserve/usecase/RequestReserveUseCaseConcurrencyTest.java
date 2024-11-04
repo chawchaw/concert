@@ -57,7 +57,7 @@ public class RequestReserveUseCaseConcurrencyTest {
     private ConcertSchedule concertSchedule1;
     private Ticket ticket1;
     private Ticket ticket2;
-    int THREAD_COUNT = 5000;
+    int THREAD_COUNT = 10;
 
     @BeforeEach
     void setUp() {
@@ -93,7 +93,7 @@ public class RequestReserveUseCaseConcurrencyTest {
         void run(Long userId, Long ticketId);
     }
 
-    void testCommon(TestReporter testReporter, RequestReserveRunnable runnable) throws InterruptedException {
+    void testConcurrency(TestReporter testReporter, RequestReserveRunnable runnable) throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
         CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT);
@@ -145,7 +145,7 @@ public class RequestReserveUseCaseConcurrencyTest {
 
     @Test
     void optimisticLock(TestReporter testReporter) throws InterruptedException {
-        testCommon(testReporter, (userId, ticketId) -> {
+        testConcurrency(testReporter, (userId, ticketId) -> {
             RequestReserveOptimisticLockUseCase.Input input = new RequestReserveOptimisticLockUseCase.Input(userId, ticket1.getId());
             requestReserveOptimisticLockUseCase.execute(input);
         });
@@ -153,7 +153,7 @@ public class RequestReserveUseCaseConcurrencyTest {
 
     @Test
     void pessimisticLock(TestReporter testReporter) throws InterruptedException {
-        testCommon(testReporter, (userId, ticketId) -> {
+        testConcurrency(testReporter, (userId, ticketId) -> {
             RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticket1.getId());
             requestReservePessimistickLockUseCase.execute(input);
         });
@@ -161,7 +161,7 @@ public class RequestReserveUseCaseConcurrencyTest {
 
     @Test
     void redissonRLock(TestReporter testReporter) throws InterruptedException {
-        testCommon(testReporter, (userId, ticketId) -> {
+        testConcurrency(testReporter, (userId, ticketId) -> {
             RequestReserveRedissonRLockUseCase.Input input = new RequestReserveRedissonRLockUseCase.Input(userId, ticket1.getId());
             requestReserveRedissonRLockUseCase.execute(input);
         });

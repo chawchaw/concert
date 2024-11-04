@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Point {
 
+    public final static String REDIS_LOCK_KEY = "'user-point:'.concat(#input.userId().toString())";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

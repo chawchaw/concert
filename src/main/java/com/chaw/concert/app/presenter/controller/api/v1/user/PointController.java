@@ -1,28 +1,26 @@
 package com.chaw.concert.app.presenter.controller.api.v1.user;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePointUseCase;
+import com.chaw.concert.app.domain.common.user.usecase.ChargePointRedissonLockUseCase;
 import com.chaw.concert.app.domain.common.user.usecase.GetPointUseCase;
-import com.chaw.concert.app.presenter.controller.api.v1.user.dto.*;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointInput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointOutput;
+import com.chaw.concert.app.presenter.controller.api.v1.user.dto.GetPointOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/user/point")
 @Tag(name = "User Point", description = "사용자 포인트 API")
+@AllArgsConstructor
 public class PointController {
 
     private final SecurityUtil securityUtils;
     private final GetPointUseCase getPointUseCase;
-    private final ChargePointUseCase chargePointUseCase;
-
-    public PointController(SecurityUtil securityUtils, GetPointUseCase getPointUseCase, ChargePointUseCase chargePointUseCase) {
-        this.securityUtils = securityUtils;
-        this.getPointUseCase = getPointUseCase;
-        this.chargePointUseCase = chargePointUseCase;
-    }
+    private final ChargePointRedissonLockUseCase chargePointRedissonLockUseCase;
 
     @Operation(
             summary = "포인트 조회",
@@ -46,7 +44,7 @@ public class PointController {
             @RequestBody ChargePointInput chargePointInput
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        ChargePointUseCase.Output result = chargePointUseCase.execute(new ChargePointUseCase.Input(userId, chargePointInput.point()));
+        ChargePointRedissonLockUseCase.Output result = chargePointRedissonLockUseCase.execute(new ChargePointRedissonLockUseCase.Input(userId, chargePointInput.point()));
         return ChargePointOutput.of(result);
     }
 }
