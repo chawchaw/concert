@@ -1,6 +1,7 @@
 package com.chaw.helper;
 
 import jakarta.persistence.EntityManager;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
@@ -10,11 +11,13 @@ import java.util.List;
 @Component
 public class DatabaseCleanupListener implements TestExecutionListener {
 
-
     @Override
     public void afterTestExecution(TestContext testContext) throws Exception {
         EntityManager entityManager = testContext.getApplicationContext().getBean(EntityManager.class);
         truncateAllTables(entityManager);
+
+        RedissonClient redissonClient = testContext.getApplicationContext().getBean(RedissonClient.class);
+        clearAllRedisData(redissonClient);
     }
 
     public void truncateAllTables(EntityManager entityManager) {
@@ -36,5 +39,9 @@ public class DatabaseCleanupListener implements TestExecutionListener {
 
         em.getTransaction().commit();
         em.close();
+    }
+
+    public void clearAllRedisData(RedissonClient redissonClient) {
+        redissonClient.getKeys().flushdb(); // 모든 Redis 키 삭제
     }
 }
