@@ -10,4 +10,8 @@ public class ActiveTokenNameHelper {
     public String getName(Long userId) {
         return KEY + ":" + userId;
     }
+
+    public String getPatten() {
+        return KEY + ":*";
+    }
 }
