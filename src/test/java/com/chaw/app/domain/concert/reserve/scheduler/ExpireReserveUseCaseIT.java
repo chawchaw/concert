@@ -4,9 +4,6 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -31,9 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class ExpireReserveUseCaseIT {
 
     @Autowired
-    private WaitQueueRepository waitQueueRepository;
-
-    @Autowired
     private TicketRepository ticketRepository;
 
     @Autowired
@@ -44,7 +38,6 @@ public class ExpireReserveUseCaseIT {
 
     private Ticket ticket;
     private Reserve reserve;
-    private WaitQueue waitQueue;
 
     @BeforeEach
     void setUp() {
@@ -63,12 +56,6 @@ public class ExpireReserveUseCaseIT {
                 .createdAt(LocalDateTime.now().minusMinutes(20))
                 .build();
         reserveRepository.save(reserve);
-
-        waitQueue = WaitQueue.builder()
-                .userId(userId)
-                .status(WaitQueueStatus.PASS)
-                .build();
-        waitQueueRepository.save(waitQueue);
     }
 
     @Test
@@ -83,7 +70,5 @@ public class ExpireReserveUseCaseIT {
 
         Reserve updatedReserve = reserveRepository.findByIdOrThrow(reserve.getId());
         assertEquals(ReserveStatus.CANCEL, updatedReserve.getReserveStatus());
-
-        assertNull(waitQueueRepository.findByUserId(1L));
     }
 }

@@ -3,8 +3,6 @@ package com.chaw.app.domain.concert.reserve.scheduler;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -24,9 +22,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ExpireReserveUseCaseUnitTest {
-
-    @Mock
-    private WaitQueueRepository waitQueueRepository;
 
     @Mock
     private TicketRepository ticketRepository;
@@ -55,9 +50,6 @@ public class ExpireReserveUseCaseUnitTest {
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).reserveUserId(1L).build();
         when(ticketRepository.findByIdOrThrow(1L)).thenReturn(ticket);
 
-        WaitQueue waitQueue = WaitQueue.builder().userId(1L).build();
-        when(waitQueueRepository.findByUserId(1L)).thenReturn(waitQueue);
-
         // When
         expireReserveUseCase.execute();
 
@@ -65,7 +57,6 @@ public class ExpireReserveUseCaseUnitTest {
         verify(ticketRepository, times(1)).findByIdOrThrow(1L);
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(expiredReserve);
-        verify(waitQueueRepository, times(1)).delete(waitQueue);
         assertEquals(TicketStatus.EMPTY, ticket.getStatus());
         assertEquals(ReserveStatus.CANCEL, expiredReserve.getReserveStatus());
     }
@@ -77,16 +68,12 @@ public class ExpireReserveUseCaseUnitTest {
         Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).reserveUserId(1L).build();
         when(ticketRepository.findByIdOrThrow(1L)).thenReturn(ticket);
 
-        WaitQueue waitQueue = WaitQueue.builder().userId(1L).build();
-        when(waitQueueRepository.findByUserId(1L)).thenReturn(waitQueue);
-
         // When
         expireReserveUseCase.cancelReserve(reserve);
 
         // Then
         verify(ticketRepository, times(1)).save(ticket);
         verify(reserveRepository, times(1)).save(reserve);
-        verify(waitQueueRepository, times(1)).delete(waitQueue);
 
         assertEquals(TicketStatus.EMPTY, ticket.getStatus());
         assertEquals(ReserveStatus.CANCEL, reserve.getReserveStatus());

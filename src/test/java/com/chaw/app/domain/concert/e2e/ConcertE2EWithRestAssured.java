@@ -7,8 +7,7 @@ import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
-import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitQueueUseCase;
+import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitTokenUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointInput;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginInput;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -51,7 +50,7 @@ public class ConcertE2EWithRestAssured {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private PassWaitQueueUseCase passWaitQueueUseCase;
+    private PassWaitTokenUseCase passWaitTokenUseCase;
 
     private final String host = "http://localhost:8080/api/v1";
     private final String username = "user1";
@@ -121,18 +120,18 @@ public class ConcertE2EWithRestAssured {
                 .post(host + "/queue/enter")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo(WaitQueueStatus.WAIT.name()))
+                .body("status", equalTo("WAIT"))
                 .extract().response();
 
         // 스케줄러 동작
-        passWaitQueueUseCase.execute();
+        passWaitTokenUseCase.execute();
 
         // 대기열 통과
         requestSpec
                 .post(host + "/queue/enter")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo(WaitQueueStatus.PASS.name()));
+                .body("status", equalTo("PASS"));
 
         // 콘서트 조회
         Response getConcertsResponse = requestSpec

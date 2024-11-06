@@ -11,9 +11,6 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
@@ -43,9 +40,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
 public class PayTicketUseCaseConcurrencyTest {
-
-    @Autowired
-    private WaitQueueRepository waitQueueRepository;
 
     @Autowired
     private PointRepository pointRepository;
@@ -82,7 +76,6 @@ public class PayTicketUseCaseConcurrencyTest {
     private Point point;
     private Concert concert;
     private ConcertSchedule concertSchedule;
-    private WaitQueue waitQueue;
     private Ticket ticket;
     private Reserve reserve;
 
@@ -107,12 +100,6 @@ public class PayTicketUseCaseConcurrencyTest {
                 .dateConcert(LocalDateTime.now().plusDays(1))
                 .build();
         concertScheduleRepository.save(concertSchedule);
-
-        waitQueue = WaitQueue.builder()
-                .userId(userId)
-                .status(WaitQueueStatus.PASS)
-                .build();
-        waitQueueRepository.save(waitQueue);
 
         ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
