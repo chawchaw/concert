@@ -1,12 +1,8 @@
 package com.chaw.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.ActiveTokenRepository;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.queue.repository.WaitTokenRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueueUseCase;
 import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitTokenUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.Test;
@@ -14,12 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
 
-import java.time.LocalDateTime;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @TestExecutionListeners(
