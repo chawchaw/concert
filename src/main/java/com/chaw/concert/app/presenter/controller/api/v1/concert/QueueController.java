@@ -1,28 +1,25 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitQueueUseCase;
+import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitTokenUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.EnterWaitQueueOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/queue")
 @Tag(name = "WaitQueue", description = "대기열")
 public class QueueController {
 
     private final SecurityUtil securityUtils;
-    private final EnterWaitQueueUseCase enterWaitQueueUseCase;
-
-    public QueueController(SecurityUtil securityUtils, EnterWaitQueueUseCase enterWaitQueueUseCase) {
-        this.securityUtils = securityUtils;
-        this.enterWaitQueueUseCase = enterWaitQueueUseCase;
-    }
+    private final EnterWaitTokenUseCase enterWaitTokenUseCase;
 
     @Operation(
             summary = "대기열 조회",
@@ -32,7 +29,7 @@ public class QueueController {
     @ResponseStatus(HttpStatus.OK)
     public EnterWaitQueueOutput enterWaitQueue() {
         Long userId = securityUtils.getCurrentUserId();
-        EnterWaitQueueUseCase.Output result = enterWaitQueueUseCase.execute(new EnterWaitQueueUseCase.Input(userId));
+        EnterWaitTokenUseCase.Output result = enterWaitTokenUseCase.execute(new EnterWaitTokenUseCase.Input(userId));
         return EnterWaitQueueOutput.of(result);
     }
 

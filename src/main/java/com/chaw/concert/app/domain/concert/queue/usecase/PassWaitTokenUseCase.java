@@ -23,6 +23,9 @@ public class PassWaitTokenUseCase {
 
     public Output execute() {
         List<WaitToken> tokens = waitTokenRepository.getTokensEligibleForPass(PASS_SIZE);
+        if (tokens.isEmpty()) {
+            return new Output(0);
+        }
         waitTokenRepository.removeTokensBeforeTimeStamp(tokens.get(tokens.size() - 1).score());
         tokens.forEach(t -> {
             Long userId = Long.parseLong(t.key());
