@@ -130,7 +130,7 @@ public class ConcertE2EWithRestAssured {
                 .post(host + "/queue/enter")
                 .then()
                 .statusCode(200)
-                .body("status", equalTo("PASS"));
+                .body("status", equalTo("ACTIVE"));
 
         // 콘서트 조회
         Response getConcertsResponse = requestSpec

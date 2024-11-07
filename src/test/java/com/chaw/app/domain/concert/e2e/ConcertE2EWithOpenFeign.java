@@ -131,7 +131,7 @@ public class ConcertE2EWithOpenFeign {
 
         // 대기열 통과
         queueResponse = queueFeignClient.enter(authHeader);
-        assertEquals("PASS", queueResponse.status());
+        assertEquals("ACTIVE", queueResponse.status());
 
         // 콘서트 조회
         GetConcertsOutput concertsResponse = concertFeignClient.getConcerts(authHeader);
