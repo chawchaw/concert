@@ -42,12 +42,9 @@ public class PayTicketRedissonRLockUseCase {
         Reserve reserve = reserveRepository.findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(input.userId(), input.ticketId(), 1);
 
         point.validateHasEnoughBalanceOrThrow(reserve.getAmount());
-        ticket.isPayableOrThrow();
+//        ticket.isPayableOrThrow();
         reserve.isReservableStatusOrThrow();
         reserve.isExpiredThenDoAndThrow(() -> {
-            ticket.resetToEmpty();
-            ticketRepository.save(ticket);
-
             reserve.cancel();
             reserveRepository.save(reserve);
         });
@@ -59,8 +56,8 @@ public class PayTicketRedissonRLockUseCase {
         }
 
         // 티켓 상태 업데이트
-        ticket.pay();
-        ticketRepository.save(ticket);
+//        ticket.pay();
+//        ticketRepository.save(ticket);
 
         // 예약 상태 업데이트
         reserve.pay();

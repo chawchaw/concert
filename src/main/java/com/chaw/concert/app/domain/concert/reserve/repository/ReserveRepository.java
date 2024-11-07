@@ -10,13 +10,9 @@ public interface ReserveRepository {
 
     Reserve findByIdOrThrow(Long id);
 
-    List<Reserve> findByReserveStatusAndCreatedAtBefore(ReserveStatus reserveStatus, LocalDateTime expiredAt);
-
     Reserve save(Reserve reserve);
 
     void deleteAll();
-
-    Reserve findByTicketIdOrThrow(Long ticketId);
 
     Reserve findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(Long userId, Long ticketId, Integer limit);
 }

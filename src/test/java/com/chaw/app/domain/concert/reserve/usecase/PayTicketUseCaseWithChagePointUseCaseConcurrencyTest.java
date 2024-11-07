@@ -8,7 +8,6 @@ import com.chaw.concert.app.domain.common.user.usecase.ChargePointRedissonLockUs
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
@@ -104,7 +103,6 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
 
         ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
-                .status(TicketStatus.RESERVE)
                 .price(price)
                 .build();
         ticketRepository.save(ticket);

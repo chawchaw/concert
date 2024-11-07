@@ -1,7 +1,6 @@
 package com.chaw.concert.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,7 @@ public class GetTicketsInEmptyStatusUseCase {
     private final TicketRepository ticketRepository;
 
     public Output execute(Input input) {
-        List<Ticket> tickets = ticketRepository.findByConcertScheduleIdAndStatus(input.concertScheduleId(), TicketStatus.EMPTY);
+        List<Ticket> tickets = ticketRepository.findByConcertScheduleId(input.concertScheduleId());
         return new Output(
                 input.concertScheduleId(),
                 tickets.stream().map(ticket -> new Output.Item(

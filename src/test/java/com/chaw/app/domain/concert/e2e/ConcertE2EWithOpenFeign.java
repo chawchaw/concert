@@ -99,7 +99,6 @@ public class ConcertE2EWithOpenFeign {
         Ticket ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
                 .type(TicketType.VIP)
-                .status(TicketStatus.EMPTY)
                 .price(100000)
                 .seatNo("A1")
                 .build();

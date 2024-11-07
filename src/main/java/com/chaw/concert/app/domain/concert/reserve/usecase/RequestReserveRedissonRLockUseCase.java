@@ -22,10 +22,10 @@ public class RequestReserveRedissonRLockUseCase {
     @RedissonRLock(key = REDIS_LOCK_KEY, waitTime = 0)
     public Output execute(Input input) {
         Ticket ticket = ticketRepository.findByIdOrThrow(input.ticketId());
-        ticket.isReservableOrThrow();
+//        ticket.isReservableOrThrow();
 
-        ticket.reserve();
-        ticketRepository.save(ticket);
+//        ticket.reserve();
+//        ticketRepository.save(ticket);
 
         Reserve reserve = Reserve.create(input.userId(), ticket.getId(), ticket.getPrice());
         reserveRepository.save(reserve);

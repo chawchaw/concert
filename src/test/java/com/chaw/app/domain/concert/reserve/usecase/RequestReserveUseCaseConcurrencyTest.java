@@ -4,7 +4,6 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
@@ -69,13 +68,11 @@ public class RequestReserveUseCaseConcurrencyTest {
 
         ticket1 = Ticket.builder()
                 .concertScheduleId(concertSchedule1.getId())
-                .status(TicketStatus.EMPTY)
                 .build();
         ticketRepository.save(ticket1);
 
         ticket2 = Ticket.builder()
                 .concertScheduleId(concertSchedule1.getId())
-                .status(TicketStatus.EMPTY)
                 .build();
         ticketRepository.save(ticket2);
     }
@@ -123,9 +120,6 @@ public class RequestReserveUseCaseConcurrencyTest {
 
         assertEquals(1, successCount.get());
         assertEquals(THREAD_COUNT - 1, failCount.get());
-
-        Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticket1.getId());
-        assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
 
         System.out.println("사용자수: " + THREAD_COUNT);
         System.out.println("소요시간: " + elapsedTime + "ms");

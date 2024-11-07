@@ -84,7 +84,6 @@ public class ConcertE2EWithRestAssured {
         Ticket ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
                 .type(TicketType.VIP)
-                .status(TicketStatus.EMPTY)
                 .price(100000)
                 .seatNo("A1")
                 .build();

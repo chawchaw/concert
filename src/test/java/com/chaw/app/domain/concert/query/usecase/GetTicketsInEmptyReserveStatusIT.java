@@ -59,14 +59,12 @@ public class GetTicketsInEmptyReserveStatusIT {
         Ticket ticket1 = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
                 .type(TicketType.VIP)
-                .status(TicketStatus.EMPTY)
                 .seatNo("A1")
                 .price(100)
                 .build();
         Ticket ticket2 = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
                 .type(TicketType.VIP)
-                .status(TicketStatus.EMPTY)
                 .seatNo("A2")
                 .price(120)
                 .build();
