@@ -7,7 +7,6 @@ import com.chaw.concert.app.domain.common.user.repository.PointRepository;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
@@ -15,7 +14,6 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketPessimistickUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,9 +61,6 @@ public class PayTicketUseCaseConcurrencyTest {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private PayTicketPessimistickUseCase payTicketPessimistickUseCase;
-
-    @Autowired
     private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
 
     int THREAD_COUNT = 10;
@@ -103,7 +98,6 @@ public class PayTicketUseCaseConcurrencyTest {
 
         ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
-                .status(TicketStatus.RESERVE)
                 .price(price)
                 .build();
         ticketRepository.save(ticket);
@@ -176,14 +170,6 @@ public class PayTicketUseCaseConcurrencyTest {
         testReporter.publishEntry("소요시간", elapsedTime + "ms");
 
         executorService.shutdown();
-    }
-
-    @Test
-    void pessimisticLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, ticketId) -> {
-            PayTicketPessimistickUseCase.Input input = new PayTicketPessimistickUseCase.Input(userId, ticketId);
-            payTicketPessimistickUseCase.execute(input);
-        });
     }
 
     @Test
