@@ -11,4 +11,11 @@ public class ReserveNameHelper {
         return KEY + ":" + concertScheduleId + ":" + ticketId + ":" + userId;
     }
 
+    public Long getTicketId(String key) {
+        return Long.parseLong(key.split(":")[2]);
+    }
+
+    public String getPattern(Long concertScheduleId) {
+        return KEY + ":" + concertScheduleId + ":*";
+    }
 }

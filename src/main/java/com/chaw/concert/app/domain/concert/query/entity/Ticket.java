@@ -3,13 +3,15 @@ package com.chaw.concert.app.domain.concert.query.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Ticket {
+public class Ticket implements Serializable {
 
     @Version
     private Long version;

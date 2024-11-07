@@ -6,7 +6,10 @@ import lombok.AllArgsConstructor;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @AllArgsConstructor
 @Repository
@@ -26,5 +29,16 @@ public class ReserveRepositoryImpl implements ReserveRepository {
         String name = reserveNameHelper.getName(reserve.concertScheduleId(), reserve.ticketId(), reserve.userId());
         redissonClient.getBucket(name).set(true);
         redissonClient.getBucket(name).expire(Reserve.RESERVE_LIMIT_SECONDS, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Set<Long> findByConcertScheduleId(Long concertScheduleId) {
+        Iterable<String> keysIterable = redissonClient
+                .getKeys()
+                .getKeysByPattern(reserveNameHelper.getPattern(concertScheduleId));
+
+        return StreamSupport.stream(keysIterable.spliterator(), false)
+                .map(key -> reserveNameHelper.getTicketId(key))
+                .collect(Collectors.toSet());
     }
 }

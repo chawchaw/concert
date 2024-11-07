@@ -10,6 +10,8 @@ public interface TicketRepository {
 
     List<Ticket> findByConcertScheduleId(Long concertScheduleId);
 
+    List<Ticket> findByConcertScheduleIdWithCache(Long concertScheduleId);
+
     Ticket save(Ticket ticket);
 
     void deleteAll();

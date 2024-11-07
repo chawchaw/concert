@@ -6,6 +6,8 @@ import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
+
 @AllArgsConstructor
 @Repository
 public class PaidTicketRepositoryImpl implements PaidTicketRepository {
@@ -28,5 +30,11 @@ public class PaidTicketRepositoryImpl implements PaidTicketRepository {
     public int countByConcertScheduleId(Long concertScheduleId) {
         RSet<Long> set = getSet(concertScheduleId);
         return set.size();
+    }
+
+    @Override
+    public Set<Long> findByConcertScheduleId(Long concertScheduleId) {
+        RSet<Long> set = getSet(concertScheduleId);
+        return set.readAll();
     }
 }

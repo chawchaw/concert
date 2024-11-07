@@ -4,6 +4,7 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,6 +26,12 @@ public class TicketRepositoryImpl implements TicketRepository {
 
     @Override
     public List<Ticket> findByConcertScheduleId(Long concertScheduleId) {
+        return repository.findByConcertScheduleId(concertScheduleId);
+    }
+
+    @Override
+    @Cacheable(value = "tickets", key = "#concertScheduleId", unless = "#result == null")
+    public List<Ticket> findByConcertScheduleIdWithCache(Long concertScheduleId) {
         return repository.findByConcertScheduleId(concertScheduleId);
     }
 
