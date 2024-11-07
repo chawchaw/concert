@@ -92,7 +92,6 @@ public class RequestReservePessimistickLockUseCaseIT {
 
         Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticketId);
         assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
-        assertEquals(userId, updatedTicket.getReserveUserId());
 
         Reserve reserve = reserveRepository.findByTicketIdOrThrow(ticketId);
         assertEquals(ReserveStatus.RESERVE, reserve.getReserveStatus());
@@ -105,7 +104,7 @@ public class RequestReservePessimistickLockUseCaseIT {
         // given
         Long userId = 1L;
         Long ticketId = ticket.getId();
-        ticket.reserveWithUserId(userId);
+        ticket.reserve();
         ticketRepository.save(ticket);
 
         RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticketId);

@@ -106,7 +106,6 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
                 .concertScheduleId(concertSchedule.getId())
                 .status(TicketStatus.RESERVE)
                 .price(price)
-                .reserveUserId(userId)
                 .build();
         ticketRepository.save(ticket);
 

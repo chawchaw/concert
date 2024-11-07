@@ -28,7 +28,7 @@ public class RequestReserveOptimisticLockUseCase {
         Ticket ticket = ticketRepository.findByIdOrThrow(input.ticketId());
         try {
             ticket.isReservableOrThrow();
-            ticket.reserveWithUserId(input.userId());
+            ticket.reserve();
             ticketRepository.save(ticket);
 
             Reserve reserve = Reserve.create(input.userId(), ticket.getId(), ticket.getPrice());

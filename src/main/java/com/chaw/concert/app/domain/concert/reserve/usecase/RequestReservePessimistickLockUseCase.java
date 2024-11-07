@@ -22,7 +22,7 @@ public class RequestReservePessimistickLockUseCase {
         Ticket ticket = ticketRepository.findByIdWithLockOrThrow(input.ticketId());
         ticket.isReservableOrThrow();
 
-        ticket.reserveWithUserId(input.userId());
+        ticket.reserve();
         ticketRepository.save(ticket);
 
         Reserve reserve = Reserve.create(input.userId(), ticket.getId(), ticket.getPrice());

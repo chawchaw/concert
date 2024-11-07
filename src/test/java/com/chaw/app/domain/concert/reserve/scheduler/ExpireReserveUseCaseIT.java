@@ -45,7 +45,6 @@ public class ExpireReserveUseCaseIT {
         Long userId = 1L;
         ticket = Ticket.builder()
                 .status(TicketStatus.RESERVE)
-                .reserveUserId(userId)
                 .build();
         ticketRepository.save(ticket);
 
@@ -66,7 +65,6 @@ public class ExpireReserveUseCaseIT {
         // Then
         Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticket.getId());
         assertEquals(TicketStatus.EMPTY, updatedTicket.getStatus());
-        assertNull(updatedTicket.getReserveUserId());
 
         Reserve updatedReserve = reserveRepository.findByIdOrThrow(reserve.getId());
         assertEquals(ReserveStatus.CANCEL, updatedReserve.getReserveStatus());

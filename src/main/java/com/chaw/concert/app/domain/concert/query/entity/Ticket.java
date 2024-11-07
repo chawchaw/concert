@@ -37,21 +37,16 @@ public class Ticket {
     @Column(name = "seat_no")
     private String seatNo; // 좌석 번호
 
-    @Column(name = "reserve_user_id")
-    private Long reserveUserId; // "예약 사용자"
-
     public void resetToEmpty() {
         this.status = TicketStatus.EMPTY;
-        this.reserveUserId = null;
     }
 
     public void pay() {
         this.status = TicketStatus.PAID;
     }
 
-    public void reserveWithUserId(Long userId) {
+    public void reserve() {
         this.status = TicketStatus.RESERVE;
-        this.reserveUserId = userId;
     }
 
     public BaseException getExceptionForNotReservable() {

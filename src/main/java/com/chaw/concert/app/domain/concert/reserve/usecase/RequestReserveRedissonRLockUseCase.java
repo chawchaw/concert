@@ -24,7 +24,7 @@ public class RequestReserveRedissonRLockUseCase {
         Ticket ticket = ticketRepository.findByIdOrThrow(input.ticketId());
         ticket.isReservableOrThrow();
 
-        ticket.reserveWithUserId(input.userId());
+        ticket.reserve();
         ticketRepository.save(ticket);
 
         Reserve reserve = Reserve.create(input.userId(), ticket.getId(), ticket.getPrice());

@@ -47,7 +47,7 @@ public class ExpireReserveUseCaseUnitTest {
 
         when(reserveRepository.findByReserveStatusAndCreatedAtBefore(any(), any())).thenReturn(expiredReserves);
 
-        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).reserveUserId(1L).build();
+        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
         when(ticketRepository.findByIdOrThrow(1L)).thenReturn(ticket);
 
         // When
@@ -65,7 +65,7 @@ public class ExpireReserveUseCaseUnitTest {
     void testCancelReserve() {
         // Given
         Reserve reserve = Reserve.builder().id(1L).userId(1L).ticketId(1L).reserveStatus(ReserveStatus.RESERVE).build();
-        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).reserveUserId(1L).build();
+        Ticket ticket = Ticket.builder().id(1L).status(TicketStatus.RESERVE).build();
         when(ticketRepository.findByIdOrThrow(1L)).thenReturn(ticket);
 
         // When

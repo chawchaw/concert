@@ -21,7 +21,7 @@ public class ExpireReserveUseCase {
 
     /**
      * if (예약상태 && 마감기간이 지남 in 예약)
-     * 티켓 -> UPDATE (EMPTY, reserveUserId null)
+     * 티켓 -> UPDATE (EMPTY)
      * 예약 -> UPDATE (CANCEL)
      */
     public void execute() {
