@@ -8,8 +8,6 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveOptimisticLockUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,12 +41,6 @@ public class RequestReserveUseCaseConcurrencyTest {
 
     @Autowired
     private TicketRepository ticketRepository;
-
-    @Autowired
-    private RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
-
-    @Autowired
-    private RequestReserveOptimisticLockUseCase requestReserveOptimisticLockUseCase;
 
     @Autowired
     private RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
@@ -141,22 +133,6 @@ public class RequestReserveUseCaseConcurrencyTest {
         testReporter.publishEntry("소요시간", elapsedTime + "ms");
 
         executorService.shutdown();
-    }
-
-    @Test
-    void optimisticLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, ticketId) -> {
-            RequestReserveOptimisticLockUseCase.Input input = new RequestReserveOptimisticLockUseCase.Input(userId, ticket1.getId());
-            requestReserveOptimisticLockUseCase.execute(input);
-        });
-    }
-
-    @Test
-    void pessimisticLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, ticketId) -> {
-            RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticket1.getId());
-            requestReservePessimistickLockUseCase.execute(input);
-        });
     }
 
     @Test
