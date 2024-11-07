@@ -12,7 +12,6 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
@@ -107,13 +106,7 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
                 .build();
         ticketRepository.save(ticket);
 
-        reserve = Reserve.builder()
-                .userId(userId)
-                .ticketId(ticket.getId())
-                .reserveStatus(ReserveStatus.RESERVE)
-                .amount(ticket.getPrice())
-                .createdAt(LocalDateTime.now())
-                .build();
+        reserve = new Reserve(ticket.getConcertScheduleId(), ticket.getId(), userId);
         reserveRepository.save(reserve);
     }
 
@@ -187,7 +180,7 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
         Point pointNew = pointRepository.findByUserId(userId);
         assertEquals(1000 - (100 * 1) + (chargePoint * THREAD_COUNT), pointNew.getBalance());
 
-        Integer countPayment = paymentRepository.countByReserveId(reserve.getId());
+        Integer countPayment = paymentRepository.countByTicketId(ticket.getId());
         assertEquals(1, countPayment);
 
         long countPointHistory = pointHistoryRepository.countAll();
