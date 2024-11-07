@@ -36,7 +36,7 @@
   - 32 vCPU, 256 GiB RAM
   - 3,300,000원
 - 비용 차이: 3,200,000원 (RDS 대비 49% 절감)
-- 참고: https://calculator.aws.amazon.com
+- 참고: https://calculator.aws
 *정확한 값이 아닌 근사치입니다.
 
 ## 제안
