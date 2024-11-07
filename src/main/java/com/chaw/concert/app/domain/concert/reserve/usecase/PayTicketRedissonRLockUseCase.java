@@ -10,6 +10,7 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepos
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
@@ -32,6 +33,7 @@ public class PayTicketRedissonRLockUseCase {
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
+    private final PaidTicketRepository paidTicketRepository;
 
     @RedissonRLock(key = Point.REDIS_LOCK_KEY)
     public Output execute(Input input) {
@@ -71,6 +73,8 @@ public class PayTicketRedissonRLockUseCase {
         // 결제 추가
         Payment payment = Payment.create(input.userId(), ticket.getConcertScheduleId(), ticket.getId(), pointHistory.getId(), PaymentMethod.POINT, ticket.getPrice());
         paymentRepository.save(payment);
+
+        paidTicketRepository.save(ticket.getConcertScheduleId(), ticket.getId());
 
         log.info("결제({}) 완료", payment.getId());
         return new Output(true, payment.getId(), point.getBalance());

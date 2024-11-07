@@ -7,6 +7,7 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
@@ -38,6 +39,8 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
     private ReserveRepository reserveRepository;
     @Mock
     private PaymentRepository paymentRepository;
+    @Mock
+    private PaidTicketRepository paidTicketRepository;;
 
     @InjectMocks
     private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
@@ -192,5 +195,6 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         verify(pointRepository, times(1)).save(point);
         verify(pointHistoryRepository, times(1)).save(any());
         verify(paymentRepository, times(1)).save(any());
+        verify(paidTicketRepository, times(1)).save(anyLong(), anyLong());
     }
 }

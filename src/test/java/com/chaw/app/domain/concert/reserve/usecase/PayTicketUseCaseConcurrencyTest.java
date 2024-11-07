@@ -11,6 +11,7 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
@@ -58,6 +59,9 @@ public class PayTicketUseCaseConcurrencyTest {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private PaidTicketRepository paidTicketRepository;;
 
     @Autowired
     private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
@@ -156,6 +160,9 @@ public class PayTicketUseCaseConcurrencyTest {
 
         long countPointHistory = pointHistoryRepository.countAll();
         assertEquals(1, countPointHistory);
+
+        int countPaidTicket = paidTicketRepository.countByConcertScheduleId(ticket.getConcertScheduleId());
+        assertEquals(1, countPaidTicket);
 
         System.out.println("사용자수: " + THREAD_COUNT);
         System.out.println("소요시간: " + elapsedTime + "ms");
