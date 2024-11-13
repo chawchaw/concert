@@ -4,31 +4,21 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
 @Repository
 public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository {
+
     private final ConcertScheduleJpaRepository repository;
 
-    public ConcertScheduleRepositoryImpl(ConcertScheduleJpaRepository repository) {
-        this.repository = repository;
-    }
-
     @Override
-    public List<ConcertSchedule> findByConcertIdAndIsSoldOut(Long concertId, boolean isSoldOut) {
-        return repository.findByConcertIdAndIsSoldOut(concertId, isSoldOut);
-    }
-
-    @Override
-    public ConcertSchedule save(ConcertSchedule concertSchedule) {
-        return repository.save(concertSchedule);
-    }
-
-    @Override
-    public boolean decreaseAvailableSeat(Long concertScheduleId) {
-        return repository.decreaseAvailableSeat(concertScheduleId) > 0;
+    public List<ConcertSchedule> findByConcertIdAndIsSoldOutAndDateConcertBetween(Long concertId, boolean isSoldOut, LocalDateTime dateConcertFrom, LocalDateTime dateConcertTo) {
+        return repository.findByConcertIdAndIsSoldOutAndDateConcertBetween(concertId, isSoldOut, dateConcertFrom, dateConcertTo);
     }
 
     @Override
@@ -39,15 +29,13 @@ public class ConcertScheduleRepositoryImpl implements ConcertScheduleRepository 
     }
 
     @Override
-    public ConcertSchedule findByIdWithLockThrow(Long id) {
-        ConcertSchedule concertSchedule = repository.findByIdWithLock(id);
-        throwNotFoundException(concertSchedule);
-        return concertSchedule;
+    public ConcertSchedule save(ConcertSchedule concertSchedule) {
+        return repository.save(concertSchedule);
     }
 
     @Override
-    public void deleteAll() {
-        repository.deleteAll();
+    public boolean decreaseAvailableSeat(Long concertScheduleId) {
+        return repository.decreaseAvailableSeat(concertScheduleId) > 0;
     }
 
     private void throwNotFoundException(ConcertSchedule concertSchedule) {

@@ -44,11 +44,12 @@ public class ConcertController {
     @GetMapping("/{concertId}/schedule")
     @ResponseStatus(HttpStatus.OK)
     public GetConcertSchedulesNotSoldOutOutput getSchedules(
-            @PathVariable Long concertId
+            @PathVariable Long concertId,
+            @RequestBody GetConcertSchedulesInput input
     ) {
         Long userId = securityUtils.getCurrentUserId();
         GetConcertSchedulesNotSoldOutUseCase.Output result = getConcertSchedulesNotSoldOutUseCase.execute(
-                new GetConcertSchedulesNotSoldOutUseCase.Input(userId, concertId)
+                new GetConcertSchedulesNotSoldOutUseCase.Input(userId, concertId, input.dateConcertFrom(), input.dateConcertTo())
         );
         return GetConcertSchedulesNotSoldOutOutput.of(result);
     }
