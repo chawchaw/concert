@@ -8,18 +8,13 @@ import com.chaw.concert.app.domain.common.user.usecase.ChargePointRedissonLockUs
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueue;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitQueueRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketPessimistickUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,9 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
 
     @Autowired
-    private WaitQueueRepository waitQueueRepository;
-
-    @Autowired
     private PointRepository pointRepository;
 
     @Autowired
@@ -70,6 +62,9 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
     private PaymentRepository paymentRepository;
 
     @Autowired
+    private PaidTicketRepository paidTicketRepository;
+
+    @Autowired
     private ChargePointRedissonLockUseCase chargePointRedissonLockUseCase;
 
     @Autowired
@@ -84,7 +79,6 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
     private Point point;
     private Concert concert;
     private ConcertSchedule concertSchedule;
-    private WaitQueue waitQueue;
     private Ticket ticket;
     private Reserve reserve;
 
@@ -110,27 +104,13 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
                 .build();
         concertScheduleRepository.save(concertSchedule);
 
-        waitQueue = WaitQueue.builder()
-                .userId(userId)
-                .status(WaitQueueStatus.PASS)
-                .build();
-        waitQueueRepository.save(waitQueue);
-
         ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
-                .status(TicketStatus.RESERVE)
                 .price(price)
-                .reserveUserId(userId)
                 .build();
         ticketRepository.save(ticket);
 
-        reserve = Reserve.builder()
-                .userId(userId)
-                .ticketId(ticket.getId())
-                .reserveStatus(ReserveStatus.RESERVE)
-                .amount(ticket.getPrice())
-                .createdAt(LocalDateTime.now())
-                .build();
+        reserve = new Reserve(ticket.getConcertScheduleId(), ticket.getId(), userId);
         reserveRepository.save(reserve);
     }
 
@@ -204,11 +184,14 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
         Point pointNew = pointRepository.findByUserId(userId);
         assertEquals(1000 - (100 * 1) + (chargePoint * THREAD_COUNT), pointNew.getBalance());
 
-        Integer countPayment = paymentRepository.countByReserveId(reserve.getId());
+        Integer countPayment = paymentRepository.countByTicketId(ticket.getId());
         assertEquals(1, countPayment);
 
         long countPointHistory = pointHistoryRepository.countAll();
         assertEquals(1 + THREAD_COUNT, countPointHistory);
+
+        int countPaidTicket = paidTicketRepository.countByConcertScheduleId(concertSchedule.getId());
+        assertEquals(1, countPaidTicket);
 
         System.out.println("사용자수: " + THREAD_COUNT);
         System.out.println("소요시간: " + elapsedTime + "ms");

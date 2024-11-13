@@ -34,11 +34,4 @@ public class ConcertSchedule {
     @Column(name = "date_concert")
     private LocalDateTime dateConcert; // 공연일
 
-    public void limitAvailableSeatsToOne() {
-        this.availableSeat = 1;
-    }
-
-    public void limitAvailableSeatsToZero() {
-        this.availableSeat = 0;
-    }
 }

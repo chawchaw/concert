@@ -7,8 +7,7 @@ import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.entity.WaitQueueStatus;
-import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitQueueUseCase;
+import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitTokenUseCase;
 import com.chaw.concert.app.infrastructure.feign.client.AuthFeignClient;
 import com.chaw.concert.app.infrastructure.feign.client.ConcertFeignClient;
 import com.chaw.concert.app.infrastructure.feign.client.QueueFeignClient;
@@ -67,7 +66,7 @@ public class ConcertE2EWithOpenFeign {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private PassWaitQueueUseCase passWaitQueueUseCase;
+    private PassWaitTokenUseCase passWaitTokenUseCase;
 
     private final String username = "user1";
     private final String password = "password";
@@ -100,7 +99,6 @@ public class ConcertE2EWithOpenFeign {
         Ticket ticket = Ticket.builder()
                 .concertScheduleId(concertSchedule.getId())
                 .type(TicketType.VIP)
-                .status(TicketStatus.EMPTY)
                 .price(100000)
                 .seatNo("A1")
                 .build();
@@ -126,14 +124,14 @@ public class ConcertE2EWithOpenFeign {
 
         // 대기열 입장
         EnterWaitQueueOutput queueResponse = queueFeignClient.enter(authHeader);
-        assertEquals(WaitQueueStatus.WAIT.name(), queueResponse.status());
+        assertEquals("WAIT", queueResponse.status());
 
         // 스케줄러 동작
-        passWaitQueueUseCase.execute();
+        passWaitTokenUseCase.execute();
 
         // 대기열 통과
         queueResponse = queueFeignClient.enter(authHeader);
-        assertEquals(WaitQueueStatus.PASS.name(), queueResponse.status());
+        assertEquals("ACTIVE", queueResponse.status());
 
         // 콘서트 조회
         GetConcertsOutput concertsResponse = concertFeignClient.getConcerts(authHeader);

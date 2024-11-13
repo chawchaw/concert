@@ -3,7 +3,10 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.infrastructure.exception.common.BaseException;
+import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.concert.app.infrastructure.redis.helper.RedissonRLock;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,23 +17,32 @@ import org.springframework.stereotype.Service;
 @Service
 public class RequestReserveRedissonRLockUseCase {
 
-    private final String REDIS_LOCK_KEY = "'request-reserve'.concat(#input.ticketId().toString())";
+    private static final String REDIS_LOCK_KEY = "'request-reserve'.concat(#input.ticketId().toString())";
 
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
+    private final PaymentRepository paymentRepository;
 
     @RedissonRLock(key = REDIS_LOCK_KEY, waitTime = 0)
     public Output execute(Input input) {
         Ticket ticket = ticketRepository.findByIdOrThrow(input.ticketId());
-        ticket.isReservableOrThrow();
 
-        ticket.reserveWithUserId(input.userId());
-        ticketRepository.save(ticket);
+        Boolean isReserved = reserveRepository.existsByConcertScheduleIdAndTicketIdAndUserId(
+                ticket.getConcertScheduleId(),
+                input.ticketId(),
+                input.userId());
+        if (isReserved) {
+            throw new BaseException(ErrorType.CONFLICT, "이미 예약된 티켓입니다.");
+        }
+        Boolean isPaid = paymentRepository.existsByTicketId(input.ticketId());
+        if (isPaid) {
+            throw new BaseException(ErrorType.CONFLICT, "이미 결제된 티켓입니다.");
+        }
 
-        Reserve reserve = Reserve.create(input.userId(), ticket.getId(), ticket.getPrice());
+        Reserve reserve = new Reserve(ticket.getConcertScheduleId(), input.ticketId(), input.userId());
         reserveRepository.save(reserve);
 
-        log.info("예약({}) 완료", reserve.getId());
+        log.info("예약({}) 완료", input.ticketId());
         return new Output(true);
     }
 

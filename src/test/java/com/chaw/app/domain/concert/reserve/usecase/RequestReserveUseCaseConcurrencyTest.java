@@ -4,12 +4,9 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveOptimisticLockUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReservePessimistickLockUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,12 +42,6 @@ public class RequestReserveUseCaseConcurrencyTest {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private RequestReservePessimistickLockUseCase requestReservePessimistickLockUseCase;
-
-    @Autowired
-    private RequestReserveOptimisticLockUseCase requestReserveOptimisticLockUseCase;
-
-    @Autowired
     private RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
 
     private Concert concert1;
@@ -77,13 +68,11 @@ public class RequestReserveUseCaseConcurrencyTest {
 
         ticket1 = Ticket.builder()
                 .concertScheduleId(concertSchedule1.getId())
-                .status(TicketStatus.EMPTY)
                 .build();
         ticketRepository.save(ticket1);
 
         ticket2 = Ticket.builder()
                 .concertScheduleId(concertSchedule1.getId())
-                .status(TicketStatus.EMPTY)
                 .build();
         ticketRepository.save(ticket2);
     }
@@ -132,31 +121,12 @@ public class RequestReserveUseCaseConcurrencyTest {
         assertEquals(1, successCount.get());
         assertEquals(THREAD_COUNT - 1, failCount.get());
 
-        Ticket updatedTicket = ticketRepository.findByIdOrThrow(ticket1.getId());
-        assertEquals(TicketStatus.RESERVE, updatedTicket.getStatus());
-
         System.out.println("사용자수: " + THREAD_COUNT);
         System.out.println("소요시간: " + elapsedTime + "ms");
         testReporter.publishEntry("사용자수", NumberFormat.getInstance().format(THREAD_COUNT));
         testReporter.publishEntry("소요시간", elapsedTime + "ms");
 
         executorService.shutdown();
-    }
-
-    @Test
-    void optimisticLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, ticketId) -> {
-            RequestReserveOptimisticLockUseCase.Input input = new RequestReserveOptimisticLockUseCase.Input(userId, ticket1.getId());
-            requestReserveOptimisticLockUseCase.execute(input);
-        });
-    }
-
-    @Test
-    void pessimisticLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, ticketId) -> {
-            RequestReservePessimistickLockUseCase.Input input = new RequestReservePessimistickLockUseCase.Input(userId, ticket1.getId());
-            requestReservePessimistickLockUseCase.execute(input);
-        });
     }
 
     @Test

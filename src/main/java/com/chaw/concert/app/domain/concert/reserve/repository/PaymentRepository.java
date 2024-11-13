@@ -3,11 +3,9 @@ package com.chaw.concert.app.domain.concert.reserve.repository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 
 public interface PaymentRepository {
+    Boolean existsByTicketId(Long ticketId);
+
     void save(Payment payment);
 
-    void deleteAll();
-
-    Payment findById(Long id);
-
-    Integer countByReserveId(Long reserveId);
+    Integer countByTicketId(Long id);
 }

@@ -23,8 +23,11 @@ public class Payment {
     @Column(name = "user_id")
     Long userId;
 
-    @Column(name = "reserve_id")
-    Long reserveId;
+    @Column(name = "concert_schedule_id")
+    Long concertScheduleId;
+
+    @Column(name = "ticket_id")
+    Long ticketId;
 
     @Column(name = "point_history_id")
     Long pointHistoryId;
@@ -39,10 +42,11 @@ public class Payment {
     @Column(name = "created_at")
     LocalDateTime createdAt; // "생성일"
 
-    public static Payment create(Long userId, Long reserveId, Long pointHistoryId, PaymentMethod paymentMethod, Integer amount) {
+    public static Payment create(Long userId, Long concertScheduleId, Long ticketId, Long pointHistoryId, PaymentMethod paymentMethod, Integer amount) {
         return Payment.builder()
                 .userId(userId)
-                .reserveId(reserveId)
+                .concertScheduleId(concertScheduleId)
+                .ticketId(ticketId)
                 .pointHistoryId(pointHistoryId)
                 .paymentMethod(paymentMethod)
                 .amount(amount)

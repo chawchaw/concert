@@ -1,10 +1,10 @@
 package com.chaw.concert.app.infrastructure.mysql.conert.query;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
-import com.chaw.concert.app.domain.concert.query.entity.TicketStatus;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,15 +25,14 @@ public class TicketRepositoryImpl implements TicketRepository {
     }
 
     @Override
-    public Ticket findByIdWithLockOrThrow(Long ticketId) {
-        Ticket ticket = repository.findByIdWithLock(ticketId);
-        throwNotFoundException(ticket);
-        return ticket;
+    public List<Ticket> findByConcertScheduleId(Long concertScheduleId) {
+        return repository.findByConcertScheduleId(concertScheduleId);
     }
 
     @Override
-    public List<Ticket> findByConcertScheduleIdAndStatus(Long concertScheduleId, TicketStatus status) {
-        return repository.findByConcertScheduleIdAndStatus(concertScheduleId, status);
+    @Cacheable(value = "tickets", key = "#concertScheduleId", unless = "#result == null")
+    public List<Ticket> findByConcertScheduleIdWithCache(Long concertScheduleId) {
+        return repository.findByConcertScheduleId(concertScheduleId);
     }
 
     @Override

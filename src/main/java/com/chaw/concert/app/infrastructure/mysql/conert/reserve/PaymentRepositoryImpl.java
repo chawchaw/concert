@@ -14,22 +14,18 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
+    public Boolean existsByTicketId(Long ticketId) {
+        return repository.existsByTicketId(ticketId);
+    }
+
+    @Override
     public void save(Payment payment) {
         repository.save(payment);
     }
 
     @Override
-    public void deleteAll() {
-        repository.deleteAll();
+    public Integer countByTicketId(Long id) {
+        return repository.countByTicketId(id);
     }
 
-    @Override
-    public Payment findById(Long id) {
-        return repository.findById(id).orElse(null);
-    }
-
-    @Override
-    public Integer countByReserveId(Long reserveId) {
-        return repository.countByReserveId(reserveId);
-    }
 }

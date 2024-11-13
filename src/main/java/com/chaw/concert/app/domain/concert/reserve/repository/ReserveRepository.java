@@ -1,22 +1,14 @@
 package com.chaw.concert.app.domain.concert.reserve.repository;
 
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
-import com.chaw.concert.app.domain.concert.reserve.entity.ReserveStatus;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 public interface ReserveRepository {
 
-    Reserve findByIdOrThrow(Long id);
+    Boolean existsByConcertScheduleIdAndTicketIdAndUserId(Long concertScheduleId, Long ticketId, Long userId);
 
-    List<Reserve> findByReserveStatusAndCreatedAtBefore(ReserveStatus reserveStatus, LocalDateTime expiredAt);
+    void save(Reserve reserve);
 
-    Reserve save(Reserve reserve);
-
-    void deleteAll();
-
-    Reserve findByTicketIdOrThrow(Long ticketId);
-
-    Reserve findByUserIdAndTicketIdOrderByIdDescLimitOrThrow(Long userId, Long ticketId, Integer limit);
+    Set<Long> findByConcertScheduleId(Long concertScheduleId);
 }
