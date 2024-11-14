@@ -17,9 +17,9 @@ public class SlackNotifierServiceIT {
 
     @Test
     @Disabled
-    void testSendErrorNotificationToSlack() {
+    void testSendNotificationToSlack() {
         String message = "Test error message from SlackNotifierService";
-        Boolean result = slackNotifierService.sendErrorNotificationToSlack(message);
+        Boolean result = slackNotifierService.sendNotificationToSlack(message);
         assertTrue(result);
     }
 }

@@ -5,6 +5,7 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,7 +28,8 @@ public class RequestReserveRedissonRLockUseCaseUnitTest {
     private ReserveRepository reserveRepository;
     @Mock
     private PaymentRepository paymentRepository;
-
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
     @InjectMocks
     private RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
 
@@ -78,12 +81,16 @@ public class RequestReserveRedissonRLockUseCaseUnitTest {
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(false);
         doNothing().when(reserveRepository).save(any());
 
+        ReserveEvent reserveEvent = new ReserveEvent(1L, 1L, 1L);
+        doNothing().when(eventPublisher).publishEvent(reserveEvent);
+
         // When
         RequestReserveRedissonRLockUseCase.Input input = new RequestReserveRedissonRLockUseCase.Input(1L, 1L);
         RequestReserveRedissonRLockUseCase.Output output = requestReserveRedissonRLockUseCase.execute(input);
 
         // Then
-        verify(reserveRepository, times(1)).save(any());
         assertEquals(true, output.success());
+        verify(reserveRepository, times(1)).save(any());
+        verify(eventPublisher, times(1)).publishEvent(reserveEvent);
     }
 }

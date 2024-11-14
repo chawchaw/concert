@@ -20,7 +20,7 @@ public class SlackNotifierServiceImpl implements SlackNotifierService {
     }
 
     @Override
-    public Boolean sendErrorNotificationToSlack(String message) {
+    public Boolean sendNotificationToSlack(String message) {
         try {
             String payload = String.format("{\"text\":\"%s\"}", message);
 

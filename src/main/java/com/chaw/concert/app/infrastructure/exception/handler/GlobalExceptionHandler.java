@@ -43,7 +43,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String requestInfo = MessageFormat.format("({0}) [{1}] {2}", request.getRemoteAddr(), request.getMethod(), request.getRequestURI());
         String message = MessageFormat.format("{0} - {1} | Request: {}", HttpStatus.INTERNAL_SERVER_ERROR.name(), ex.getMessage(), requestInfo);
         log.error(message, ex);
-        slackNotifierService.sendErrorNotificationToSlack(message);
+        slackNotifierService.sendNotificationToSlack(message);
     }
 
     public record ExceptionResponse(String message, String status, int code) {
