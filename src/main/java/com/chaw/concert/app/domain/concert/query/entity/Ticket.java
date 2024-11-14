@@ -13,9 +13,6 @@ import java.io.Serializable;
 @ToString
 public class Ticket implements Serializable {
 
-    @Version
-    private Long version;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
