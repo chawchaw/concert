@@ -64,10 +64,12 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
                         .build()
         );
 
-        when(concertScheduleRepository.findByConcertIdAndIsSoldOut(concertId, false)).thenReturn(concertSchedules);
+        LocalDateTime dateConcertFrom = LocalDateTime.now();
+        LocalDateTime dateConcertTo = LocalDateTime.now().plusDays(3);
+        when(concertScheduleRepository.findByConcertIdAndIsSoldOutAndDateConcertBetween(concertId, false, dateConcertFrom, dateConcertTo)).thenReturn(concertSchedules);
 
         // When
-        GetConcertSchedulesNotSoldOutUseCase.Input input = new GetConcertSchedulesNotSoldOutUseCase.Input(0L, concertId);
+        GetConcertSchedulesNotSoldOutUseCase.Input input = new GetConcertSchedulesNotSoldOutUseCase.Input(0L, concertId, dateConcertFrom, dateConcertTo);
         GetConcertSchedulesNotSoldOutUseCase.Output output = getConcertSchedulesNotSoldOutUseCase.execute(input);
 
         // Then
@@ -94,7 +96,7 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
         assertEquals(100, secondSchedule.availableSeat());
 
         verify(concertRepository, times(1)).findByIdOrThrow(concertId);
-        verify(concertScheduleRepository, times(1)).findByConcertIdAndIsSoldOut(concertId, false);
+        verify(concertScheduleRepository, times(1)).findByConcertIdAndIsSoldOutAndDateConcertBetween(concertId, false, dateConcertFrom, dateConcertTo);
     }
 
 }

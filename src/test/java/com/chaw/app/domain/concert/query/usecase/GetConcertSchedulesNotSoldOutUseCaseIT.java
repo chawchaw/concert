@@ -68,7 +68,9 @@ public class GetConcertSchedulesNotSoldOutUseCaseIT {
     @Test
     void testGetConcertSchedulesNotSoldOut() {
         // Given
-        GetConcertSchedulesNotSoldOutUseCase.Input input = new GetConcertSchedulesNotSoldOutUseCase.Input(0L, concert.getId());
+        LocalDateTime dateConcertFrom = LocalDateTime.now();
+        LocalDateTime dateConcertTo = LocalDateTime.now().plusDays(3);
+        GetConcertSchedulesNotSoldOutUseCase.Input input = new GetConcertSchedulesNotSoldOutUseCase.Input(0L, concert.getId(), dateConcertFrom, dateConcertTo);
 
         // When
         GetConcertSchedulesNotSoldOutUseCase.Output output = getConcertSchedulesNotSoldOutUseCase.execute(input);

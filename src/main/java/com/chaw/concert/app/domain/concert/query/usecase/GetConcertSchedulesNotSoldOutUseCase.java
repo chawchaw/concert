@@ -22,7 +22,11 @@ public class GetConcertSchedulesNotSoldOutUseCase {
     public Output execute(Input input) {
         Concert concert = concertRepository.findByIdOrThrow(input.concertId());
 
-        List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSoldOut(input.concertId(), false);
+        List<ConcertSchedule> concertSchedules = concertScheduleRepository.findByConcertIdAndIsSoldOutAndDateConcertBetween(
+                input.concertId(),
+                false,
+                input.dateConcertFrom(),
+                input.dateConcertTo());
 
         log.info("일정({}) 조회", input.concertId());
         return new Output(
@@ -43,7 +47,9 @@ public class GetConcertSchedulesNotSoldOutUseCase {
 
     public record Input (
         Long userId,
-        Long concertId
+        Long concertId,
+        LocalDateTime dateConcertFrom,
+        LocalDateTime dateConcertTo
     ) {}
 
     public record Output (

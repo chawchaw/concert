@@ -8,11 +8,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface ConcertScheduleJpaRepository extends JpaRepository<ConcertSchedule, Long> {
-    List<ConcertSchedule> findByConcertIdAndIsSoldOut(Long concertId, boolean isSoldOut);
+
+    List<ConcertSchedule> findByConcertIdAndIsSoldOutAndDateConcertBetween(
+            Long concertId,
+            boolean isSoldOut,
+            LocalDateTime dateConcertFrom,
+            LocalDateTime dateConcertTo);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT cs FROM ConcertSchedule cs WHERE cs.id = :id")
