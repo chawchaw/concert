@@ -13,11 +13,13 @@ import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.concert.app.infrastructure.redis.helper.RedissonRLock;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -34,6 +36,7 @@ public class PayTicketRedissonRLockUseCase {
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
     private final PaidTicketRepository paidTicketRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @RedissonRLock(key = Point.REDIS_LOCK_KEY)
     public Output execute(Input input) {
@@ -77,6 +80,7 @@ public class PayTicketRedissonRLockUseCase {
         paidTicketRepository.save(ticket.getConcertScheduleId(), ticket.getId());
 
         log.info("결제({}) 완료", payment.getId());
+        eventPublisher.publishEvent(new PayEvent(payment.getConcertScheduleId(), payment.getTicketId(), payment.getUserId()));
         return new Output(true, payment.getId(), point.getBalance());
     }
 
