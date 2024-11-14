@@ -45,14 +45,14 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).build();
         List<Ticket> emptyTickets = Arrays.asList(ticket1, ticket2);
 
-        when(ticketRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(emptyTickets);
+        when(ticketRepository.findByConcertScheduleIdWithCache(concertScheduleId)).thenReturn(emptyTickets);
         when(reserveRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(Set.of());
 
         // When
         GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
 
         // Then
-        verify(ticketRepository, times(1)).findByConcertScheduleId(concertScheduleId);
+        verify(ticketRepository, times(1)).findByConcertScheduleIdWithCache(concertScheduleId);
         verify(reserveRepository, times(1)).findByConcertScheduleId(concertScheduleId);
         verify(paidTicketRepository, times(1)).findByConcertScheduleId(concertScheduleId);
         assertEquals(2, output.tickets().size());
@@ -73,14 +73,14 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).build();
         List<Ticket> emptyTickets = Arrays.asList(ticket1, ticket2);
 
-        when(ticketRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(emptyTickets);
+        when(ticketRepository.findByConcertScheduleIdWithCache(concertScheduleId)).thenReturn(emptyTickets);
         when(reserveRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(Set.of(2L));
 
         // When
         GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
 
         // Then
-        verify(ticketRepository, times(1)).findByConcertScheduleId(concertScheduleId);
+        verify(ticketRepository, times(1)).findByConcertScheduleIdWithCache(concertScheduleId);
         verify(reserveRepository, times(1)).findByConcertScheduleId(concertScheduleId);
         verify(paidTicketRepository, times(1)).findByConcertScheduleId(concertScheduleId);
         assertEquals(1, output.tickets().size());
@@ -90,21 +90,23 @@ class GetTicketsInEmptyReserveStatusUnitTest {
     void test_결제된티켓이있을때() {
         // Given
         Long concertScheduleId = 1L;
+        Long ticketId1 = 1L;
+        Long ticketId2 = 2L;
 
         GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
 
-        Ticket ticket1 = Ticket.builder().id(1L).type(TicketType.VIP).seatNo("A1").price(100).build();
-        Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).build();
+        Ticket ticket1 = Ticket.builder().id(ticketId1).type(TicketType.VIP).seatNo("A1").price(100).build();
+        Ticket ticket2 = Ticket.builder().id(ticketId2).type(TicketType.VIP).seatNo("A2").price(120).build();
         List<Ticket> emptyTickets = Arrays.asList(ticket1, ticket2);
 
-        when(ticketRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(emptyTickets);
+        when(ticketRepository.findByConcertScheduleIdWithCache(concertScheduleId)).thenReturn(emptyTickets);
         when(paidTicketRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(Set.of(1L, 2L));
 
         // When
         GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
 
         // Then
-        verify(ticketRepository, times(1)).findByConcertScheduleId(concertScheduleId);
+        verify(ticketRepository, times(1)).findByConcertScheduleIdWithCache(concertScheduleId);
         verify(reserveRepository, times(1)).findByConcertScheduleId(concertScheduleId);
         verify(paidTicketRepository, times(1)).findByConcertScheduleId(concertScheduleId);
         assertEquals(0, output.tickets().size());
