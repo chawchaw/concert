@@ -1,8 +1,8 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.concert.queue.usecase.EnterWaitTokenUseCase;
-import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.EnterWaitQueueOutput;
+import com.chaw.concert.app.domain.concert.queue.usecase.GetUserNodeUseCase;
+import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.UserNodeOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -19,18 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class QueueController {
 
     private final SecurityUtil securityUtils;
-    private final EnterWaitTokenUseCase enterWaitTokenUseCase;
+    private final GetUserNodeUseCase getUserNodeUseCase;
 
     @Operation(
             summary = "대기열 조회",
             description = "대기열의 토큰을 발급받고 순서를 조회합니다."
     )
-    @PostMapping("/enter")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
-    public EnterWaitQueueOutput enterWaitQueue() {
+    public UserNodeOutput getUserNode() {
         Long userId = securityUtils.getCurrentUserId();
-        EnterWaitTokenUseCase.Output result = enterWaitTokenUseCase.execute(new EnterWaitTokenUseCase.Input(userId));
-        return EnterWaitQueueOutput.of(result);
+        GetUserNodeUseCase.Output result = getUserNodeUseCase.execute(new GetUserNodeUseCase.Input(userId));
+        return UserNodeOutput.of(result);
     }
 
 }

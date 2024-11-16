@@ -7,7 +7,7 @@ import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitTokenUseCase;
+import com.chaw.concert.app.domain.concert.queue.usecase.ActiveUserNodesUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointInput;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginInput;
 import com.chaw.helper.DatabaseCleanupListener;
@@ -50,7 +50,7 @@ public class ConcertE2EWithRestAssured {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private PassWaitTokenUseCase passWaitTokenUseCase;
+    private ActiveUserNodesUseCase activeUserNodesUseCase;
 
     private final String host = "http://localhost:8080/api/v1";
     private final String username = "user1";
@@ -123,7 +123,7 @@ public class ConcertE2EWithRestAssured {
                 .extract().response();
 
         // 스케줄러 동작
-        passWaitTokenUseCase.execute();
+        activeUserNodesUseCase.execute();
 
         // 대기열 통과
         requestSpec

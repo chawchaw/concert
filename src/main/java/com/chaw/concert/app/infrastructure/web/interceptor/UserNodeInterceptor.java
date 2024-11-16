@@ -2,7 +2,8 @@ package com.chaw.concert.app.infrastructure.web.interceptor;
 
 import com.chaw.concert.app.domain.common.auth.entity.User;
 import com.chaw.concert.app.domain.common.auth.respository.UserRepository;
-import com.chaw.concert.app.domain.concert.queue.repository.ActiveTokenRepository;
+import com.chaw.concert.app.domain.concert.queue.entity.UserNode;
+import com.chaw.concert.app.domain.concert.queue.repository.UserNodeRepository;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,10 +14,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @AllArgsConstructor
 @Component
-public class WaitQueueInterceptor implements HandlerInterceptor {
+public class UserNodeInterceptor implements HandlerInterceptor {
 
     private final UserRepository userRepository;
-    private final ActiveTokenRepository activeTokenRepository;
+    private final UserNodeRepository userNodeRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -37,6 +38,7 @@ public class WaitQueueInterceptor implements HandlerInterceptor {
             return null;
         }
 
-        return activeTokenRepository.existsByUserId(user.getId());
+        UserNode userNode = userNodeRepository.findByUserId(user.getId());
+        return userNode != null && userNode.isActive();
     }
 }

@@ -1,9 +1,9 @@
 package com.chaw.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.domain.concert.queue.repository.ActiveTokenRepository;
-import com.chaw.concert.app.domain.concert.queue.repository.WaitTokenRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitTokenUseCase;
+import com.chaw.concert.app.domain.concert.queue.entity.UserNodeStatus;
+import com.chaw.concert.app.domain.concert.queue.repository.UserNodeRepository;
+import com.chaw.concert.app.domain.concert.queue.usecase.ActiveUserNodesUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,34 +20,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class PassWaitTokenUseCaseIT {
+public class ActiveUserNodesUseCaseIT {
 
     @Autowired
-    private WaitTokenRepository waitTokenRepository;
+    private UserNodeRepository userNodeRepository;
 
     @Autowired
-    private ActiveTokenRepository activeTokenRepository;
-
-    @Autowired
-    private PassWaitTokenUseCase passWaitTokenUseCase;
+    private ActiveUserNodesUseCase activeUserNodesUseCase;
 
     @Test
     @DisplayName("대기자가 50명일때 30명만 통과한다")
     void execute_shouldUpdate30WaitQueue() {
         // Given
         LongStream.range(0, 50).forEach(i -> {
-            waitTokenRepository.saveWithCurrentTime(i);
+            userNodeRepository.createWait(i);
         });
 
         // When
-        PassWaitTokenUseCase.Output result = passWaitTokenUseCase.execute();
+        ActiveUserNodesUseCase.Output result = activeUserNodesUseCase.execute();
 
         // Then
         assertEquals(30, result.countPass());
-        int remainingWaitCount = waitTokenRepository.countAll();
+        long remainingWaitCount = userNodeRepository.countByStatus(UserNodeStatus.WAIT);
         assertEquals(50 - 30, remainingWaitCount);
 
-        long activeTokenCount = activeTokenRepository.countAll();
+        long activeTokenCount = userNodeRepository.countByStatus(UserNodeStatus.ACTIVE);
         assertEquals(30, activeTokenCount);
     }
 
@@ -56,19 +53,19 @@ public class PassWaitTokenUseCaseIT {
     void execute_shouldUpdate20WaitQueue() {
         // Given
         LongStream.range(0, 20).forEach(i -> {
-            waitTokenRepository.saveWithCurrentTime(i);
+            userNodeRepository.createWait(i);
         });
 
         // When
-        PassWaitTokenUseCase.Output result = passWaitTokenUseCase.execute();
+        ActiveUserNodesUseCase.Output result = activeUserNodesUseCase.execute();
 
         // Then
         assertEquals(20, result.countPass());
 
-        int remainingWaitCount = waitTokenRepository.countAll();
+        long remainingWaitCount = userNodeRepository.countByStatus(UserNodeStatus.WAIT);
         assertEquals(0, remainingWaitCount);
 
-        long activeTokenCount = activeTokenRepository.countAll();
+        long activeTokenCount = userNodeRepository.countByStatus(UserNodeStatus.ACTIVE);
         assertEquals(20, activeTokenCount);
     }
 }
