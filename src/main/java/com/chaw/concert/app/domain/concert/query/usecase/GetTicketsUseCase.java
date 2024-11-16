@@ -15,7 +15,7 @@ import java.util.Set;
 
 @AllArgsConstructor
 @Service
-public class GetTicketsInEmptyStatusUseCase {
+public class GetTicketsUseCase {
 
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;

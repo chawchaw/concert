@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class GetConcertSchedulesNotSoldOutUseCase {
+public class GetConcertSchedulesUseCase {
 
     private final ConcertRepository concertRepository;
     private final ConcertScheduleRepository concertScheduleRepository;

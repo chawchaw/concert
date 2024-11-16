@@ -1,9 +1,9 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert;
 
 import com.chaw.concert.app.domain.common.auth.util.SecurityUtil;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesUseCase;
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
@@ -21,8 +21,8 @@ public class ConcertController {
 
     private final SecurityUtil securityUtils;
     private final GetConcertsUseCase getConcertsUseCase;
-    private final GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
-    private final GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
+    private final GetConcertSchedulesUseCase getConcertSchedulesUseCase;
+    private final GetTicketsUseCase getTicketsUseCase;
     private final ReserveUseCase reserveUseCase;
     private final PayUseCase payUseCase;
 
@@ -48,8 +48,8 @@ public class ConcertController {
             @RequestBody GetConcertSchedulesInput input
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        GetConcertSchedulesNotSoldOutUseCase.Output result = getConcertSchedulesNotSoldOutUseCase.execute(
-                new GetConcertSchedulesNotSoldOutUseCase.Input(userId, concertId, input.dateConcertFrom(), input.dateConcertTo())
+        GetConcertSchedulesUseCase.Output result = getConcertSchedulesUseCase.execute(
+                new GetConcertSchedulesUseCase.Input(userId, concertId, input.dateConcertFrom(), input.dateConcertTo())
         );
         return GetConcertSchedulesNotSoldOutOutput.of(result);
     }
@@ -63,8 +63,8 @@ public class ConcertController {
     public GetTicketsInEmptyStatusOutput getTickets(
             @PathVariable Long concertScheduleId
     ) {
-        GetTicketsInEmptyStatusUseCase.Output result = getTicketsInEmptyStatusUseCase.execute(
-                new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId)
+        GetTicketsUseCase.Output result = getTicketsUseCase.execute(
+                new GetTicketsUseCase.Input(concertScheduleId)
         );
         return GetTicketsInEmptyStatusOutput.of(result);
     }

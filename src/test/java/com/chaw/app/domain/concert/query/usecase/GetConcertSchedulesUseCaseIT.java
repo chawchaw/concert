@@ -5,7 +5,7 @@ import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class GetConcertSchedulesNotSoldOutUseCaseIT {
+public class GetConcertSchedulesUseCaseIT {
     @Autowired
-    private GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
+    private GetConcertSchedulesUseCase getConcertSchedulesUseCase;
 
     @Autowired
     private ConcertScheduleRepository concertScheduleRepository;
@@ -70,10 +70,10 @@ public class GetConcertSchedulesNotSoldOutUseCaseIT {
         // Given
         LocalDateTime dateConcertFrom = LocalDateTime.now();
         LocalDateTime dateConcertTo = LocalDateTime.now().plusDays(3);
-        GetConcertSchedulesNotSoldOutUseCase.Input input = new GetConcertSchedulesNotSoldOutUseCase.Input(0L, concert.getId(), dateConcertFrom, dateConcertTo);
+        GetConcertSchedulesUseCase.Input input = new GetConcertSchedulesUseCase.Input(0L, concert.getId(), dateConcertFrom, dateConcertTo);
 
         // When
-        GetConcertSchedulesNotSoldOutUseCase.Output output = getConcertSchedulesNotSoldOutUseCase.execute(input);
+        GetConcertSchedulesUseCase.Output output = getConcertSchedulesUseCase.execute(input);
 
         // Then
         assertNotNull(output);
@@ -83,10 +83,10 @@ public class GetConcertSchedulesNotSoldOutUseCaseIT {
         assertEquals("Test Artist", output.artist());
         assertEquals("Test Host", output.host());
 
-        List<GetConcertSchedulesNotSoldOutUseCase.Output.Item> concertSchedules = output.schedules();
+        List<GetConcertSchedulesUseCase.Output.Item> concertSchedules = output.schedules();
         assertNotNull(concertSchedules);
         assertEquals(1, concertSchedules.size());
-        GetConcertSchedulesNotSoldOutUseCase.Output.Item schedule = concertSchedules.get(0);
+        GetConcertSchedulesUseCase.Output.Item schedule = concertSchedules.get(0);
         assertEquals(false, schedule.isSoldOut());
         assertEquals(100, schedule.totalSeat());
         assertEquals(50, schedule.availableSeat());

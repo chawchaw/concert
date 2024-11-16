@@ -4,7 +4,7 @@ import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
+public class GetConcertSchedulesUseCaseUnitTest {
 
     @Mock
     private ConcertRepository concertRepository;
@@ -29,7 +29,7 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
     private ConcertScheduleRepository concertScheduleRepository;
 
     @InjectMocks
-    private GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
+    private GetConcertSchedulesUseCase getConcertSchedulesUseCase;
 
     @Test
     void testExecute_ConcertFound() {
@@ -69,8 +69,8 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
         when(concertScheduleRepository.findByConcertIdAndIsSoldOutAndDateConcertBetween(concertId, false, dateConcertFrom, dateConcertTo)).thenReturn(concertSchedules);
 
         // When
-        GetConcertSchedulesNotSoldOutUseCase.Input input = new GetConcertSchedulesNotSoldOutUseCase.Input(0L, concertId, dateConcertFrom, dateConcertTo);
-        GetConcertSchedulesNotSoldOutUseCase.Output output = getConcertSchedulesNotSoldOutUseCase.execute(input);
+        GetConcertSchedulesUseCase.Input input = new GetConcertSchedulesUseCase.Input(0L, concertId, dateConcertFrom, dateConcertTo);
+        GetConcertSchedulesUseCase.Output output = getConcertSchedulesUseCase.execute(input);
 
         // Then
         assertNotNull(output);
@@ -80,16 +80,16 @@ public class GetConcertSchedulesNotSoldOutUseCaseUnitTest {
         assertEquals("Test Artist", output.artist());
         assertEquals("Test Host", output.host());
 
-        List<GetConcertSchedulesNotSoldOutUseCase.Output.Item> scheduleItems = output.schedules();
+        List<GetConcertSchedulesUseCase.Output.Item> scheduleItems = output.schedules();
         assertEquals(2, scheduleItems.size());
 
-        GetConcertSchedulesNotSoldOutUseCase.Output.Item firstSchedule = scheduleItems.get(0);
+        GetConcertSchedulesUseCase.Output.Item firstSchedule = scheduleItems.get(0);
         assertEquals(1L, firstSchedule.id());
         assertEquals(false, firstSchedule.isSoldOut());
         assertEquals(100, firstSchedule.totalSeat());
         assertEquals(50, firstSchedule.availableSeat());
 
-        GetConcertSchedulesNotSoldOutUseCase.Output.Item secondSchedule = scheduleItems.get(1);
+        GetConcertSchedulesUseCase.Output.Item secondSchedule = scheduleItems.get(1);
         assertEquals(2L, secondSchedule.id());
         assertEquals(false, secondSchedule.isSoldOut());
         assertEquals(200, secondSchedule.totalSeat());

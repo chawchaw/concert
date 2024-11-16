@@ -8,7 +8,7 @@ import com.chaw.concert.app.domain.concert.query.entity.TicketType;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsUseCase;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class GetTicketsInEmptyReserveStatusIT {
+public class GetTicketsIT {
 
     @Autowired
     private ConcertRepository concertRepository;
@@ -52,7 +52,7 @@ public class GetTicketsInEmptyReserveStatusIT {
     private CacheManager cacheManager;
 
     @Autowired
-    private GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
+    private GetTicketsUseCase getTicketsUseCase;
 
     private Concert concert;
     private ConcertSchedule concertSchedule;
@@ -93,17 +93,17 @@ public class GetTicketsInEmptyReserveStatusIT {
     @Test
     void testGetTicketsInEmptyStatus() {
         // Given
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertSchedule.getId());
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertSchedule.getId());
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         assertNotNull(output);
         assertEquals(2, output.tickets().size());
 
-        GetTicketsInEmptyStatusUseCase.Output.Item firstTicket = output.tickets().get(0);
-        GetTicketsInEmptyStatusUseCase.Output.Item secondTicket = output.tickets().get(1);
+        GetTicketsUseCase.Output.Item firstTicket = output.tickets().get(0);
+        GetTicketsUseCase.Output.Item secondTicket = output.tickets().get(1);
 
         assertEquals("A1", firstTicket.seatNo());
         assertEquals(100, firstTicket.price());
@@ -117,10 +117,10 @@ public class GetTicketsInEmptyReserveStatusIT {
         Long concertScheduleId = concertSchedule.getId();
         reserveRepository.save(new Reserve(concertScheduleId, 2L, 1L));
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         assertEquals(1, output.tickets().size());
@@ -132,10 +132,10 @@ public class GetTicketsInEmptyReserveStatusIT {
         Long concertScheduleId = concertSchedule.getId();
         paidTicketRepository.save(concertScheduleId, 2L);
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         assertEquals(1, output.tickets().size());
@@ -148,10 +148,10 @@ public class GetTicketsInEmptyReserveStatusIT {
         reserveRepository.save(new Reserve(concertScheduleId, 1L, 1L));
         paidTicketRepository.save(concertScheduleId, 2L);
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         assertEquals(0, output.tickets().size());
@@ -162,11 +162,11 @@ public class GetTicketsInEmptyReserveStatusIT {
         // Given
         Long concertScheduleId = concertSchedule.getId();
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
-        GetTicketsInEmptyStatusUseCase.Output output2 = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
+        GetTicketsUseCase.Output output2 = getTicketsUseCase.execute(input);
 
         // Then
         Cache cacheTickets = cacheManager.getCache("tickets");

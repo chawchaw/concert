@@ -1,6 +1,6 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert.dto;
 
-import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotSoldOutUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesUseCase;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public record GetConcertSchedulesNotSoldOutOutput (
             LocalDateTime dateConcert
     ) {}
 
-    public static GetConcertSchedulesNotSoldOutOutput of(GetConcertSchedulesNotSoldOutUseCase.Output output) {
+    public static GetConcertSchedulesNotSoldOutOutput of(GetConcertSchedulesUseCase.Output output) {
         return GetConcertSchedulesNotSoldOutOutput.builder()
                 .id(output.id())
                 .name(output.name())

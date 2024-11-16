@@ -3,7 +3,7 @@ package com.chaw.app.domain.concert.query.usecase;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.entity.TicketType;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsUseCase;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GetTicketsInEmptyReserveStatusUnitTest {
+class GetTicketsUnitTest {
 
     @Mock
     private TicketRepository ticketRepository;
@@ -32,14 +32,14 @@ class GetTicketsInEmptyReserveStatusUnitTest {
     private PaidTicketRepository paidTicketRepository;
 
     @InjectMocks
-    private GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
+    private GetTicketsUseCase getTicketsUseCase;
 
     @Test
     void test_모두조회() {
         // Given
         Long concertScheduleId = 1L;
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         Ticket ticket1 = Ticket.builder().id(1L).type(TicketType.VIP).seatNo("A1").price(100).build();
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).build();
@@ -49,7 +49,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         when(reserveRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(Set.of());
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         verify(ticketRepository, times(1)).findByConcertScheduleIdWithCache(concertScheduleId);
@@ -67,7 +67,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         // Given
         Long concertScheduleId = 1L;
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         Ticket ticket1 = Ticket.builder().id(1L).type(TicketType.VIP).seatNo("A1").price(100).build();
         Ticket ticket2 = Ticket.builder().id(2L).type(TicketType.VIP).seatNo("A2").price(120).build();
@@ -77,7 +77,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         when(reserveRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(Set.of(2L));
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         verify(ticketRepository, times(1)).findByConcertScheduleIdWithCache(concertScheduleId);
@@ -93,7 +93,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         Long ticketId1 = 1L;
         Long ticketId2 = 2L;
 
-        GetTicketsInEmptyStatusUseCase.Input input = new GetTicketsInEmptyStatusUseCase.Input(concertScheduleId);
+        GetTicketsUseCase.Input input = new GetTicketsUseCase.Input(concertScheduleId);
 
         Ticket ticket1 = Ticket.builder().id(ticketId1).type(TicketType.VIP).seatNo("A1").price(100).build();
         Ticket ticket2 = Ticket.builder().id(ticketId2).type(TicketType.VIP).seatNo("A2").price(120).build();
@@ -103,7 +103,7 @@ class GetTicketsInEmptyReserveStatusUnitTest {
         when(paidTicketRepository.findByConcertScheduleId(concertScheduleId)).thenReturn(Set.of(1L, 2L));
 
         // When
-        GetTicketsInEmptyStatusUseCase.Output output = getTicketsInEmptyStatusUseCase.execute(input);
+        GetTicketsUseCase.Output output = getTicketsUseCase.execute(input);
 
         // Then
         verify(ticketRepository, times(1)).findByConcertScheduleIdWithCache(concertScheduleId);
