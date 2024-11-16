@@ -11,6 +11,7 @@ import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketReposito
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,7 +42,9 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
-    private PaidTicketRepository paidTicketRepository;;
+    private PaidTicketRepository paidTicketRepository;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
@@ -164,18 +168,21 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
 
     @Test
     void test_결제_완료() {
+        Long userId = 1L;
+        Long concertScheduleId = 1L;
+        Long ticketId = 1L;
         // Given
         Point point = Point.builder()
-                .userId(1L)
+                .userId(userId)
                 .balance(1000)
                 .build();
-        Ticket ticket = Ticket.builder()
-                .id(1L)
-                .concertScheduleId(1L)
-                .price(1000)
-                .build();
         ConcertSchedule concertSchedule = ConcertSchedule.builder()
-                .id(1L)
+                .id(concertScheduleId)
+                .build();
+        Ticket ticket = Ticket.builder()
+                .id(ticketId)
+                .concertScheduleId(concertScheduleId)
+                .price(1000)
                 .build();
 
         when(pointRepository.findByUserId(anyLong())).thenReturn(point);
@@ -184,6 +191,9 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         when(reserveRepository.existsByConcertScheduleIdAndTicketIdAndUserId(anyLong(), anyLong(), anyLong())).thenReturn(true);
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(false);
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(true);
+
+        PayEvent payEvent = new PayEvent(concertScheduleId, ticketId, userId);
+        doNothing().when(eventPublisher).publishEvent(payEvent);
 
         // When
         PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(1L, 1L);
@@ -196,5 +206,6 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         verify(pointHistoryRepository, times(1)).save(any());
         verify(paymentRepository, times(1)).save(any());
         verify(paidTicketRepository, times(1)).save(anyLong(), anyLong());
+        verify(eventPublisher, times(1)).publishEvent(payEvent);
     }
 }
