@@ -3,8 +3,9 @@ package com.chaw.app.domain.concert.reserve.usecase;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
@@ -13,14 +14,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class RequestReserveRedissonRLockUseCaseUnitTest {
+public class ReserveUseCaseUnitTest {
 
     @Mock
     private TicketRepository ticketRepository;
@@ -29,9 +29,9 @@ public class RequestReserveRedissonRLockUseCaseUnitTest {
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private ReserveEventRepository reserveEventRepository;
     @InjectMocks
-    private RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
+    private ReserveUseCase reserveUseCase;
 
     @Test
     void test_예약된_티켓() {
@@ -43,8 +43,8 @@ public class RequestReserveRedissonRLockUseCaseUnitTest {
         when(reserveRepository.existsByConcertScheduleIdAndTicketIdAndUserId(anyLong(), anyLong(), anyLong())).thenReturn(true);
 
         // When
-        RequestReserveRedissonRLockUseCase.Input input = new RequestReserveRedissonRLockUseCase.Input(1L, 1L);
-        BaseException exception = assertThrows(BaseException.class, () -> requestReserveRedissonRLockUseCase.execute(input));
+        ReserveUseCase.Input input = new ReserveUseCase.Input(1L, 1L);
+        BaseException exception = assertThrows(BaseException.class, () -> reserveUseCase.execute(input));
 
         // Then
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -62,8 +62,8 @@ public class RequestReserveRedissonRLockUseCaseUnitTest {
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(true);
 
         // When
-        RequestReserveRedissonRLockUseCase.Input input = new RequestReserveRedissonRLockUseCase.Input(1L, 1L);
-        BaseException exception = assertThrows(BaseException.class, () -> requestReserveRedissonRLockUseCase.execute(input));
+        ReserveUseCase.Input input = new ReserveUseCase.Input(1L, 1L);
+        BaseException exception = assertThrows(BaseException.class, () -> reserveUseCase.execute(input));
 
         // Then
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -82,15 +82,15 @@ public class RequestReserveRedissonRLockUseCaseUnitTest {
         doNothing().when(reserveRepository).save(any());
 
         ReserveEvent reserveEvent = new ReserveEvent(1L, 1L, 1L);
-        doNothing().when(eventPublisher).publishEvent(reserveEvent);
+        doNothing().when(reserveEventRepository).complete(reserveEvent);
 
         // When
-        RequestReserveRedissonRLockUseCase.Input input = new RequestReserveRedissonRLockUseCase.Input(1L, 1L);
-        RequestReserveRedissonRLockUseCase.Output output = requestReserveRedissonRLockUseCase.execute(input);
+        ReserveUseCase.Input input = new ReserveUseCase.Input(1L, 1L);
+        ReserveUseCase.Output output = reserveUseCase.execute(input);
 
         // Then
         assertEquals(true, output.success());
         verify(reserveRepository, times(1)).save(any());
-        verify(eventPublisher, times(1)).publishEvent(reserveEvent);
+        verify(reserveEventRepository, times(1)).complete(reserveEvent);
     }
 }

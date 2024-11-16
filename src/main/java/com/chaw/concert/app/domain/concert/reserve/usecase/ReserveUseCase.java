@@ -4,6 +4,7 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
@@ -11,20 +12,19 @@ import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.concert.app.infrastructure.redis.helper.RedissonRLock;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @AllArgsConstructor
 @Service
-public class RequestReserveRedissonRLockUseCase {
+public class ReserveUseCase {
 
     private static final String REDIS_LOCK_KEY = "'request-reserve'.concat(#input.ticketId().toString())";
 
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final ReserveEventRepository reserveEventRepository;
 
     @RedissonRLock(key = REDIS_LOCK_KEY, waitTime = 0)
     public Output execute(Input input) {
@@ -46,7 +46,7 @@ public class RequestReserveRedissonRLockUseCase {
         reserveRepository.save(reserve);
 
         log.info("예약({}) 완료", input.ticketId());
-        eventPublisher.publishEvent(new ReserveEvent(reserve.concertScheduleId(), reserve.ticketId(), reserve.userId()));
+        reserveEventRepository.complete(new ReserveEvent(reserve.concertScheduleId(), reserve.ticketId(), reserve.userId()));
         return new Output(true);
     }
 

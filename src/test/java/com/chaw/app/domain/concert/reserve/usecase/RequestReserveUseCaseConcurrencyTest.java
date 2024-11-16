@@ -7,7 +7,7 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class RequestReserveUseCaseConcurrencyTest {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
+    private ReserveUseCase reserveUseCase;
 
     private Concert concert1;
     private ConcertSchedule concertSchedule1;
@@ -132,8 +132,8 @@ public class RequestReserveUseCaseConcurrencyTest {
     @Test
     void redissonRLock(TestReporter testReporter) throws InterruptedException {
         testConcurrency(testReporter, (userId, ticketId) -> {
-            RequestReserveRedissonRLockUseCase.Input input = new RequestReserveRedissonRLockUseCase.Input(userId, ticket1.getId());
-            requestReserveRedissonRLockUseCase.execute(input);
+            ReserveUseCase.Input input = new ReserveUseCase.Input(userId, ticket1.getId());
+            reserveUseCase.execute(input);
         });
     }
 

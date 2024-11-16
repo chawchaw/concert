@@ -5,7 +5,7 @@ import com.chaw.concert.app.domain.concert.query.usecase.GetConcertSchedulesNotS
 import com.chaw.concert.app.domain.concert.query.usecase.GetConcertsUseCase;
 import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.RequestReserveRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +23,7 @@ public class ConcertController {
     private final GetConcertsUseCase getConcertsUseCase;
     private final GetConcertSchedulesNotSoldOutUseCase getConcertSchedulesNotSoldOutUseCase;
     private final GetTicketsInEmptyStatusUseCase getTicketsInEmptyStatusUseCase;
-    private final RequestReserveRedissonRLockUseCase requestReserveRedissonRLockUseCase;
+    private final ReserveUseCase reserveUseCase;
     private final PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
 
     @Operation(
@@ -79,8 +79,8 @@ public class ConcertController {
             @PathVariable Long ticketId
     ) {
         Long userId = securityUtils.getCurrentUserId();
-        RequestReserveRedissonRLockUseCase.Output result = requestReserveRedissonRLockUseCase.execute(
-                new RequestReserveRedissonRLockUseCase.Input(userId, ticketId)
+        ReserveUseCase.Output result = reserveUseCase.execute(
+                new ReserveUseCase.Input(userId, ticketId)
         );
         return RequestReserveOutput.of(result);
     }
