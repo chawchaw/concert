@@ -15,7 +15,7 @@ import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
     private ChargePointRedissonLockUseCase chargePointRedissonLockUseCase;
 
     @Autowired
-    private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
+    private PayUseCase payUseCase;
 
     int THREAD_COUNT = 3;
     private Long userId = 1L;
@@ -204,8 +204,8 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
     @Test
     void redissonRLock(TestReporter testReporter) throws InterruptedException {
         testConcurrency(testReporter, (userId, ticketId) -> {
-            PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(userId, ticketId);
-            payTicketRedissonRLockUseCase.execute(input);
+            PayUseCase.Input input = new PayUseCase.Input(userId, ticketId);
+            payUseCase.execute(input);
         }, (userId, point) -> {
             ChargePointRedissonLockUseCase.Input input = new ChargePointRedissonLockUseCase.Input(userId, point);
             chargePointRedissonLockUseCase.execute(input);

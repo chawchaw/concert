@@ -15,7 +15,7 @@ import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatfor
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ public class PayTicketUseCaseIT {
     private ConcertDataPlatformRepository concertDataPlatformRepository;
 
     @Autowired
-    private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
+    private PayUseCase payUseCase;
 
     private Long userId = 1L;
     private Integer balance = 1000;
@@ -114,8 +114,8 @@ public class PayTicketUseCaseIT {
 
         // when
         Long startTime = System.currentTimeMillis();
-        PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(userId, ticket.getId());
-        PayTicketRedissonRLockUseCase.Output output = payTicketRedissonRLockUseCase.execute(input);
+        PayUseCase.Input input = new PayUseCase.Input(userId, ticket.getId());
+        PayUseCase.Output output = payUseCase.execute(input);
         Long endTime = System.currentTimeMillis();
         Long elapsedTime = endTime - startTime;
         System.out.println("소요시간: " + elapsedTime + "ms");

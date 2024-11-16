@@ -8,9 +8,10 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.PayEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PayTicketRedissonRLockUseCaseUnitTest {
+public class PayUseCaseUnitTest {
 
     @Mock
     private PointRepository pointRepository;
@@ -44,10 +44,10 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
     @Mock
     private PaidTicketRepository paidTicketRepository;
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private PayEventRepository payEventRepository;
 
     @InjectMocks
-    private PayTicketRedissonRLockUseCase payTicketRedissonRLockUseCase;
+    private PayUseCase payUseCase;
 
     @Test
     void test_예약되지_않은_티켓() {
@@ -68,8 +68,8 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         when(reserveRepository.existsByConcertScheduleIdAndTicketIdAndUserId(anyLong(), anyLong(), anyLong())).thenReturn(false);
 
         // When
-        PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(1L, 1L);
-        BaseException exception = assertThrows(BaseException.class, () -> payTicketRedissonRLockUseCase.execute(input));
+        PayUseCase.Input input = new PayUseCase.Input(1L, 1L);
+        BaseException exception = assertThrows(BaseException.class, () -> payUseCase.execute(input));
 
         // Then
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -96,8 +96,8 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(true);
 
         // When
-        PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(1L, 1L);
-        BaseException exception = assertThrows(BaseException.class, () -> payTicketRedissonRLockUseCase.execute(input));
+        PayUseCase.Input input = new PayUseCase.Input(1L, 1L);
+        BaseException exception = assertThrows(BaseException.class, () -> payUseCase.execute(input));
 
         // Then
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -126,8 +126,8 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(false);
 
         // When
-        PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(1L, 1L);
-        BaseException exception = assertThrows(BaseException.class, () -> payTicketRedissonRLockUseCase.execute(input));
+        PayUseCase.Input input = new PayUseCase.Input(1L, 1L);
+        BaseException exception = assertThrows(BaseException.class, () -> payUseCase.execute(input));
 
         // Then
         assertEquals(ErrorType.CONFLICT, exception.getErrorType());
@@ -158,8 +158,8 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(false);
 
         // When
-        PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(1L, 1L);
-        BaseException exception = assertThrows(BaseException.class, () -> payTicketRedissonRLockUseCase.execute(input));
+        PayUseCase.Input input = new PayUseCase.Input(1L, 1L);
+        BaseException exception = assertThrows(BaseException.class, () -> payUseCase.execute(input));
 
         // Then
         assertEquals(ErrorType.DATA_INTEGRITY_VIOLATION, exception.getErrorType());
@@ -193,11 +193,11 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(true);
 
         PayEvent payEvent = new PayEvent(concertScheduleId, ticketId, userId);
-        doNothing().when(eventPublisher).publishEvent(payEvent);
+        doNothing().when(payEventRepository).complete(payEvent);
 
         // When
-        PayTicketRedissonRLockUseCase.Input input = new PayTicketRedissonRLockUseCase.Input(1L, 1L);
-        PayTicketRedissonRLockUseCase.Output output = payTicketRedissonRLockUseCase.execute(input);
+        PayUseCase.Input input = new PayUseCase.Input(1L, 1L);
+        PayUseCase.Output output = payUseCase.execute(input);
 
         // Then
         assertEquals(true, output.success());
@@ -206,6 +206,6 @@ public class PayTicketRedissonRLockUseCaseUnitTest {
         verify(pointHistoryRepository, times(1)).save(any());
         verify(paymentRepository, times(1)).save(any());
         verify(paidTicketRepository, times(1)).save(anyLong(), anyLong());
-        verify(eventPublisher, times(1)).publishEvent(payEvent);
+        verify(payEventRepository, times(1)).complete(payEvent);
     }
 }
