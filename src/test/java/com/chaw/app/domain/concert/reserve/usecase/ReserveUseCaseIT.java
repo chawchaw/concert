@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class RequestReserveUseCaseIT {
+public class ReserveUseCaseIT {
 
     @Autowired
     private ConcertRepository concertRepository;

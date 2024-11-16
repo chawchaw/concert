@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class RequestReserveUseCaseConcurrencyTest {
+public class ReserveUseCaseConcurrencyTest {
 
     @Autowired
     private ConcertRepository concertRepository;

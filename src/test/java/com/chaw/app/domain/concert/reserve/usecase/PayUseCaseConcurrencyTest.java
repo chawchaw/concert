@@ -4,7 +4,6 @@ import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.domain.common.user.entity.Point;
 import com.chaw.concert.app.domain.common.user.repository.PointHistoryRepository;
 import com.chaw.concert.app.domain.common.user.repository.PointRepository;
-import com.chaw.concert.app.domain.common.user.usecase.ChargePointRedissonLockUseCase;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
@@ -38,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
+public class PayUseCaseConcurrencyTest {
 
     @Autowired
     private PointRepository pointRepository;
@@ -62,19 +61,15 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private PaidTicketRepository paidTicketRepository;
-
-    @Autowired
-    private ChargePointRedissonLockUseCase chargePointRedissonLockUseCase;
+    private PaidTicketRepository paidTicketRepository;;
 
     @Autowired
     private PayUseCase payUseCase;
 
-    int THREAD_COUNT = 3;
+    int THREAD_COUNT = 10;
     private Long userId = 1L;
     private Integer balance = 1000;
     private Integer price = 100;
-    private Integer chargePoint = 50;
 
     private Point point;
     private Concert concert;
@@ -119,22 +114,15 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
         void run(Long userId, Long ticketId);
     }
 
-    @FunctionalInterface
-    public interface ChargePointRunnable<T> {
-        void run(Long userId, Integer point);
-    }
+    void testConcurrency(TestReporter testReporter, PayTicketRunnable runnable) throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
-    void testConcurrency(TestReporter testReporter, PayTicketRunnable payTicketRunnable, ChargePointRunnable chargePointRunnable) throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT * 2);
-
-        CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT * 2);
+        CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT);
         CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(THREAD_COUNT * 2);
+        CountDownLatch doneLatch = new CountDownLatch(THREAD_COUNT);
 
-        AtomicInteger successPayTicketCount = new AtomicInteger(0);
-        AtomicInteger successChargePointCount = new AtomicInteger(0);
-        AtomicInteger failPayTicketCount = new AtomicInteger(0);
-        AtomicInteger failChargePointCount = new AtomicInteger(0);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
 
         for (int i = 0; i < THREAD_COUNT; i++) {
             executorService.execute(() -> {
@@ -142,27 +130,12 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
                     readyLatch.countDown();
                     startLatch.await();
 
-                    payTicketRunnable.run(userId, ticket.getId());
-                    successPayTicketCount.incrementAndGet();
+                    runnable.run(userId, ticket.getId());
+                    successCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (RuntimeException e) {
-                    failPayTicketCount.incrementAndGet();
-                } finally {
-                    doneLatch.countDown();
-                }
-            });
-            executorService.execute(() -> {
-                try {
-                    readyLatch.countDown();
-                    startLatch.await();
-
-                    chargePointRunnable.run(userId, chargePoint);
-                    successChargePointCount.incrementAndGet();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (RuntimeException e) {
-                    failChargePointCount.incrementAndGet();
+                    failCount.incrementAndGet();
                 } finally {
                     doneLatch.countDown();
                 }
@@ -176,21 +149,19 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
         Long endTime = System.currentTimeMillis();
         Long elapsedTime = endTime - startTime;
 
-        assertEquals(1, successPayTicketCount.get());
-        assertEquals(THREAD_COUNT - 1, failPayTicketCount.get());
-        assertEquals(THREAD_COUNT, successChargePointCount.get());
-        assertEquals(0, failChargePointCount.get());
+        assertEquals(1, successCount.get());
+        assertEquals(THREAD_COUNT - 1, failCount.get());
 
         Point pointNew = pointRepository.findByUserId(userId);
-        assertEquals(1000 - (100 * 1) + (chargePoint * THREAD_COUNT), pointNew.getBalance());
+        assertEquals(1000 - 100, pointNew.getBalance());
 
         Integer countPayment = paymentRepository.countByTicketId(ticket.getId());
         assertEquals(1, countPayment);
 
         long countPointHistory = pointHistoryRepository.countAll();
-        assertEquals(1 + THREAD_COUNT, countPointHistory);
+        assertEquals(1, countPointHistory);
 
-        int countPaidTicket = paidTicketRepository.countByConcertScheduleId(concertSchedule.getId());
+        int countPaidTicket = paidTicketRepository.countByConcertScheduleId(ticket.getConcertScheduleId());
         assertEquals(1, countPaidTicket);
 
         System.out.println("사용자수: " + THREAD_COUNT);
@@ -206,9 +177,6 @@ public class PayTicketUseCaseWithChagePointUseCaseConcurrencyTest {
         testConcurrency(testReporter, (userId, ticketId) -> {
             PayUseCase.Input input = new PayUseCase.Input(userId, ticketId);
             payUseCase.execute(input);
-        }, (userId, point) -> {
-            ChargePointRedissonLockUseCase.Input input = new ChargePointRedissonLockUseCase.Input(userId, point);
-            chargePointRedissonLockUseCase.execute(input);
         });
     }
 

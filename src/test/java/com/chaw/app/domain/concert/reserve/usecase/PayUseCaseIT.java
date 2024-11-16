@@ -11,6 +11,7 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -18,26 +19,23 @@ import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestReporter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestExecutionListeners;
 
-import java.text.NumberFormat;
 import java.time.LocalDateTime;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @TestExecutionListeners(
         listeners = DatabaseCleanupListener.class,
         mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-public class PayTicketUseCaseConcurrencyTest {
+public class PayUseCaseIT {
 
     @Autowired
     private PointRepository pointRepository;
@@ -63,10 +61,12 @@ public class PayTicketUseCaseConcurrencyTest {
     @Autowired
     private PaidTicketRepository paidTicketRepository;;
 
+    @MockBean
+    private ConcertDataPlatformRepository concertDataPlatformRepository;
+
     @Autowired
     private PayUseCase payUseCase;
 
-    int THREAD_COUNT = 10;
     private Long userId = 1L;
     private Integer balance = 1000;
     private Integer price = 100;
@@ -109,75 +109,20 @@ public class PayTicketUseCaseConcurrencyTest {
         reserveRepository.save(reserve);
     }
 
-    @FunctionalInterface
-    public interface PayTicketRunnable<T> {
-        void run(Long userId, Long ticketId);
-    }
+    @Test
+    void 결제_성공시_이벤트리스너가_데이터_플랫폼에_결제정보_전달() {
 
-    void testConcurrency(TestReporter testReporter, PayTicketRunnable runnable) throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-
-        CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT);
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(THREAD_COUNT);
-
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failCount = new AtomicInteger(0);
-
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            executorService.execute(() -> {
-                try {
-                    readyLatch.countDown();
-                    startLatch.await();
-
-                    runnable.run(userId, ticket.getId());
-                    successCount.incrementAndGet();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (RuntimeException e) {
-                    failCount.incrementAndGet();
-                } finally {
-                    doneLatch.countDown();
-                }
-            });
-        }
-
-        readyLatch.await();
+        // when
         Long startTime = System.currentTimeMillis();
-        startLatch.countDown();
-        doneLatch.await();
+        PayUseCase.Input input = new PayUseCase.Input(userId, ticket.getId());
+        PayUseCase.Output output = payUseCase.execute(input);
         Long endTime = System.currentTimeMillis();
         Long elapsedTime = endTime - startTime;
-
-        assertEquals(1, successCount.get());
-        assertEquals(THREAD_COUNT - 1, failCount.get());
-
-        Point pointNew = pointRepository.findByUserId(userId);
-        assertEquals(1000 - 100, pointNew.getBalance());
-
-        Integer countPayment = paymentRepository.countByTicketId(ticket.getId());
-        assertEquals(1, countPayment);
-
-        long countPointHistory = pointHistoryRepository.countAll();
-        assertEquals(1, countPointHistory);
-
-        int countPaidTicket = paidTicketRepository.countByConcertScheduleId(ticket.getConcertScheduleId());
-        assertEquals(1, countPaidTicket);
-
-        System.out.println("사용자수: " + THREAD_COUNT);
         System.out.println("소요시간: " + elapsedTime + "ms");
-        testReporter.publishEntry("사용자수", NumberFormat.getInstance().format(THREAD_COUNT));
-        testReporter.publishEntry("소요시간", elapsedTime + "ms");
 
-        executorService.shutdown();
-    }
-
-    @Test
-    void redissonRLock(TestReporter testReporter) throws InterruptedException {
-        testConcurrency(testReporter, (userId, ticketId) -> {
-            PayUseCase.Input input = new PayUseCase.Input(userId, ticketId);
-            payUseCase.execute(input);
-        });
+        // then
+        assertEquals(true, output.success());
+        verify(concertDataPlatformRepository, times(1)).savePay(concertSchedule.getId(), ticket.getId(), userId);
     }
 
 }
