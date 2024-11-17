@@ -7,7 +7,7 @@ import com.chaw.concert.app.domain.concert.query.entity.*;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.queue.usecase.PassWaitTokenUseCase;
+import com.chaw.concert.app.domain.concert.queue.usecase.ActiveUserNodesUseCase;
 import com.chaw.concert.app.infrastructure.feign.client.AuthFeignClient;
 import com.chaw.concert.app.infrastructure.feign.client.ConcertFeignClient;
 import com.chaw.concert.app.infrastructure.feign.client.QueueFeignClient;
@@ -66,7 +66,7 @@ public class ConcertE2EWithOpenFeign {
     private TicketRepository ticketRepository;
 
     @Autowired
-    private PassWaitTokenUseCase passWaitTokenUseCase;
+    private ActiveUserNodesUseCase activeUserNodesUseCase;
 
     private final String username = "user1";
     private final String password = "password";
@@ -123,11 +123,11 @@ public class ConcertE2EWithOpenFeign {
         String authHeader = "Bearer " + token;
 
         // 대기열 입장
-        EnterWaitQueueOutput queueResponse = queueFeignClient.enter(authHeader);
+        UserNodeOutput queueResponse = queueFeignClient.enter(authHeader);
         assertEquals("WAIT", queueResponse.status());
 
         // 스케줄러 동작
-        passWaitTokenUseCase.execute();
+        activeUserNodesUseCase.execute();
 
         // 대기열 통과
         queueResponse = queueFeignClient.enter(authHeader);

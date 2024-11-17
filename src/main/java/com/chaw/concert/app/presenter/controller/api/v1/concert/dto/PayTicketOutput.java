@@ -1,6 +1,6 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert.dto;
 
-import com.chaw.concert.app.domain.concert.reserve.usecase.PayTicketRedissonRLockUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
 import lombok.Builder;
 
 @Builder
@@ -9,7 +9,7 @@ public record PayTicketOutput(
         Long paymentId,
         Integer balance
 ){
-    public static PayTicketOutput of(PayTicketRedissonRLockUseCase.Output output) {
+    public static PayTicketOutput of(PayUseCase.Output output) {
         return PayTicketOutput.builder()
                 .success(output.success())
                 .paymentId(output.paymentId())

@@ -1,6 +1,6 @@
 package com.chaw.concert.app.presenter.controller.api.v1.concert.dto;
 
-import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsInEmptyStatusUseCase;
+import com.chaw.concert.app.domain.concert.query.usecase.GetTicketsUseCase;
 import lombok.Builder;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public record GetTicketsInEmptyStatusOutput (
             Integer price
     ) {}
 
-    public static GetTicketsInEmptyStatusOutput of(GetTicketsInEmptyStatusUseCase.Output output) {
+    public static GetTicketsInEmptyStatusOutput of(GetTicketsUseCase.Output output) {
         return GetTicketsInEmptyStatusOutput.builder()
                 .concertScheduleId(output.concertScheduleId())
                 .tickets(output.tickets().stream().map(ticket -> GetTicketsInEmptyStatusOutput.Item.builder()

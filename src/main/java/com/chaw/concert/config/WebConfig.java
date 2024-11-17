@@ -1,6 +1,6 @@
 package com.chaw.concert.config;
 
-import com.chaw.concert.app.infrastructure.web.interceptor.WaitQueueInterceptor;
+import com.chaw.concert.app.infrastructure.web.interceptor.UserNodeInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -8,15 +8,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final WaitQueueInterceptor waitQueueInterceptor;
+    private final UserNodeInterceptor userNodeInterceptor;
 
-    public WebConfig(WaitQueueInterceptor waitQueueInterceptor) {
-        this.waitQueueInterceptor = waitQueueInterceptor;
+    public WebConfig(UserNodeInterceptor userNodeInterceptor) {
+        this.userNodeInterceptor = userNodeInterceptor;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(waitQueueInterceptor)
+        registry.addInterceptor(userNodeInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
                         "/api/**/auth/**",
