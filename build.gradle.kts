@@ -30,6 +30,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign") // OpenFeign 의존성 추가
     implementation("jakarta.servlet:jakarta.servlet-api:6.0.0") // Jakarta Servlet API 의존성 추가
     implementation("org.redisson:redisson-spring-boot-starter:3.23.4") // Redisson 의존성 추가 (버전 3.23.4)
+    implementation("org.springframework.kafka:spring-kafka") // Kafka 의존성 추가
 
     annotationProcessor("org.projectlombok:lombok")  // Lombok 컴파일 타임에 사용
 
@@ -39,6 +40,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.rest-assured:rest-assured:5.3.0") // RestAssured 의존성 추가
     testImplementation("io.rest-assured:json-path:5.3.0") // JSONPath 의존성 추가
+    testImplementation("org.springframework.kafka:spring-kafka-test") // Kafka 테스트 의존성 추가
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

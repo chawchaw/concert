@@ -8,9 +8,11 @@ import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginInput;
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.LoginOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Auth", description = "인증")
@@ -18,11 +20,6 @@ public class UserController {
 
     private final JoinUseCase joinUseCase;
     private final LoginUseCase loginUseCase;
-
-    public UserController(JoinUseCase joinUseCase, LoginUseCase loginUseCase) {
-        this.joinUseCase = joinUseCase;
-        this.loginUseCase = loginUseCase;
-    }
 
     @Operation(
             summary = "회원가입",

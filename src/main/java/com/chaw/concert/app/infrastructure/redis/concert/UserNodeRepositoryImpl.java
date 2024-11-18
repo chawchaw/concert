@@ -128,6 +128,9 @@ public class UserNodeRepositoryImpl implements UserNodeRepository {
     }
 
     private void deleteUserNodes(List<UserNode> userNodes) {
+        if (userNodes.isEmpty()) {
+            return;
+        }
         Double score = userNodes.get(userNodes.size() - 1).getScore();
         RScoredSortedSet<String> sortedSet = getWaitSortedSet();
         sortedSet.removeRangeByScore(0, true, score, true);
