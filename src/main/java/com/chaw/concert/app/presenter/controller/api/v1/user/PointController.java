@@ -12,10 +12,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/user/point")
 @Tag(name = "User Point", description = "사용자 포인트 API")
-@AllArgsConstructor
 public class PointController {
 
     private final SecurityUtil securityUtils;
