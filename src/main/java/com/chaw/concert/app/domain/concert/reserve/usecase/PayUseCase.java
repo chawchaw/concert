@@ -11,10 +11,10 @@ import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PayEventRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaidEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.concert.app.infrastructure.redis.helper.RedissonRLock;
@@ -36,7 +36,7 @@ public class PayUseCase {
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
     private final PaidTicketRepository paidTicketRepository;
-    private final PayEventRepository payEventRepository;
+    private final PaidEventRepository paidEventRepository;
 
     @RedissonRLock(key = Point.REDIS_LOCK_KEY)
     public Output execute(Input input) {
@@ -80,7 +80,7 @@ public class PayUseCase {
         paidTicketRepository.save(ticket.getConcertScheduleId(), ticket.getId());
 
         log.info("결제({}) 완료", payment.getId());
-        payEventRepository.complete(new PayEvent(payment.getConcertScheduleId(), payment.getTicketId(), payment.getUserId()));
+        paidEventRepository.complete(new PaidEvent(payment.getConcertScheduleId(), payment.getTicketId(), payment.getUserId()));
         return new Output(true, payment.getId(), point.getBalance());
     }
 

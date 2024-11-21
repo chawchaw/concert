@@ -1,7 +1,7 @@
 package com.chaw.concert.app.infrastructure.consumer.concert;
 
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Slf4j
 @Component
-public class ReserveKafkaListener {
+public class ReservedKafkaListener {
 
     private final ConcertDataPlatformRepository concertDataPlatformRepository;
     private final SlackNotifierService slackNotifierService;
@@ -22,16 +22,16 @@ public class ReserveKafkaListener {
     }
 
     @KafkaListener(topics = KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, groupId = KafkaTopics.GROUP_ID)
-    public void saveOnDataPlatform(ReserveEvent reserveEvent) {
+    public void saveOnDataPlatform(ReservedEvent reservedEvent) {
         logReceivedMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE);
 
-        concertDataPlatformRepository.saveReserve(reserveEvent.concertScheduleId(), reserveEvent.ticketId(), reserveEvent.userId());
+        concertDataPlatformRepository.saveReserve(reservedEvent.concertScheduleId(), reservedEvent.ticketId(), reservedEvent.userId());
     }
 
     @KafkaListener(topics = KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, groupId = KafkaTopics.GROUP_ID)
-    public void sendToSlack(ReserveEvent reserveEvent) {
+    public void sendToSlack(ReservedEvent reservedEvent) {
         logReceivedMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK);
 
-        slackNotifierService.sendNotificationToSlack(reserveEvent.toMessage());
+        slackNotifierService.sendNotificationToSlack(reservedEvent.toMessage());
     }
 }

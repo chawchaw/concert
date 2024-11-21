@@ -4,9 +4,9 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveEventRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.concert.app.infrastructure.redis.helper.RedissonRLock;
@@ -24,7 +24,7 @@ public class ReserveUseCase {
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
-    private final ReserveEventRepository reserveEventRepository;
+    private final ReservedEventRepository reservedEventRepository;
 
     @RedissonRLock(key = REDIS_LOCK_KEY, waitTime = 0)
     public Output execute(Input input) {
@@ -46,7 +46,7 @@ public class ReserveUseCase {
         reserveRepository.save(reserve);
 
         log.info("예약({}) 완료", input.ticketId());
-        reserveEventRepository.complete(new ReserveEvent(reserve.concertScheduleId(), reserve.ticketId(), reserve.userId()));
+        reservedEventRepository.complete(new ReservedEvent(reserve.concertScheduleId(), reserve.ticketId(), reserve.userId()));
         return new Output(true);
     }
 

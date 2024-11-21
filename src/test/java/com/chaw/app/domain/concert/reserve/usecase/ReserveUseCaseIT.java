@@ -1,8 +1,8 @@
 package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
-import com.chaw.concert.app.infrastructure.consumer.concert.ReserveEventListener;
-import com.chaw.concert.app.infrastructure.consumer.concert.ReserveKafkaListener;
+import com.chaw.concert.app.infrastructure.consumer.concert.ReservedEventListener;
+import com.chaw.concert.app.infrastructure.consumer.concert.ReservedKafkaListener;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
@@ -10,9 +10,9 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveEventRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
 import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
@@ -46,16 +46,16 @@ public class ReserveUseCaseIT {
     private TicketRepository ticketRepository;
 
     @SpyBean
-    private ReserveEventRepository reserveEventRepository;
+    private ReservedEventRepository reservedEventRepository;
 
     @SpyBean
-    private ReserveEventListener reserveEventListener;
+    private ReservedEventListener reservedEventListener;
 
     @SpyBean
     private KafkaProducer kafkaProducer;
 
     @SpyBean
-    private ReserveKafkaListener reserveKafkaListener;
+    private ReservedKafkaListener reservedKafkaListener;
 
     @SpyBean
     private ConcertDataPlatformRepository concertDataPlatformRepository;
@@ -96,7 +96,7 @@ public class ReserveUseCaseIT {
     void 카프카_발행과_컨슘이_잘_동작했는지_확인() {
         // Given
         Long userId = 1L;
-        ReserveEvent reserveEvent = new ReserveEvent(concertSchedule1.getId(), ticket1.getId(), userId);
+        ReservedEvent reservedEvent = new ReservedEvent(concertSchedule1.getId(), ticket1.getId(), userId);
         ReserveUseCase.Input input = new ReserveUseCase.Input(userId, ticket1.getId());
 
         // When
@@ -109,14 +109,14 @@ public class ReserveUseCaseIT {
         // Then
         assertEquals(true, output.success());
 
-        verify(reserveEventRepository, timeout(1000)).complete(reserveEvent);
-        verify(reserveEventListener, timeout(1000)).saveOnDataPlatform(reserveEvent);
-        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, reserveEvent);
-        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, reserveEvent);
-        verify(reserveKafkaListener, timeout(5000)).saveOnDataPlatform(reserveEvent);
-        verify(reserveKafkaListener, timeout(5000)).sendToSlack(reserveEvent);
-        verify(concertDataPlatformRepository, timeout(5000)).saveReserve(reserveEvent.concertScheduleId(), reserveEvent.ticketId(), reserveEvent.userId());
-        verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(reserveEvent.toMessage());
+        verify(reservedEventRepository, timeout(1000)).complete(reservedEvent);
+        verify(reservedEventListener, timeout(1000)).saveOnDataPlatform(reservedEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, reservedEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, reservedEvent);
+        verify(reservedKafkaListener, timeout(5000)).saveOnDataPlatform(reservedEvent);
+        verify(reservedKafkaListener, timeout(5000)).sendToSlack(reservedEvent);
+        verify(concertDataPlatformRepository, timeout(5000)).saveReserve(reservedEvent.concertScheduleId(), reservedEvent.ticketId(), reservedEvent.userId());
+        verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(reservedEvent.toMessage());
     }
 
 }

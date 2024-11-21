@@ -1,18 +1,18 @@
 package com.chaw.concert.app.infrastructure.event.concert.reserve;
 
-import com.chaw.concert.app.domain.concert.reserve.repository.PayEventRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepository;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Repository;
 
 @AllArgsConstructor
 @Repository
-public class PayEventRepositoryImpl implements PayEventRepository {
+public class ReservedEventRepositoryImpl implements ReservedEventRepository {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public void complete(PayEvent event) {
+    public void complete(ReservedEvent event) {
         eventPublisher.publishEvent(event);
     }
 }

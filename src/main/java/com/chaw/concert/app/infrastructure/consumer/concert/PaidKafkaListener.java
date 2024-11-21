@@ -1,8 +1,7 @@
 package com.chaw.concert.app.infrastructure.consumer.concert;
 
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
 import lombok.AllArgsConstructor;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Slf4j
 @Component
-public class PayKafkaListener {
+public class PaidKafkaListener {
 
     private final ConcertDataPlatformRepository concertDataPlatformRepository;
     private final SlackNotifierService slackNotifierService;
@@ -23,16 +22,16 @@ public class PayKafkaListener {
     }
 
     @KafkaListener(topics = KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, groupId = KafkaTopics.GROUP_ID)
-    public void saveOnDataPlatform(PayEvent payEvent) {
+    public void saveOnDataPlatform(PaidEvent paidEvent) {
         logReceivedMessage(KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE);
 
-        concertDataPlatformRepository.savePay(payEvent.concertScheduleId(), payEvent.ticketId(), payEvent.userId());
+        concertDataPlatformRepository.savePay(paidEvent.concertScheduleId(), paidEvent.ticketId(), paidEvent.userId());
     }
 
     @KafkaListener(topics = KafkaTopics.CONCERT_PAY_TOPIC_SLACK, groupId = KafkaTopics.GROUP_ID)
-    public void sendToSlack(PayEvent payEvent) {
+    public void sendToSlack(PaidEvent paidEvent) {
         logReceivedMessage(KafkaTopics.CONCERT_PAY_TOPIC_SLACK);
 
-        slackNotifierService.sendNotificationToSlack(payEvent.toMessage());
+        slackNotifierService.sendNotificationToSlack(paidEvent.toMessage());
     }
 }

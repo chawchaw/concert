@@ -11,12 +11,12 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepos
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PayEventRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.PaidEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
-import com.chaw.concert.app.infrastructure.consumer.concert.PayEventListener;
-import com.chaw.concert.app.infrastructure.consumer.concert.PayKafkaListener;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
+import com.chaw.concert.app.infrastructure.consumer.concert.PaidEventListener;
+import com.chaw.concert.app.infrastructure.consumer.concert.PaidKafkaListener;
 import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
 import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
@@ -57,16 +57,16 @@ public class PayUseCaseIT {
     private ReserveRepository reserveRepository;
 
     @SpyBean
-    private PayEventRepository payEventRepository;
+    private PaidEventRepository paidEventRepository;
 
     @SpyBean
-    private PayEventListener payEventListener;
+    private PaidEventListener paidEventListener;
 
     @SpyBean
     private KafkaProducer kafkaProducer;
 
     @SpyBean
-    private PayKafkaListener payKafkaListener;
+    private PaidKafkaListener paidKafkaListener;
 
     @SpyBean
     private ConcertDataPlatformRepository concertDataPlatformRepository;
@@ -122,7 +122,7 @@ public class PayUseCaseIT {
     @Test
     void 결제_성공시_이벤트리스너가_데이터_플랫폼에_결제정보_전달() {
         // given
-        PayEvent payEvent = new PayEvent(concertSchedule.getId(), ticket.getId(), userId);
+        PaidEvent paidEvent = new PaidEvent(concertSchedule.getId(), ticket.getId(), userId);
 
         // when
         Long startTime = System.currentTimeMillis();
@@ -135,14 +135,14 @@ public class PayUseCaseIT {
         // then
         assertEquals(true, output.success());
 
-        verify(payEventRepository, timeout(1000)).complete(payEvent);
-        verify(payEventListener, timeout(1000)).saveOnDataPlatform(payEvent);
-        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, payEvent);
-        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_PAY_TOPIC_SLACK, payEvent);
-        verify(payKafkaListener, timeout(5000)).saveOnDataPlatform(payEvent);
-        verify(payKafkaListener, timeout(5000)).sendToSlack(payEvent);
-        verify(concertDataPlatformRepository, timeout(5000)).savePay(payEvent.concertScheduleId(), payEvent.ticketId(), payEvent.userId());
-        verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(payEvent.toMessage());
+        verify(paidEventRepository, timeout(1000)).complete(paidEvent);
+        verify(paidEventListener, timeout(1000)).saveOnDataPlatform(paidEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, paidEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_PAY_TOPIC_SLACK, paidEvent);
+        verify(paidKafkaListener, timeout(5000)).saveOnDataPlatform(paidEvent);
+        verify(paidKafkaListener, timeout(5000)).sendToSlack(paidEvent);
+        verify(concertDataPlatformRepository, timeout(5000)).savePay(paidEvent.concertScheduleId(), paidEvent.ticketId(), paidEvent.userId());
+        verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(paidEvent.toMessage());
     }
 
 }
