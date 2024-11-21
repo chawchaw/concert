@@ -2,7 +2,9 @@ package com.chaw.concert.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutbox;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
+import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
@@ -24,6 +26,7 @@ public class ReserveUseCase {
     private final TicketRepository ticketRepository;
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
+    private final ConcertOutboxRepository concertOutboxRepository;
     private final ReservedEventRepository reservedEventRepository;
 
     @RedissonRLock(key = REDIS_LOCK_KEY, waitTime = 0)
@@ -42,12 +45,25 @@ public class ReserveUseCase {
             throw new BaseException(ErrorType.CONFLICT, "이미 결제된 티켓입니다.");
         }
 
+        // Redis 에 예약 정보 저장
         Reserve reserve = new Reserve(ticket.getConcertScheduleId(), input.ticketId(), input.userId());
         reserveRepository.save(reserve);
 
+        // Kafka Outbox 에 이벤트 저장
+        ConcertOutbox concertOutbox = ConcertOutbox.createReserved(ticket.getConcertScheduleId(), input.ticketId(), input.userId());
+        concertOutboxRepository.save(concertOutbox);
+
+        // Kafka Producer 로 이벤트 발행
+        reservedEventRepository.complete(ReservedEvent.builder()
+                .concertScheduleId(ticket.getConcertScheduleId())
+                .ticketId(input.ticketId())
+                .userId(input.userId())
+                .concertOutboxId(concertOutbox.getId())
+                .build());
+
         log.info("예약({}) 완료", input.ticketId());
-        reservedEventRepository.complete(new ReservedEvent(reserve.concertScheduleId(), reserve.ticketId(), reserve.userId()));
-        return new Output(true);
+
+        return new Output(true, concertOutbox.getId());
     }
 
     public record Input (
@@ -56,6 +72,7 @@ public class ReserveUseCase {
     ) {}
 
     public record Output (
-            Boolean success
+            Boolean success,
+            Long concertOutboxId
     ) {}
 }
