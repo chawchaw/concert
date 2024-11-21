@@ -5,6 +5,8 @@ import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 
 public enum ConcertOutboxStatus {
     INIT("INIT"),
+    RETRY("RETRY"),
+    FAILED("FAILED"),
     PUBLISHED("PUBLISHED");
 
     private final String dbValue;
