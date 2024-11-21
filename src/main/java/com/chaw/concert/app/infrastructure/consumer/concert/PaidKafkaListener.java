@@ -1,6 +1,9 @@
 package com.chaw.concert.app.infrastructure.consumer.concert;
 
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutbox;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxType;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PaidKafkaListener {
 
+    private final ConcertOutboxRepository concertOutboxRepository;
     private final ConcertDataPlatformRepository concertDataPlatformRepository;
     private final SlackNotifierService slackNotifierService;
 
@@ -24,6 +28,10 @@ public class PaidKafkaListener {
     @KafkaListener(topics = KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, groupId = KafkaTopics.GROUP_ID)
     public void saveOnDataPlatform(PaidEvent paidEvent) {
         logReceivedMessage(KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE);
+
+        ConcertOutbox concertOutbox = concertOutboxRepository.findByIdAndTypeOrThrow(paidEvent.concertOutboxId(), ConcertOutboxType.PAID);
+        concertOutbox.published();
+        concertOutboxRepository.save(concertOutbox);
 
         concertDataPlatformRepository.savePay(paidEvent.concertScheduleId(), paidEvent.ticketId(), paidEvent.userId());
     }

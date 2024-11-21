@@ -9,8 +9,12 @@ import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutbox;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxStatus;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxType;
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
@@ -52,6 +56,9 @@ public class PayUseCaseIT {
 
     @Autowired
     private TicketRepository ticketRepository;
+
+    @Autowired
+    private ConcertOutboxRepository concertOutboxRepository;
 
     @Autowired
     private ReserveRepository reserveRepository;
@@ -121,9 +128,6 @@ public class PayUseCaseIT {
 
     @Test
     void 결제_성공시_이벤트리스너가_데이터_플랫폼에_결제정보_전달() {
-        // given
-        PaidEvent paidEvent = new PaidEvent(concertSchedule.getId(), ticket.getId(), userId);
-
         // when
         Long startTime = System.currentTimeMillis();
         PayUseCase.Input input = new PayUseCase.Input(userId, ticket.getId());
@@ -134,7 +138,15 @@ public class PayUseCaseIT {
 
         // then
         assertEquals(true, output.success());
+        ConcertOutbox concertOutbox = concertOutboxRepository.findByIdAndTypeOrThrow(output.concertOutboxId(), ConcertOutboxType.PAID);
+        assertEquals(ConcertOutboxStatus.INIT, concertOutbox.getStatus());
 
+        PaidEvent paidEvent = PaidEvent.builder()
+                .concertScheduleId(concertSchedule.getId())
+                .ticketId(ticket.getId())
+                .userId(userId)
+                .concertOutboxId(output.concertOutboxId())
+                .build();
         verify(paidEventRepository, timeout(1000)).complete(paidEvent);
         verify(paidEventListener, timeout(1000)).saveOnDataPlatform(paidEvent);
         verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, paidEvent);
@@ -143,6 +155,9 @@ public class PayUseCaseIT {
         verify(paidKafkaListener, timeout(5000)).sendToSlack(paidEvent);
         verify(concertDataPlatformRepository, timeout(5000)).savePay(paidEvent.concertScheduleId(), paidEvent.ticketId(), paidEvent.userId());
         verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(paidEvent.toMessage());
+
+        ConcertOutbox concertOutboxAfterConsume = concertOutboxRepository.findByIdAndTypeOrThrow(output.concertOutboxId(), ConcertOutboxType.PAID);
+        assertEquals(ConcertOutboxStatus.PUBLISHED, concertOutboxAfterConsume.getStatus());
     }
 
 }
