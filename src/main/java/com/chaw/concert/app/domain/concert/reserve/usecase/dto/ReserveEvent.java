@@ -4,4 +4,8 @@ public record ReserveEvent (
         Long concertScheduleId,
         Long ticketId,
         Long userId
-){}
+){
+    public String toMessage() {
+        return String.format("예약 완료: concertScheduleId=%d, ticketId=%d, userId=%d", concertScheduleId, ticketId, userId);
+    }
+}

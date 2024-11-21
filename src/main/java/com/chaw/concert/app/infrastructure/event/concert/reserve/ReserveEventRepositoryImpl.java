@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @AllArgsConstructor
 @Repository
-public class ReserveCompleteRepositoryImpl implements ReserveEventRepository {
+public class ReserveEventRepositoryImpl implements ReserveEventRepository {
     private final ApplicationEventPublisher eventPublisher;
 
     @Override

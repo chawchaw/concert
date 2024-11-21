@@ -1,6 +1,8 @@
 package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
+import com.chaw.concert.app.infrastructure.consumer.concert.ReserveEventListener;
+import com.chaw.concert.app.infrastructure.consumer.concert.ReserveKafkaListener;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
@@ -8,20 +10,24 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReserveEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
+import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
+import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestExecutionListeners;
 
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @TestExecutionListeners(
@@ -39,8 +45,23 @@ public class ReserveUseCaseIT {
     @Autowired
     private TicketRepository ticketRepository;
 
-    @MockBean
+    @SpyBean
+    private ReserveEventRepository reserveEventRepository;
+
+    @SpyBean
+    private ReserveEventListener reserveEventListener;
+
+    @SpyBean
+    private KafkaProducer kafkaProducer;
+
+    @SpyBean
+    private ReserveKafkaListener reserveKafkaListener;
+
+    @SpyBean
     private ConcertDataPlatformRepository concertDataPlatformRepository;
+
+    @SpyBean
+    private SlackNotifierService slackNotifierService;
 
     @Autowired
     private ReserveUseCase reserveUseCase;
@@ -72,9 +93,10 @@ public class ReserveUseCaseIT {
     }
 
     @Test
-    void 예약_성공시_이벤트리스너가_데이터_플랫폼에_예약정보_전달() {
-        Long userId = 1L;
+    void 카프카_발행과_컨슘이_잘_동작했는지_확인() {
         // Given
+        Long userId = 1L;
+        ReserveEvent reserveEvent = new ReserveEvent(concertSchedule1.getId(), ticket1.getId(), userId);
         ReserveUseCase.Input input = new ReserveUseCase.Input(userId, ticket1.getId());
 
         // When
@@ -86,7 +108,15 @@ public class ReserveUseCaseIT {
 
         // Then
         assertEquals(true, output.success());
-        verify(concertDataPlatformRepository, times(1)).saveReserve(concertSchedule1.getId(), ticket1.getId(), userId);
+
+        verify(reserveEventRepository, timeout(1000)).complete(reserveEvent);
+        verify(reserveEventListener, timeout(1000)).saveOnDataPlatform(reserveEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, reserveEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, reserveEvent);
+        verify(reserveKafkaListener, timeout(5000)).saveOnDataPlatform(reserveEvent);
+        verify(reserveKafkaListener, timeout(5000)).sendToSlack(reserveEvent);
+        verify(concertDataPlatformRepository, timeout(5000)).saveReserve(reserveEvent.concertScheduleId(), reserveEvent.ticketId(), reserveEvent.userId());
+        verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(reserveEvent.toMessage());
     }
 
 }
