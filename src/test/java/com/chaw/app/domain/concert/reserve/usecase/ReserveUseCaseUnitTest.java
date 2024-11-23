@@ -2,11 +2,12 @@ package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveEventRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReserveEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,9 @@ public class ReserveUseCaseUnitTest {
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
-    private ReserveEventRepository reserveEventRepository;
+    private ConcertOutboxRepository concertOutboxRepository;
+    @Mock
+    private ReservedEventRepository reservedEventRepository;
     @InjectMocks
     private ReserveUseCase reserveUseCase;
 
@@ -79,10 +82,15 @@ public class ReserveUseCaseUnitTest {
         when(ticketRepository.findByIdOrThrow(anyLong())).thenReturn(ticket);
         when(reserveRepository.existsByConcertScheduleIdAndTicketIdAndUserId(anyLong(), anyLong(), anyLong())).thenReturn(false);
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(false);
+        doNothing().when(concertOutboxRepository).save(any());
         doNothing().when(reserveRepository).save(any());
 
-        ReserveEvent reserveEvent = new ReserveEvent(1L, 1L, 1L);
-        doNothing().when(reserveEventRepository).complete(reserveEvent);
+        ReservedEvent reservedEvent = ReservedEvent.builder()
+                .concertScheduleId(1L)
+                .ticketId(1L)
+                .userId(1L)
+                .build();
+        doNothing().when(reservedEventRepository).complete(reservedEvent);
 
         // When
         ReserveUseCase.Input input = new ReserveUseCase.Input(1L, 1L);
@@ -91,6 +99,6 @@ public class ReserveUseCaseUnitTest {
         // Then
         assertEquals(true, output.success());
         verify(reserveRepository, times(1)).save(any());
-        verify(reserveEventRepository, times(1)).complete(reserveEvent);
+        verify(reservedEventRepository, times(1)).complete(reservedEvent);
     }
 }

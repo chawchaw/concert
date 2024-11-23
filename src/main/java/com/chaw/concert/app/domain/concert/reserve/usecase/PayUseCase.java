@@ -8,13 +8,11 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutbox;
 import com.chaw.concert.app.domain.concert.reserve.entity.Payment;
 import com.chaw.concert.app.domain.concert.reserve.entity.PaymentMethod;
-import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PayEventRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
+import com.chaw.concert.app.domain.concert.reserve.repository.*;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import com.chaw.concert.app.infrastructure.redis.helper.RedissonRLock;
@@ -36,7 +34,8 @@ public class PayUseCase {
     private final ReserveRepository reserveRepository;
     private final PaymentRepository paymentRepository;
     private final PaidTicketRepository paidTicketRepository;
-    private final PayEventRepository payEventRepository;
+    private final ConcertOutboxRepository concertOutboxRepository;
+    private final PaidEventRepository paidEventRepository;
 
     @RedissonRLock(key = Point.REDIS_LOCK_KEY)
     public Output execute(Input input) {
@@ -77,11 +76,24 @@ public class PayUseCase {
         Payment payment = Payment.create(input.userId(), ticket.getConcertScheduleId(), ticket.getId(), pointHistory.getId(), PaymentMethod.POINT, ticket.getPrice());
         paymentRepository.save(payment);
 
+        // Redis 에 결제된 티켓 추가
         paidTicketRepository.save(ticket.getConcertScheduleId(), ticket.getId());
 
+        // Kafka Outbox 에 이벤트 저장
+        ConcertOutbox concertOutbox = ConcertOutbox.createPaid(ticket.getConcertScheduleId(), input.ticketId(), input.userId());
+        concertOutboxRepository.save(concertOutbox);
+
+        // Kafka Producer 로 이벤트 발행
+        paidEventRepository.complete(PaidEvent.builder()
+                .concertScheduleId(ticket.getConcertScheduleId())
+                .ticketId(input.ticketId())
+                .userId(input.userId())
+                .concertOutboxId(concertOutbox.getId())
+                .build());
+
         log.info("결제({}) 완료", payment.getId());
-        payEventRepository.complete(new PayEvent(payment.getConcertScheduleId(), payment.getTicketId(), payment.getUserId()));
-        return new Output(true, payment.getId(), point.getBalance());
+
+        return new Output(true, payment.getId(), point.getBalance(), concertOutbox.getId());
     }
 
     public record Input (
@@ -92,6 +104,7 @@ public class PayUseCase {
     public record Output (
         Boolean success,
         Long paymentId,
-        Integer balance
+        Integer balance,
+        Long concertOutboxId
     ) {}
 }

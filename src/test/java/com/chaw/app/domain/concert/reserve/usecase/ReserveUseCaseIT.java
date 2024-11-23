@@ -1,6 +1,12 @@
 package com.chaw.app.domain.concert.reserve.usecase;
 
 import com.chaw.concert.ConcertApplication;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutbox;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxStatus;
+import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxType;
+import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
+import com.chaw.concert.app.infrastructure.consumer.concert.ReservedEventListener;
+import com.chaw.concert.app.infrastructure.consumer.concert.ReservedKafkaListener;
 import com.chaw.concert.app.domain.concert.query.entity.Concert;
 import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
@@ -8,20 +14,24 @@ import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
+import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
+import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestExecutionListeners;
 
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = ConcertApplication.class)
 @TestExecutionListeners(
@@ -39,8 +49,26 @@ public class ReserveUseCaseIT {
     @Autowired
     private TicketRepository ticketRepository;
 
-    @MockBean
+    @Autowired
+    private ConcertOutboxRepository concertOutboxRepository;
+
+    @SpyBean
+    private ReservedEventRepository reservedEventRepository;
+
+    @SpyBean
+    private ReservedEventListener reservedEventListener;
+
+    @SpyBean
+    private KafkaProducer kafkaProducer;
+
+    @SpyBean
+    private ReservedKafkaListener reservedKafkaListener;
+
+    @SpyBean
     private ConcertDataPlatformRepository concertDataPlatformRepository;
+
+    @SpyBean
+    private SlackNotifierService slackNotifierService;
 
     @Autowired
     private ReserveUseCase reserveUseCase;
@@ -72,9 +100,9 @@ public class ReserveUseCaseIT {
     }
 
     @Test
-    void 예약_성공시_이벤트리스너가_데이터_플랫폼에_예약정보_전달() {
-        Long userId = 1L;
+    void 카프카_발행과_컨슘이_잘_동작했는지_확인() {
         // Given
+        Long userId = 1L;
         ReserveUseCase.Input input = new ReserveUseCase.Input(userId, ticket1.getId());
 
         // When
@@ -86,7 +114,26 @@ public class ReserveUseCaseIT {
 
         // Then
         assertEquals(true, output.success());
-        verify(concertDataPlatformRepository, times(1)).saveReserve(concertSchedule1.getId(), ticket1.getId(), userId);
+        ConcertOutbox concertOutbox = concertOutboxRepository.findByIdAndTypeOrThrow(output.concertOutboxId(), ConcertOutboxType.RESERVED);
+        assertEquals(ConcertOutboxStatus.INIT, concertOutbox.getStatus());
+
+        ReservedEvent reservedEvent = ReservedEvent.builder()
+                .concertScheduleId(concertSchedule1.getId())
+                .ticketId(ticket1.getId())
+                .userId(userId)
+                .concertOutboxId(output.concertOutboxId())
+                .build();
+        verify(reservedEventRepository, timeout(1000)).complete(reservedEvent);
+        verify(reservedEventListener, timeout(1000)).saveOnDataPlatform(reservedEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, reservedEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, reservedEvent);
+        verify(reservedKafkaListener, timeout(5000)).saveOnDataPlatform(reservedEvent);
+        verify(reservedKafkaListener, timeout(5000)).sendToSlack(reservedEvent);
+        verify(concertDataPlatformRepository, timeout(5000)).saveReserve(reservedEvent.concertScheduleId(), reservedEvent.ticketId(), reservedEvent.userId());
+        verify(slackNotifierService, timeout(5000)).sendNotificationToSlack(reservedEvent.toMessage());
+
+        ConcertOutbox concertOutboxAfterConsume = concertOutboxRepository.findByIdAndTypeOrThrow(output.concertOutboxId(), ConcertOutboxType.RESERVED);
+        assertEquals(ConcertOutboxStatus.PUBLISHED, concertOutboxAfterConsume.getStatus());
     }
 
 }

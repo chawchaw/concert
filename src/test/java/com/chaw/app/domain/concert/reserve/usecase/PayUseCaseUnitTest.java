@@ -7,12 +7,9 @@ import com.chaw.concert.app.domain.concert.query.entity.ConcertSchedule;
 import com.chaw.concert.app.domain.concert.query.entity.Ticket;
 import com.chaw.concert.app.domain.concert.query.repository.ConcertScheduleRepository;
 import com.chaw.concert.app.domain.concert.query.repository.TicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PayEventRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.PaymentRepository;
-import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
+import com.chaw.concert.app.domain.concert.reserve.repository.*;
 import com.chaw.concert.app.domain.concert.reserve.usecase.PayUseCase;
-import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PayEvent;
+import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
 import org.junit.jupiter.api.Test;
@@ -44,7 +41,9 @@ public class PayUseCaseUnitTest {
     @Mock
     private PaidTicketRepository paidTicketRepository;
     @Mock
-    private PayEventRepository payEventRepository;
+    private ConcertOutboxRepository concertOutboxRepository;
+    @Mock
+    private PaidEventRepository paidEventRepository;
 
     @InjectMocks
     private PayUseCase payUseCase;
@@ -191,9 +190,9 @@ public class PayUseCaseUnitTest {
         when(reserveRepository.existsByConcertScheduleIdAndTicketIdAndUserId(anyLong(), anyLong(), anyLong())).thenReturn(true);
         when(paymentRepository.existsByTicketId(anyLong())).thenReturn(false);
         when(concertScheduleRepository.decreaseAvailableSeat(anyLong())).thenReturn(true);
-
-        PayEvent payEvent = new PayEvent(concertScheduleId, ticketId, userId);
-        doNothing().when(payEventRepository).complete(payEvent);
+        doNothing().when(paidTicketRepository).save(anyLong(), anyLong());
+        doNothing().when(concertOutboxRepository).save(any());
+        doNothing().when(paidEventRepository).complete(any());
 
         // When
         PayUseCase.Input input = new PayUseCase.Input(1L, 1L);
@@ -206,6 +205,6 @@ public class PayUseCaseUnitTest {
         verify(pointHistoryRepository, times(1)).save(any());
         verify(paymentRepository, times(1)).save(any());
         verify(paidTicketRepository, times(1)).save(anyLong(), anyLong());
-        verify(payEventRepository, times(1)).complete(payEvent);
+        verify(paidEventRepository, times(1)).complete(any());
     }
 }
