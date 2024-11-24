@@ -27,10 +27,10 @@ public class PointHistory {
     private Long ticketId;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(name = "type")
     private PointHistoryType type; // 변경 타입
 
-    @Column
+    @Column(name = "amount")
     private Integer amount; // 변경 금액
 
     @CreatedDate

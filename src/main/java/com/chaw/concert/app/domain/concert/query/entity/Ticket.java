@@ -21,10 +21,10 @@ public class Ticket implements Serializable {
     private Long concertScheduleId; // 공연일정 ID
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(name = "type")
     private TicketType type;
 
-    @Column
+    @Column(name = "price")
     private Integer price; // 가격
 
     @Column(name = "seat_no")
