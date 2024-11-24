@@ -54,6 +54,7 @@ public class PointHistory {
                 .ticketId(ticketId)
                 .type(PointHistoryType.PAY)
                 .amount(amount)
+                .dateTransaction(LocalDateTime.now())
                 .build();
     }
 }
