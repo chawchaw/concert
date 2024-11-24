@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +17,6 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class ConcertOutbox {
 
     private static final ConcertOutboxStatus DEFAULT_STATUS = ConcertOutboxStatus.INIT;
@@ -53,7 +50,6 @@ public class ConcertOutbox {
     @Column(name = "retry_count")
     private int retryCount = DEFAULT_RETRY_COUNT;
 
-    @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdAt; // "생성일"
 
@@ -71,6 +67,7 @@ public class ConcertOutbox {
                 .ticketId(ticketId)
                 .userId(userId)
                 .retryCount(0)
+                .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
