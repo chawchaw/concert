@@ -116,7 +116,7 @@ public class ConcertOutbox {
     }
 
     public String toMessageForRetryFailed() {
-        return String.format("Kafka 발행 실패: 시도횟수=%d, concertOutboxId=%d, type=%s", retryCount, id, type.getDbValue());
+        return String.format("Kafka 발행 실패: 시도횟수=%d, concertOutboxId=%d, type=%s", retryCount, id, type.name());
     }
 
     public String getTopic() {
