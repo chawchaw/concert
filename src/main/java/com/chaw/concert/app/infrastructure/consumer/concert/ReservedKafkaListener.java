@@ -5,7 +5,8 @@ import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxType;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
-import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.KafkaGroups;
+import com.chaw.concert.app.infrastructure.kafka.ReserveKafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +26,9 @@ public class ReservedKafkaListener {
         log.info("Received from topic: {}", topic);
     }
 
-    @KafkaListener(topics = KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, groupId = KafkaTopics.GROUP_ID)
+    @KafkaListener(topics = ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, groupId = KafkaGroups.GROUP_ID)
     public void saveOnDataPlatform(ReservedEvent reservedEvent) {
-        logReceivedMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE);
+        logReceivedMessage(ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE);
 
         ConcertOutbox concertOutbox = concertOutboxRepository.findByIdAndTypeOrThrow(reservedEvent.concertOutboxId(), ConcertOutboxType.RESERVED);
         concertOutbox.published();
@@ -36,9 +37,9 @@ public class ReservedKafkaListener {
         concertDataPlatformRepository.saveReserve(reservedEvent.concertScheduleId(), reservedEvent.ticketId(), reservedEvent.userId());
     }
 
-    @KafkaListener(topics = KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, groupId = KafkaTopics.GROUP_ID)
+    @KafkaListener(topics = ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, groupId = KafkaGroups.GROUP_ID)
     public void sendToSlack(ReservedEvent reservedEvent) {
-        logReceivedMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK);
+        logReceivedMessage(ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_SLACK);
 
         slackNotifierService.sendNotificationToSlack(reservedEvent.toMessage());
     }

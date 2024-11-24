@@ -2,7 +2,8 @@ package com.chaw.concert.app.domain.concert.reserve.entity;
 
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
-import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.PayKafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.ReserveKafkaTopics;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -119,9 +120,9 @@ public class ConcertOutbox {
     public String getTopic() {
         switch (type) {
             case RESERVED:
-                return KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE;
+                return ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE;
             case PAID:
-                return KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE;
+                return PayKafkaTopics.CONCERT_PAY_TOPIC_DATASTORE;
             default:
                 throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION,
                         String.format("ConcertOutbox type 이 잘못되었습니다. type=%s, concertOutboxId=%d", type, id));

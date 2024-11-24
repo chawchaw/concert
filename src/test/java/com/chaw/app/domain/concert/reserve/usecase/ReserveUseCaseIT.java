@@ -18,7 +18,7 @@ import com.chaw.concert.app.domain.concert.reserve.repository.ReservedEventRepos
 import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
-import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.ReserveKafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
 import com.chaw.helper.DatabaseCleanupListener;
 import org.junit.jupiter.api.BeforeEach;
@@ -125,8 +125,8 @@ public class ReserveUseCaseIT {
                 .build();
         verify(reservedEventRepository, timeout(1000)).complete(reservedEvent);
         verify(reservedEventListener, timeout(1000)).saveOnDataPlatform(reservedEvent);
-        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, reservedEvent);
-        verify(kafkaProducer, timeout(1000)).sendMessage(KafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, reservedEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE, reservedEvent);
+        verify(kafkaProducer, timeout(1000)).sendMessage(ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_SLACK, reservedEvent);
         verify(reservedKafkaListener, timeout(5000)).saveOnDataPlatform(reservedEvent);
         verify(reservedKafkaListener, timeout(5000)).sendToSlack(reservedEvent);
         verify(concertDataPlatformRepository, timeout(5000)).saveReserve(reservedEvent.concertScheduleId(), reservedEvent.ticketId(), reservedEvent.userId());
