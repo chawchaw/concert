@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class) // Auditing 활성화
+@EntityListeners(AuditingEntityListener.class)
 public class ConcertOutbox {
 
     private static final ConcertOutboxStatus DEFAULT_STATUS = ConcertOutboxStatus.INIT;
