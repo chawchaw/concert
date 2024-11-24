@@ -1,7 +1,11 @@
 package com.chaw.concert.app.infrastructure.exception.common;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Getter
+@RequiredArgsConstructor
 public enum ErrorType {
     BAD_REQUEST(HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
@@ -12,12 +16,4 @@ public enum ErrorType {
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final HttpStatus httpStatus;
-
-    ErrorType(HttpStatus httpsStatus) {
-        this.httpStatus = httpsStatus;
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
 }
