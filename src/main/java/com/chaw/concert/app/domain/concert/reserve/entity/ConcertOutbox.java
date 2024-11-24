@@ -27,33 +27,35 @@ public class ConcertOutbox {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    ConcertOutboxStatus status;
+    private ConcertOutboxStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    ConcertOutboxType type;
+    private ConcertOutboxType type;
 
     @Column(name = "concert_schedule_id")
-    Long concertScheduleId;
+    private Long concertScheduleId;
 
     @Column(name = "ticket_id")
-    Long ticketId;
+    private Long ticketId;
 
     @Column(name = "user_id")
-    Long userId;
+    private Long userId;
 
     @Column(name = "retry_count")
-    int retryCount;
+    private int retryCount;
 
     @CreatedDate
     @Column(name = "created_at")
-    LocalDateTime createdAt; // "생성일"
+    private LocalDateTime createdAt; // "생성일"
 
     @Column(name = "last_retried_at")
-    LocalDateTime lastRetriedAt; // "재시도 일시"
+    private LocalDateTime lastRetriedAt; // "재시도 일시"
 
     @Column(name = "updated_at")
-    LocalDateTime updatedAt; // "수정일"
+    private LocalDateTime updatedAt; // "수정일"
 
     private static ConcertOutbox create(ConcertOutboxType type, Long concertScheduleId, Long ticketId, Long userId) {
         return ConcertOutbox.builder()

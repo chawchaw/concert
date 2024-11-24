@@ -26,8 +26,8 @@ public class PointHistory {
     @Column(name = "ticket_id")
     private Long ticketId;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    @Convert(converter = PointHistoryTypeConverter.class)
     private PointHistoryType type; // 변경 타입
 
     @Column

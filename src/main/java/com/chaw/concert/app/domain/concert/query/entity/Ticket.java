@@ -20,8 +20,8 @@ public class Ticket implements Serializable {
     @Column(name = "concert_schedule_id")
     private Long concertScheduleId; // 공연일정 ID
 
+    @Enumerated(EnumType.STRING)
     @Column
-    @Convert(converter = TicketTypeConverter.class)
     private TicketType type;
 
     @Column
