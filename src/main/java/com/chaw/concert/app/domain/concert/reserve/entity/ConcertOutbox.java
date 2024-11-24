@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +19,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class) // Auditing 활성화
 public class ConcertOutbox {
+
+    private static final ConcertOutboxStatus DEFAULT_STATUS = ConcertOutboxStatus.INIT;
+    private static final int DEFAULT_RETRY_COUNT = 0;
 
     public static final int RETRY_LIMIT = 3;
     public static final int RETRY_MINUTES = 5;
@@ -44,8 +49,9 @@ public class ConcertOutbox {
     @Column(name = "user_id")
     private Long userId;
 
+    @Builder.Default
     @Column(name = "retry_count")
-    private int retryCount;
+    private int retryCount = DEFAULT_RETRY_COUNT;
 
     @CreatedDate
     @Column(name = "created_at")
@@ -59,7 +65,7 @@ public class ConcertOutbox {
 
     private static ConcertOutbox create(ConcertOutboxType type, Long concertScheduleId, Long ticketId, Long userId) {
         return ConcertOutbox.builder()
-                .status(ConcertOutboxStatus.INIT)
+                .status(DEFAULT_STATUS)
                 .type(type)
                 .concertScheduleId(concertScheduleId)
                 .ticketId(ticketId)
@@ -67,6 +73,11 @@ public class ConcertOutbox {
                 .retryCount(0)
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    private void updateStatus(ConcertOutboxStatus status) {
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public static ConcertOutbox createReserved(Long concertScheduleId, Long ticketId, Long userId) {
@@ -86,20 +97,17 @@ public class ConcertOutbox {
     }
 
     public void published() {
-        this.status = ConcertOutboxStatus.PUBLISHED;
-        this.updatedAt = LocalDateTime.now();
+        updateStatus(ConcertOutboxStatus.PUBLISHED);
     }
 
     public void retried() {
-        this.status = ConcertOutboxStatus.RETRY;
-        this.lastRetriedAt = LocalDateTime.now();
+        updateStatus(ConcertOutboxStatus.RETRY);
         this.updatedAt = LocalDateTime.now();
         this.retryCount++;
     }
 
     public void failed() {
-        this.status = ConcertOutboxStatus.FAILED;
-        this.updatedAt = LocalDateTime.now();
+        updateStatus(ConcertOutboxStatus.FAILED);
     }
 
     public boolean isRetryable() {
@@ -118,7 +126,8 @@ public class ConcertOutbox {
             case PAID:
                 return KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE;
             default:
-                throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "ConcertOutbox type 이 잘못되었습니다.");
+                throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION,
+                        String.format("ConcertOutbox type 이 잘못되었습니다. type=%s, concertOutboxId=%d", type, id));
         }
     }
 }
