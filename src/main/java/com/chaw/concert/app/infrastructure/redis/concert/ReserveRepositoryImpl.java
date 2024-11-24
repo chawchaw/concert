@@ -2,7 +2,7 @@ package com.chaw.concert.app.infrastructure.redis.concert;
 
 import com.chaw.concert.app.domain.concert.reserve.entity.Reserve;
 import com.chaw.concert.app.domain.concert.reserve.repository.ReserveRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Repository
 public class ReserveRepositoryImpl implements ReserveRepository {
 

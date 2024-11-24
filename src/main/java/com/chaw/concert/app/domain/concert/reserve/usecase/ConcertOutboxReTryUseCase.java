@@ -6,13 +6,13 @@ import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepos
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.ReservedEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class ConcertOutboxReTryUseCase {
 

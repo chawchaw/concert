@@ -1,11 +1,11 @@
 package com.chaw.concert.app.presenter.scheduler.concert;
 
 import com.chaw.concert.app.domain.concert.reserve.usecase.ConcertOutboxReTryUseCase;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Component
 public class ConcertOutboxScheduler {
 
