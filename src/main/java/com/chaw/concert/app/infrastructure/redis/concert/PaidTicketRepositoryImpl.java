@@ -1,14 +1,14 @@
 package com.chaw.concert.app.infrastructure.redis.concert;
 
 import com.chaw.concert.app.domain.concert.reserve.repository.PaidTicketRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.redisson.api.RSet;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Repository;
 
 import java.util.Set;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Repository
 public class PaidTicketRepositoryImpl implements PaidTicketRepository {
 

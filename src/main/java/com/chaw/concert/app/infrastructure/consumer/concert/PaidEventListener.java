@@ -3,13 +3,13 @@ package com.chaw.concert.app.infrastructure.consumer.concert;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
 import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
 import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class PaidEventListener {
 
