@@ -1,8 +1,33 @@
 # docker-compose -p concert up -d
-version: '3.8'
-
 services:
+
+  application-server:
+    container_name: spring-boot
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../config/slack.properties:/app/config/slack.properties
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/hhplus?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "zjxA8!9d*a"
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - concert
+
   mysql-db:
+    container_name: mysql-db
     image: mysql:8.0   # 안정적인 MySQL 8.0 버전 사용
     platform: linux/amd64
     environment:
@@ -14,16 +39,27 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - concert
 
   redis:
+    container_name: redis
     image: redis:7.0    # 최신 안정 버전의 Redis 사용
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     command: [ "redis-server", "--appendonly", "yes" ]  # 데이터 영속성 활성화
+    networks:
+      - concert
 
   zookeeper:
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -32,8 +68,11 @@ services:
       - "22181:2181"
     # Mac M chip 사용 시 아래 platform 추가
     platform: linux/amd64
+    networks:
+      - concert
 
   kafka:
+    container_name: kafka
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
@@ -46,6 +85,21 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - concert
+
+  k6:
+    image: grafana/k6
+    volumes:
+      - ../k6/test.js:/test/test.js
+    command: [ "run", "/test/test.js" ]
+    depends_on:
+      - application-server
+    networks:
+      - concert
+
+networks:
+  concert:
 
 volumes:
   mysql_data:
