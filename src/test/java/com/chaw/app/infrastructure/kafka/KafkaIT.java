@@ -3,7 +3,7 @@ package com.chaw.app.infrastructure.kafka;
 import com.chaw.concert.ConcertApplication;
 import com.chaw.concert.app.infrastructure.consumer.KafkaTestConsumer;
 import com.chaw.concert.app.infrastructure.kafka.KafkaProducer;
-import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.TestKafkaTopics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +24,7 @@ public class KafkaIT {
 
     @Test
     public void 컨슈머_리스너가_정상적으로_실행() {
-        kafkaProducer.sendMessage(KafkaTopics.TEST, "test-message");
+        kafkaProducer.sendMessage(TestKafkaTopics.TEST, "test-message");
 
         verify(kafkaTestConsumer, timeout(5000)).consume(anyString());
     }

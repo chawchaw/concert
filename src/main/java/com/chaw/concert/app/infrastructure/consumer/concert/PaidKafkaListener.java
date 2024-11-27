@@ -5,14 +5,15 @@ import com.chaw.concert.app.domain.concert.reserve.entity.ConcertOutboxType;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertDataPlatformRepository;
 import com.chaw.concert.app.domain.concert.reserve.repository.ConcertOutboxRepository;
 import com.chaw.concert.app.domain.concert.reserve.usecase.dto.PaidEvent;
-import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.KafkaGroups;
+import com.chaw.concert.app.infrastructure.kafka.PayKafkaTopics;
 import com.chaw.concert.app.infrastructure.slack.SlackNotifierService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 @Component
 public class PaidKafkaListener {
@@ -25,9 +26,9 @@ public class PaidKafkaListener {
         log.info("Received from topic: {}", topic);
     }
 
-    @KafkaListener(topics = KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, groupId = KafkaTopics.GROUP_ID)
+    @KafkaListener(topics = PayKafkaTopics.CONCERT_PAY_TOPIC_DATASTORE, groupId = KafkaGroups.GROUP_ID)
     public void saveOnDataPlatform(PaidEvent paidEvent) {
-        logReceivedMessage(KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE);
+        logReceivedMessage(PayKafkaTopics.CONCERT_PAY_TOPIC_DATASTORE);
 
         ConcertOutbox concertOutbox = concertOutboxRepository.findByIdAndTypeOrThrow(paidEvent.concertOutboxId(), ConcertOutboxType.PAID);
         concertOutbox.published();
@@ -36,9 +37,9 @@ public class PaidKafkaListener {
         concertDataPlatformRepository.savePay(paidEvent.concertScheduleId(), paidEvent.ticketId(), paidEvent.userId());
     }
 
-    @KafkaListener(topics = KafkaTopics.CONCERT_PAY_TOPIC_SLACK, groupId = KafkaTopics.GROUP_ID)
+    @KafkaListener(topics = PayKafkaTopics.CONCERT_PAY_TOPIC_SLACK, groupId = KafkaGroups.GROUP_ID)
     public void sendToSlack(PaidEvent paidEvent) {
-        logReceivedMessage(KafkaTopics.CONCERT_PAY_TOPIC_SLACK);
+        logReceivedMessage(PayKafkaTopics.CONCERT_PAY_TOPIC_SLACK);
 
         slackNotifierService.sendNotificationToSlack(paidEvent.toMessage());
     }

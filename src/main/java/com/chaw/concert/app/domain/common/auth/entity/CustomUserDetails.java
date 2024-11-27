@@ -1,12 +1,12 @@
 package com.chaw.concert.app.domain.common.auth.entity;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
     private final Long id; // 사용자 ID

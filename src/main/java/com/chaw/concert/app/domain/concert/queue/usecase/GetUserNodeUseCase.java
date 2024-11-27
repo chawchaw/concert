@@ -3,7 +3,7 @@ package com.chaw.concert.app.domain.concert.queue.usecase;
 import com.chaw.concert.app.domain.concert.queue.entity.UserNode;
 import com.chaw.concert.app.domain.concert.queue.entity.UserNodeStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.UserNodeRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * 대기열에 입장 및 대기순서, 상태 조회
  */
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class GetUserNodeUseCase {
 

@@ -1,12 +1,12 @@
 package com.chaw.concert.app.infrastructure.kafka;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Component
 public class KafkaProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;

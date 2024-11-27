@@ -2,7 +2,7 @@ package com.chaw.concert.app.domain.concert.queue.usecase;
 
 import com.chaw.concert.app.domain.concert.queue.entity.UserNode;
 import com.chaw.concert.app.domain.concert.queue.repository.UserNodeRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 통과 스케줄러
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class ActiveUserNodesUseCase {
 

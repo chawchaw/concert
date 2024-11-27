@@ -9,14 +9,14 @@ import com.chaw.concert.app.domain.concert.reserve.usecase.ReserveUseCase;
 import com.chaw.concert.app.presenter.controller.api.v1.concert.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
 @RequestMapping("/api/v1/concert")
 @Tag(name = "Concert", description = "콘서트")
-@AllArgsConstructor
+@RequiredArgsConstructor
+@RestController
 public class ConcertController {
 
     private final SecurityUtil securityUtils;

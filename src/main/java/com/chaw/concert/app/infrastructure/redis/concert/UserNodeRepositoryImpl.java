@@ -3,7 +3,7 @@ package com.chaw.concert.app.infrastructure.redis.concert;
 import com.chaw.concert.app.domain.concert.queue.entity.UserNode;
 import com.chaw.concert.app.domain.concert.queue.entity.UserNodeStatus;
 import com.chaw.concert.app.domain.concert.queue.repository.UserNodeRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.redisson.api.RKeys;
 import org.redisson.api.RScoredSortedSet;
 import org.redisson.api.RedissonClient;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Repository
 public class UserNodeRepositoryImpl implements UserNodeRepository {
 

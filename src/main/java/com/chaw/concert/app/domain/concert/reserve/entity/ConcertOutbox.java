@@ -2,13 +2,13 @@ package com.chaw.concert.app.domain.concert.reserve.entity;
 
 import com.chaw.concert.app.infrastructure.exception.common.BaseException;
 import com.chaw.concert.app.infrastructure.exception.common.ErrorType;
-import com.chaw.concert.app.infrastructure.kafka.KafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.PayKafkaTopics;
+import com.chaw.concert.app.infrastructure.kafka.ReserveKafkaTopics;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +20,9 @@ import java.util.List;
 @NoArgsConstructor
 public class ConcertOutbox {
 
+    private static final ConcertOutboxStatus DEFAULT_STATUS = ConcertOutboxStatus.INIT;
+    private static final int DEFAULT_RETRY_COUNT = 0;
+
     public static final int RETRY_LIMIT = 3;
     public static final int RETRY_MINUTES = 5;
 
@@ -27,44 +30,52 @@ public class ConcertOutbox {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    ConcertOutboxStatus status;
+    private ConcertOutboxStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    ConcertOutboxType type;
+    private ConcertOutboxType type;
 
     @Column(name = "concert_schedule_id")
-    Long concertScheduleId;
+    private Long concertScheduleId;
 
     @Column(name = "ticket_id")
-    Long ticketId;
+    private Long ticketId;
 
     @Column(name = "user_id")
-    Long userId;
+    private Long userId;
 
+    @Builder.Default
     @Column(name = "retry_count")
-    int retryCount;
+    private int retryCount = DEFAULT_RETRY_COUNT;
 
-    @CreatedDate
     @Column(name = "created_at")
-    LocalDateTime createdAt; // "생성일"
+    private LocalDateTime createdAt; // "생성일"
 
     @Column(name = "last_retried_at")
-    LocalDateTime lastRetriedAt; // "재시도 일시"
+    private LocalDateTime lastRetriedAt; // "재시도 일시"
 
     @Column(name = "updated_at")
-    LocalDateTime updatedAt; // "수정일"
+    private LocalDateTime updatedAt; // "수정일"
 
     private static ConcertOutbox create(ConcertOutboxType type, Long concertScheduleId, Long ticketId, Long userId) {
         return ConcertOutbox.builder()
-                .status(ConcertOutboxStatus.INIT)
+                .status(DEFAULT_STATUS)
                 .type(type)
                 .concertScheduleId(concertScheduleId)
                 .ticketId(ticketId)
                 .userId(userId)
                 .retryCount(0)
+                .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    private void updateStatus(ConcertOutboxStatus status) {
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public static ConcertOutbox createReserved(Long concertScheduleId, Long ticketId, Long userId) {
@@ -84,20 +95,17 @@ public class ConcertOutbox {
     }
 
     public void published() {
-        this.status = ConcertOutboxStatus.PUBLISHED;
-        this.updatedAt = LocalDateTime.now();
+        updateStatus(ConcertOutboxStatus.PUBLISHED);
     }
 
     public void retried() {
-        this.status = ConcertOutboxStatus.RETRY;
-        this.lastRetriedAt = LocalDateTime.now();
+        updateStatus(ConcertOutboxStatus.RETRY);
         this.updatedAt = LocalDateTime.now();
         this.retryCount++;
     }
 
     public void failed() {
-        this.status = ConcertOutboxStatus.FAILED;
-        this.updatedAt = LocalDateTime.now();
+        updateStatus(ConcertOutboxStatus.FAILED);
     }
 
     public boolean isRetryable() {
@@ -106,17 +114,18 @@ public class ConcertOutbox {
     }
 
     public String toMessageForRetryFailed() {
-        return String.format("Kafka 발행 실패: 시도횟수=%d, concertOutboxId=%d, type=%s", retryCount, id, type.getDbValue());
+        return String.format("Kafka 발행 실패: 시도횟수=%d, concertOutboxId=%d, type=%s", retryCount, id, type.name());
     }
 
     public String getTopic() {
         switch (type) {
             case RESERVED:
-                return KafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE;
+                return ReserveKafkaTopics.CONCERT_RESERVE_TOPIC_DATASTORE;
             case PAID:
-                return KafkaTopics.CONCERT_PAY_TOPIC_DATASTORE;
+                return PayKafkaTopics.CONCERT_PAY_TOPIC_DATASTORE;
             default:
-                throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION, "ConcertOutbox type 이 잘못되었습니다.");
+                throw new BaseException(ErrorType.DATA_INTEGRITY_VIOLATION,
+                        String.format("ConcertOutbox type 이 잘못되었습니다. type=%s, concertOutboxId=%d", type, id));
         }
     }
 }

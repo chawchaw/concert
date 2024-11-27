@@ -1,13 +1,13 @@
 package com.chaw.concert.app.domain.concert.query.usecase;
 
 import com.chaw.concert.app.domain.concert.query.repository.ConcertRepository;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class GetConcertsUseCase {
     private final ConcertRepository concertRepository;

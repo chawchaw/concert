@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class PointHistory {
 
     @Id
@@ -26,11 +28,11 @@ public class PointHistory {
     @Column(name = "ticket_id")
     private Long ticketId;
 
-    @Column
-    @Convert(converter = PointHistoryTypeConverter.class)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
     private PointHistoryType type; // 변경 타입
 
-    @Column
+    @Column(name = "amount")
     private Integer amount; // 변경 금액
 
     @CreatedDate
@@ -52,6 +54,7 @@ public class PointHistory {
                 .ticketId(ticketId)
                 .type(PointHistoryType.PAY)
                 .amount(amount)
+                .dateTransaction(LocalDateTime.now())
                 .build();
     }
 }

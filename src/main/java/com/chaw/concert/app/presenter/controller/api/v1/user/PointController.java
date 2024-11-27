@@ -8,14 +8,14 @@ import com.chaw.concert.app.presenter.controller.api.v1.user.dto.ChargePointOutp
 import com.chaw.concert.app.presenter.controller.api.v1.user.dto.GetPointOutput;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-@AllArgsConstructor
-@RestController
 @RequestMapping("/api/v1/user/point")
 @Tag(name = "User Point", description = "사용자 포인트 API")
+@RequiredArgsConstructor
+@RestController
 public class PointController {
 
     private final SecurityUtil securityUtils;
