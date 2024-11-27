@@ -70,7 +70,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 "/api/v1/auth/join",
                 "/swagger-ui/",  // Swagger UI 경로
                 "/v3/api-docs",  // OpenAPI 문서 경로
-                "/swagger-ui.html"  // Swagger 기본 HTML 경로
+                "/swagger-ui.html",  // Swagger 기본 HTML 경로
+                "/actuator/prometheus"  // Prometheus 경로
         );
 
         return excludePaths.stream().anyMatch(path::startsWith);

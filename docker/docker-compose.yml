@@ -1,4 +1,6 @@
+# ./gradlew build -x test
 # docker-compose -p concert up -d
+# docker-compose -p concert up --build -d
 services:
 
   application-server:
@@ -17,6 +19,8 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true" # Micrometer Prometheus 활성화
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "prometheus" # Prometheus 엔드포인트 노출
 
     depends_on:
       mysql-db:
@@ -88,13 +92,46 @@ services:
     networks:
       - concert
 
-  k6:
-    image: grafana/k6
+#  k6:
+#    image: grafana/k6
+#    volumes:
+#      - ../k6/test.js:/test/test.js
+#    command: [ "run", "/test/test.js" ]
+#    depends_on:
+#      - application-server
+#    networks:
+#      - concert
+
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8081:8080"
     volumes:
-      - ../k6/test.js:/test/test.js
-    command: [ "run", "/test/test.js" ]
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - concert
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - concert
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
     depends_on:
-      - application-server
+      - prometheus
     networks:
       - concert
 
