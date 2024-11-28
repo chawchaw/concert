@@ -39,6 +39,15 @@ spring:
     properties:
       spring.json.trusted.packages: "*"
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+
 # JWT 설정
 jwt:
   secret: g7LGbgzTJUaGzJCiUsgQr/5bOkPJVxyGPJK3a7yYpLA=

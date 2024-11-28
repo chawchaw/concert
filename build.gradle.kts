@@ -28,6 +28,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security") // Spring Security 의존성 추가
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign") // OpenFeign 의존성 추가
     implementation("org.springframework.kafka:spring-kafka") // Kafka 의존성 추가
+    implementation("org.springframework.boot:spring-boot-starter-actuator") // Actuator 의존성 추가
+    implementation("io.micrometer:micrometer-registry-prometheus") // Prometheus 의존성 추가 (Micrometer)
 
     // BOM 에 포함되지 않아 직접 버전을 명시
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0") // Swagger 의존성 추가
