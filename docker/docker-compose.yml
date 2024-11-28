@@ -1,8 +1,48 @@
 # docker-compose -p concert up -d
-version: '3.8'
-
 services:
+
+  # ./gradlew build -x test
+  # docker-compose -p concert up --build -d application-server
+  application-server:
+    container_name: spring-boot
+    build:
+      context: ..
+      dockerfile: docker/spring/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../config/slack.properties:/app/config/slack.properties
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/hhplus?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "zjxA8!9d*a"
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true" # Micrometer Prometheus 활성화
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "prometheus" # Prometheus 엔드포인트 노출
+
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: '1g'
+        reservations:
+          cpus: '1'
+          memory: '1g'
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - concert
+
+  # docker-compose -p concert up --build -d mysql-db
   mysql-db:
+    container_name: mysql-db
     image: mysql:8.0   # 안정적인 MySQL 8.0 버전 사용
     platform: linux/amd64
     environment:
@@ -14,16 +54,46 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - concert
 
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1g'
+        reservations:
+          cpus: '1'
+          memory: '1g'
+
+  # docker-compose -p concert up --build -d redis
   redis:
+    container_name: redis
     image: redis:7.0    # 최신 안정 버전의 Redis 사용
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     command: [ "redis-server", "--appendonly", "yes" ]  # 데이터 영속성 활성화
+    networks:
+      - concert
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '2g'
+        reservations:
+          cpus: '0.5'
+          memory: '512m'
 
   zookeeper:
+    container_name: zookeeper
     image: confluentinc/cp-zookeeper:latest
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -32,8 +102,11 @@ services:
       - "22181:2181"
     # Mac M chip 사용 시 아래 platform 추가
     platform: linux/amd64
+    networks:
+      - concert
 
   kafka:
+    container_name: kafka
     image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
@@ -46,6 +119,67 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - concert
+
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - concert
+
+  # docker-compose -p concert up --build -d prometheus
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--web.enable-remote-write-receiver" # Remote Write 활성화
+      - "--enable-feature=native-histograms"  # Histogram 지원 활성화
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - concert
+
+  # docker-compose -p concert up --build -d k6
+  k6:
+    container_name: k6
+    image: grafana/k6
+    ports:
+      - "6565:6565"
+    command: run -o experimental-prometheus-rw /test/test.js
+    volumes:
+      - ../k6/test.js:/test/test.js
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=true
+    depends_on:
+      - application-server
+      - prometheus
+    networks:
+      - concert
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - concert
+
+networks:
+  concert:
 
 volumes:
   mysql_data:
