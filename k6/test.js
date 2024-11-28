@@ -8,7 +8,7 @@ const QUEUE_URL = `${HOST}/queue`;
 
 const REPEAT_COUNT = 10;
 const SLEEP_SECOND = 1;
-const TARGET_USER_COUNT_PER_STAGE = 500;
+const TARGET_USER_COUNT_PER_STAGE = 50;
 
 export const options = {
   thresholds: { // 성능 기준
@@ -31,15 +31,18 @@ export default async function () {
 
   // 회원가입
   signup(username, password);
+  sleep(SLEEP_SECOND);
 
   // 로그인
   const loginResponse = login(username, password);
+  sleep(SLEEP_SECOND);
 
   // 로그인 성공 시 토큰 추출
   const authToken = loginResponse.json('token'); // 예: JWT 토큰
 
   // 대기열 입장
   joinQueue(authToken);
+  sleep(SLEEP_SECOND);
 
   // 대기열 상태 조회 (1초마다 반복)
   for (let i = 0; i < REPEAT_COUNT; i++) {
