@@ -26,7 +26,7 @@ services:
       resources:
         limits:
           cpus: '8'
-          memory: '1g'
+          memory: '16g'
         reservations:
           cpus: '1'
           memory: '1g'
@@ -50,6 +50,7 @@ services:
       MYSQL_DATABASE: hhplus
       MYSQL_USER: concert
       MYSQL_PASSWORD: d&xjzlAX7z@L
+#      MYSQL_EXTRA_FLAGS: "--thread_handling=pool-of-threads --thread_pool_size=4"
     ports:
       - "3306:3306"
     volumes:
@@ -70,6 +71,21 @@ services:
         reservations:
           cpus: '1'
           memory: '1g'
+
+  # docker-compose -p concert up --build -d mysql-exporter
+  mysql-exporter:
+    container_name: mysql-exporter
+    image: prom/mysqld-exporter
+    command:
+      - "--config.my-cnf=/cfg/.my.cnf"
+    volumes:
+      - ./mysql-exporter/.my.cnf:/cfg/.my.cnf
+    ports:
+      - "9104:9104"  # Prometheus가 이 포트를 통해 데이터 수집
+    depends_on:
+      - mysql-db
+    networks:
+      - concert
 
   # docker-compose -p concert up --build -d redis
   redis:

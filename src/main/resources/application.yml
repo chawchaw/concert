@@ -7,8 +7,8 @@ spring:
     username: root
     password: zjxA8!9d*a
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    hikari:
-#      maximumPoolSize: 20
+    hikari:
+      maximumPoolSize: 40
 
   jpa:
     hibernate:

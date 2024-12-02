@@ -8,7 +8,7 @@ const QUEUE_URL = `${HOST}/queue`;
 
 const REPEAT_COUNT = 10;
 const SLEEP_SECOND = 1;
-const TARGET_USER_COUNT_PER_STAGE = 50;
+const TARGET_USER_COUNT_PER_STAGE = 100;
 
 export const options = {
   thresholds: { // 성능 기준
